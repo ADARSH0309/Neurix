@@ -2,16 +2,7 @@
  * Gmail MCP Server
  */
 
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-  ListResourcesRequestSchema,
-  ReadResourceRequestSchema,
-  ListPromptsRequestSchema,
-  GetPromptRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
+import { NeurixBaseServer, type Tool, type CallToolResult, type ReadResourceResult, type GetPromptResult } from '@neurix/mcp-sdk';
 import { GmailClient } from './gmail-client.js';
 import { z } from 'zod';
 import { GMAIL_LABELS } from './types.js';
@@ -99,8 +90,7 @@ const MaxResultsSchema = z.object({
   maxResults: z.number().min(1).max(100).optional().default(20),
 });
 
-export class GmailServer {
-  private server: Server;
+export class GmailServer extends NeurixBaseServer {
   private gmailClient: GmailClient;
 
   constructor(
@@ -109,993 +99,916 @@ export class GmailServer {
     redirectUri: string,
     tokenPath: string
   ) {
-    this.server = new Server(
-      {
-        name: 'neurix-gmail-server',
-        version: '0.1.0',
-      },
-      {
-        capabilities: {
-          tools: {},
-          resources: {},
-          prompts: {},
-        },
-      }
-    );
+    super({
+      name: 'neurix-gmail-server',
+      version: '0.1.0',
+      description: 'Gmail MCP Server for managing email through MCP',
+    });
 
     this.gmailClient = new GmailClient(clientId, clientSecret, redirectUri, tokenPath);
-    this.setupHandlers();
   }
 
   async initialize(): Promise<void> {
     await this.gmailClient.initialize();
-    console.error(JSON.stringify({
-      timestamp: new Date().toISOString(),
-      level: 'info',
-      message: 'Gmail client initialized successfully',
-    }));
+    this.logger.info('Gmail client initialized successfully');
   }
 
-  private setupHandlers(): void {
-    // List tools
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => {
-      return {
-        tools: [
-          // Message operations
-          {
-            name: 'list_messages',
-            description: 'List messages in the mailbox. Can filter by labels and search query.',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                maxResults: { type: 'number', description: 'Maximum number of messages to return (1-100, default: 20)' },
-                pageToken: { type: 'string', description: 'Token for pagination' },
-                query: { type: 'string', description: 'Gmail search query (e.g., "from:user@example.com", "is:unread")' },
-                labelIds: { type: 'array', items: { type: 'string' }, description: 'Filter by label IDs' },
-              },
-            },
+  protected async listTools(): Promise<Tool[]> {
+    return [
+      // Message operations
+      {
+        name: 'list_messages',
+        description: 'List messages in the mailbox. Can filter by labels and search query.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            maxResults: { type: 'number', description: 'Maximum number of messages to return (1-100, default: 20)' },
+            pageToken: { type: 'string', description: 'Token for pagination' },
+            query: { type: 'string', description: 'Gmail search query (e.g., "from:user@example.com", "is:unread")' },
+            labelIds: { type: 'array', items: { type: 'string' }, description: 'Filter by label IDs' },
           },
-          {
-            name: 'get_message',
-            description: 'Get a specific email message with full details',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                messageId: { type: 'string', description: 'Message ID' },
-              },
-              required: ['messageId'],
-            },
+        },
+      },
+      {
+        name: 'get_message',
+        description: 'Get a specific email message with full details',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            messageId: { type: 'string', description: 'Message ID' },
           },
-          {
-            name: 'send_message',
-            description: 'Send a new email message',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                to: { type: 'string', description: 'Recipient email address' },
-                subject: { type: 'string', description: 'Email subject' },
-                body: { type: 'string', description: 'Email body content' },
-                cc: { type: 'string', description: 'CC recipients (comma-separated)' },
-                bcc: { type: 'string', description: 'BCC recipients (comma-separated)' },
-                isHtml: { type: 'boolean', description: 'Whether body is HTML (default: false)' },
-              },
-              required: ['to', 'subject', 'body'],
-            },
+          required: ['messageId'],
+        },
+      },
+      {
+        name: 'send_message',
+        description: 'Send a new email message',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            to: { type: 'string', description: 'Recipient email address' },
+            subject: { type: 'string', description: 'Email subject' },
+            body: { type: 'string', description: 'Email body content' },
+            cc: { type: 'string', description: 'CC recipients (comma-separated)' },
+            bcc: { type: 'string', description: 'BCC recipients (comma-separated)' },
+            isHtml: { type: 'boolean', description: 'Whether body is HTML (default: false)' },
           },
-          {
-            name: 'reply_to_message',
-            description: 'Reply to an existing email message',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                messageId: { type: 'string', description: 'Message ID to reply to' },
-                body: { type: 'string', description: 'Reply body content' },
-                isHtml: { type: 'boolean', description: 'Whether body is HTML (default: false)' },
-              },
-              required: ['messageId', 'body'],
-            },
+          required: ['to', 'subject', 'body'],
+        },
+      },
+      {
+        name: 'reply_to_message',
+        description: 'Reply to an existing email message',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            messageId: { type: 'string', description: 'Message ID to reply to' },
+            body: { type: 'string', description: 'Reply body content' },
+            isHtml: { type: 'boolean', description: 'Whether body is HTML (default: false)' },
           },
-          {
-            name: 'forward_message',
-            description: 'Forward an email message to another recipient',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                messageId: { type: 'string', description: 'Message ID to forward' },
-                to: { type: 'string', description: 'Recipient email address' },
-                additionalMessage: { type: 'string', description: 'Additional message to include' },
-              },
-              required: ['messageId', 'to'],
-            },
+          required: ['messageId', 'body'],
+        },
+      },
+      {
+        name: 'forward_message',
+        description: 'Forward an email message to another recipient',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            messageId: { type: 'string', description: 'Message ID to forward' },
+            to: { type: 'string', description: 'Recipient email address' },
+            additionalMessage: { type: 'string', description: 'Additional message to include' },
           },
-          {
-            name: 'search_messages',
-            description: 'Search for messages using Gmail search syntax',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                query: { type: 'string', description: 'Gmail search query' },
-                maxResults: { type: 'number', description: 'Maximum results (default: 20)' },
-              },
-              required: ['query'],
-            },
+          required: ['messageId', 'to'],
+        },
+      },
+      {
+        name: 'search_messages',
+        description: 'Search for messages using Gmail search syntax',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            query: { type: 'string', description: 'Gmail search query' },
+            maxResults: { type: 'number', description: 'Maximum results (default: 20)' },
           },
-          {
-            name: 'trash_message',
-            description: 'Move a message to trash',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                messageId: { type: 'string', description: 'Message ID' },
-              },
-              required: ['messageId'],
-            },
+          required: ['query'],
+        },
+      },
+      {
+        name: 'trash_message',
+        description: 'Move a message to trash',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            messageId: { type: 'string', description: 'Message ID' },
           },
-          {
-            name: 'untrash_message',
-            description: 'Remove a message from trash',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                messageId: { type: 'string', description: 'Message ID' },
-              },
-              required: ['messageId'],
-            },
+          required: ['messageId'],
+        },
+      },
+      {
+        name: 'untrash_message',
+        description: 'Remove a message from trash',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            messageId: { type: 'string', description: 'Message ID' },
           },
-          {
-            name: 'delete_message',
-            description: 'Permanently delete a message (cannot be undone)',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                messageId: { type: 'string', description: 'Message ID' },
-              },
-              required: ['messageId'],
-            },
+          required: ['messageId'],
+        },
+      },
+      {
+        name: 'delete_message',
+        description: 'Permanently delete a message (cannot be undone)',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            messageId: { type: 'string', description: 'Message ID' },
           },
-          {
-            name: 'mark_as_read',
-            description: 'Mark a message as read',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                messageId: { type: 'string', description: 'Message ID' },
-              },
-              required: ['messageId'],
-            },
+          required: ['messageId'],
+        },
+      },
+      {
+        name: 'mark_as_read',
+        description: 'Mark a message as read',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            messageId: { type: 'string', description: 'Message ID' },
           },
-          {
-            name: 'mark_as_unread',
-            description: 'Mark a message as unread',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                messageId: { type: 'string', description: 'Message ID' },
-              },
-              required: ['messageId'],
-            },
+          required: ['messageId'],
+        },
+      },
+      {
+        name: 'mark_as_unread',
+        description: 'Mark a message as unread',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            messageId: { type: 'string', description: 'Message ID' },
           },
-          {
-            name: 'star_message',
-            description: 'Star a message',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                messageId: { type: 'string', description: 'Message ID' },
-              },
-              required: ['messageId'],
-            },
+          required: ['messageId'],
+        },
+      },
+      {
+        name: 'star_message',
+        description: 'Star a message',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            messageId: { type: 'string', description: 'Message ID' },
           },
-          {
-            name: 'unstar_message',
-            description: 'Remove star from a message',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                messageId: { type: 'string', description: 'Message ID' },
-              },
-              required: ['messageId'],
-            },
+          required: ['messageId'],
+        },
+      },
+      {
+        name: 'unstar_message',
+        description: 'Remove star from a message',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            messageId: { type: 'string', description: 'Message ID' },
           },
-          {
-            name: 'archive_message',
-            description: 'Archive a message (remove from inbox)',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                messageId: { type: 'string', description: 'Message ID' },
-              },
-              required: ['messageId'],
-            },
+          required: ['messageId'],
+        },
+      },
+      {
+        name: 'archive_message',
+        description: 'Archive a message (remove from inbox)',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            messageId: { type: 'string', description: 'Message ID' },
           },
-          {
-            name: 'modify_labels',
-            description: 'Add or remove labels from a message',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                messageId: { type: 'string', description: 'Message ID' },
-                addLabelIds: { type: 'array', items: { type: 'string' }, description: 'Labels to add' },
-                removeLabelIds: { type: 'array', items: { type: 'string' }, description: 'Labels to remove' },
-              },
-              required: ['messageId'],
-            },
+          required: ['messageId'],
+        },
+      },
+      {
+        name: 'modify_labels',
+        description: 'Add or remove labels from a message',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            messageId: { type: 'string', description: 'Message ID' },
+            addLabelIds: { type: 'array', items: { type: 'string' }, description: 'Labels to add' },
+            removeLabelIds: { type: 'array', items: { type: 'string' }, description: 'Labels to remove' },
           },
-          {
-            name: 'get_unread',
-            description: 'Get unread messages from inbox',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                maxResults: { type: 'number', description: 'Maximum results (default: 20)' },
-              },
-            },
+          required: ['messageId'],
+        },
+      },
+      {
+        name: 'get_unread',
+        description: 'Get unread messages from inbox',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            maxResults: { type: 'number', description: 'Maximum results (default: 20)' },
           },
-          {
-            name: 'get_sent',
-            description: 'Get sent messages',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                maxResults: { type: 'number', description: 'Maximum results (default: 20)' },
-              },
-            },
+        },
+      },
+      {
+        name: 'get_sent',
+        description: 'Get sent messages',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            maxResults: { type: 'number', description: 'Maximum results (default: 20)' },
           },
-          {
-            name: 'get_starred',
-            description: 'Get starred messages',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                maxResults: { type: 'number', description: 'Maximum results (default: 20)' },
-              },
-            },
+        },
+      },
+      {
+        name: 'get_starred',
+        description: 'Get starred messages',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            maxResults: { type: 'number', description: 'Maximum results (default: 20)' },
           },
-          {
-            name: 'get_trashed',
-            description: 'Get messages in trash',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                maxResults: { type: 'number', description: 'Maximum results (default: 20)' },
-              },
-            },
+        },
+      },
+      {
+        name: 'get_trashed',
+        description: 'Get messages in trash',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            maxResults: { type: 'number', description: 'Maximum results (default: 20)' },
           },
+        },
+      },
 
-          // Thread operations
-          {
-            name: 'list_threads',
-            description: 'List email threads',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                maxResults: { type: 'number', description: 'Maximum threads to return (default: 20)' },
-                query: { type: 'string', description: 'Gmail search query' },
-                labelIds: { type: 'array', items: { type: 'string' }, description: 'Filter by label IDs' },
-              },
-            },
+      // Thread operations
+      {
+        name: 'list_threads',
+        description: 'List email threads',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            maxResults: { type: 'number', description: 'Maximum threads to return (default: 20)' },
+            query: { type: 'string', description: 'Gmail search query' },
+            labelIds: { type: 'array', items: { type: 'string' }, description: 'Filter by label IDs' },
           },
-          {
-            name: 'get_thread',
-            description: 'Get a thread with all its messages',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                threadId: { type: 'string', description: 'Thread ID' },
-              },
-              required: ['threadId'],
-            },
+        },
+      },
+      {
+        name: 'get_thread',
+        description: 'Get a thread with all its messages',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            threadId: { type: 'string', description: 'Thread ID' },
           },
-          {
-            name: 'trash_thread',
-            description: 'Move an entire thread to trash',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                threadId: { type: 'string', description: 'Thread ID' },
-              },
-              required: ['threadId'],
-            },
+          required: ['threadId'],
+        },
+      },
+      {
+        name: 'trash_thread',
+        description: 'Move an entire thread to trash',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            threadId: { type: 'string', description: 'Thread ID' },
           },
-          {
-            name: 'delete_thread',
-            description: 'Permanently delete a thread (cannot be undone)',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                threadId: { type: 'string', description: 'Thread ID' },
-              },
-              required: ['threadId'],
-            },
+          required: ['threadId'],
+        },
+      },
+      {
+        name: 'delete_thread',
+        description: 'Permanently delete a thread (cannot be undone)',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            threadId: { type: 'string', description: 'Thread ID' },
           },
+          required: ['threadId'],
+        },
+      },
 
-          // Label operations
-          {
-            name: 'list_labels',
-            description: 'List all labels in the mailbox',
-            inputSchema: {
-              type: 'object',
-              properties: {},
-            },
+      // Label operations
+      {
+        name: 'list_labels',
+        description: 'List all labels in the mailbox',
+        inputSchema: {
+          type: 'object',
+          properties: {},
+        },
+      },
+      {
+        name: 'create_label',
+        description: 'Create a new label',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', description: 'Label name' },
+            backgroundColor: { type: 'string', description: 'Background color (hex)' },
+            textColor: { type: 'string', description: 'Text color (hex)' },
           },
-          {
-            name: 'create_label',
-            description: 'Create a new label',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                name: { type: 'string', description: 'Label name' },
-                backgroundColor: { type: 'string', description: 'Background color (hex)' },
-                textColor: { type: 'string', description: 'Text color (hex)' },
-              },
-              required: ['name'],
-            },
+          required: ['name'],
+        },
+      },
+      {
+        name: 'update_label',
+        description: 'Update a label',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            labelId: { type: 'string', description: 'Label ID' },
+            name: { type: 'string', description: 'New label name' },
+            backgroundColor: { type: 'string', description: 'Background color (hex)' },
+            textColor: { type: 'string', description: 'Text color (hex)' },
           },
-          {
-            name: 'update_label',
-            description: 'Update a label',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                labelId: { type: 'string', description: 'Label ID' },
-                name: { type: 'string', description: 'New label name' },
-                backgroundColor: { type: 'string', description: 'Background color (hex)' },
-                textColor: { type: 'string', description: 'Text color (hex)' },
-              },
-              required: ['labelId'],
-            },
+          required: ['labelId'],
+        },
+      },
+      {
+        name: 'delete_label',
+        description: 'Delete a label',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            labelId: { type: 'string', description: 'Label ID' },
           },
-          {
-            name: 'delete_label',
-            description: 'Delete a label',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                labelId: { type: 'string', description: 'Label ID' },
-              },
-              required: ['labelId'],
-            },
+          required: ['labelId'],
+        },
+      },
+
+      // Draft operations
+      {
+        name: 'list_drafts',
+        description: 'List all drafts',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            maxResults: { type: 'number', description: 'Maximum drafts to return (default: 20)' },
           },
-
-          // Draft operations
-          {
-            name: 'list_drafts',
-            description: 'List all drafts',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                maxResults: { type: 'number', description: 'Maximum drafts to return (default: 20)' },
-              },
-            },
+        },
+      },
+      {
+        name: 'create_draft',
+        description: 'Create a new draft',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            to: { type: 'string', description: 'Recipient email address' },
+            subject: { type: 'string', description: 'Email subject' },
+            body: { type: 'string', description: 'Email body content' },
+            cc: { type: 'string', description: 'CC recipients' },
+            bcc: { type: 'string', description: 'BCC recipients' },
+            isHtml: { type: 'boolean', description: 'Whether body is HTML' },
           },
-          {
-            name: 'create_draft',
-            description: 'Create a new draft',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                to: { type: 'string', description: 'Recipient email address' },
-                subject: { type: 'string', description: 'Email subject' },
-                body: { type: 'string', description: 'Email body content' },
-                cc: { type: 'string', description: 'CC recipients' },
-                bcc: { type: 'string', description: 'BCC recipients' },
-                isHtml: { type: 'boolean', description: 'Whether body is HTML' },
-              },
-              required: ['to', 'subject', 'body'],
-            },
+          required: ['to', 'subject', 'body'],
+        },
+      },
+      {
+        name: 'delete_draft',
+        description: 'Delete a draft',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            draftId: { type: 'string', description: 'Draft ID' },
           },
-          {
-            name: 'delete_draft',
-            description: 'Delete a draft',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                draftId: { type: 'string', description: 'Draft ID' },
-              },
-              required: ['draftId'],
-            },
+          required: ['draftId'],
+        },
+      },
+      {
+        name: 'send_draft',
+        description: 'Send a draft',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            draftId: { type: 'string', description: 'Draft ID' },
           },
-          {
-            name: 'send_draft',
-            description: 'Send a draft',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                draftId: { type: 'string', description: 'Draft ID' },
-              },
-              required: ['draftId'],
-            },
+          required: ['draftId'],
+        },
+      },
+
+      // Attachment operations
+      {
+        name: 'get_attachment',
+        description: 'Download an attachment from a message',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            messageId: { type: 'string', description: 'Message ID' },
+            attachmentId: { type: 'string', description: 'Attachment ID' },
           },
+          required: ['messageId', 'attachmentId'],
+        },
+      },
 
-          // Attachment operations
-          {
-            name: 'get_attachment',
-            description: 'Download an attachment from a message',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                messageId: { type: 'string', description: 'Message ID' },
-                attachmentId: { type: 'string', description: 'Attachment ID' },
-              },
-              required: ['messageId', 'attachmentId'],
-            },
-          },
+      // Profile
+      {
+        name: 'get_profile',
+        description: 'Get Gmail account profile information',
+        inputSchema: {
+          type: 'object',
+          properties: {},
+        },
+      },
+    ] as Tool[];
+  }
 
-          // Profile
-          {
-            name: 'get_profile',
-            description: 'Get Gmail account profile information',
-            inputSchema: {
-              type: 'object',
-              properties: {},
-            },
-          },
-        ],
-      };
-    });
-
-    // Call tool
-    this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-      const { name, arguments: args } = request.params;
-
-      try {
-        switch (name) {
-          // Message operations
-          case 'list_messages': {
-            const params = ListMessagesSchema.parse(args);
-            const result = await this.gmailClient.listMessages({
-              maxResults: params.maxResults,
-              pageToken: params.pageToken,
-              q: params.query,
-              labelIds: params.labelIds,
-            });
-            return {
-              content: [{
-                type: 'text',
-                text: await this.formatMessageList(result.messages, result.nextPageToken),
-              }],
-            };
-          }
-
-          case 'get_message': {
-            const params = GetMessageSchema.parse(args);
-            const message = await this.gmailClient.getMessage(params.messageId);
-            const parsed = this.gmailClient.parseMessage(message);
-            return {
-              content: [{
-                type: 'text',
-                text: this.formatParsedEmail(parsed),
-              }],
-            };
-          }
-
-          case 'send_message': {
-            const params = SendMessageSchema.parse(args);
-            const result = await this.gmailClient.sendMessage(params);
-            return {
-              content: [{
-                type: 'text',
-                text: `Email sent successfully!\n\nMessage ID: ${result.id}\nThread ID: ${result.threadId}`,
-              }],
-            };
-          }
-
-          case 'reply_to_message': {
-            const params = ReplyMessageSchema.parse(args);
-            const result = await this.gmailClient.replyToMessage(params);
-            return {
-              content: [{
-                type: 'text',
-                text: `Reply sent successfully!\n\nMessage ID: ${result.id}\nThread ID: ${result.threadId}`,
-              }],
-            };
-          }
-
-          case 'forward_message': {
-            const params = ForwardMessageSchema.parse(args);
-            const result = await this.gmailClient.forwardMessage(params);
-            return {
-              content: [{
-                type: 'text',
-                text: `Message forwarded successfully!\n\nMessage ID: ${result.id}\nThread ID: ${result.threadId}`,
-              }],
-            };
-          }
-
-          case 'search_messages': {
-            const params = SearchMessagesSchema.parse(args);
-            const messages = await this.gmailClient.searchMessages(params.query, params.maxResults);
-            return {
-              content: [{
-                type: 'text',
-                text: `Search results for "${params.query}":\n\n${await this.formatMessageList(messages)}`,
-              }],
-            };
-          }
-
-          case 'trash_message': {
-            const params = GetMessageSchema.parse(args);
-            await this.gmailClient.trashMessage(params.messageId);
-            return {
-              content: [{
-                type: 'text',
-                text: 'Message moved to trash',
-              }],
-            };
-          }
-
-          case 'untrash_message': {
-            const params = GetMessageSchema.parse(args);
-            await this.gmailClient.untrashMessage(params.messageId);
-            return {
-              content: [{
-                type: 'text',
-                text: 'Message removed from trash',
-              }],
-            };
-          }
-
-          case 'delete_message': {
-            const params = GetMessageSchema.parse(args);
-            await this.gmailClient.deleteMessage(params.messageId);
-            return {
-              content: [{
-                type: 'text',
-                text: 'Message permanently deleted',
-              }],
-            };
-          }
-
-          case 'mark_as_read': {
-            const params = GetMessageSchema.parse(args);
-            await this.gmailClient.markAsRead(params.messageId);
-            return {
-              content: [{
-                type: 'text',
-                text: 'Message marked as read',
-              }],
-            };
-          }
-
-          case 'mark_as_unread': {
-            const params = GetMessageSchema.parse(args);
-            await this.gmailClient.markAsUnread(params.messageId);
-            return {
-              content: [{
-                type: 'text',
-                text: 'Message marked as unread',
-              }],
-            };
-          }
-
-          case 'star_message': {
-            const params = GetMessageSchema.parse(args);
-            await this.gmailClient.starMessage(params.messageId);
-            return {
-              content: [{
-                type: 'text',
-                text: 'Message starred',
-              }],
-            };
-          }
-
-          case 'unstar_message': {
-            const params = GetMessageSchema.parse(args);
-            await this.gmailClient.unstarMessage(params.messageId);
-            return {
-              content: [{
-                type: 'text',
-                text: 'Message unstarred',
-              }],
-            };
-          }
-
-          case 'archive_message': {
-            const params = GetMessageSchema.parse(args);
-            await this.gmailClient.archiveMessage(params.messageId);
-            return {
-              content: [{
-                type: 'text',
-                text: 'Message archived',
-              }],
-            };
-          }
-
-          case 'modify_labels': {
-            const params = ModifyLabelsSchema.parse(args);
-            await this.gmailClient.modifyMessageLabels(params);
-            return {
-              content: [{
-                type: 'text',
-                text: 'Message labels updated',
-              }],
-            };
-          }
-
-          case 'get_unread': {
-            const params = MaxResultsSchema.parse(args);
-            const messages = await this.gmailClient.getUnreadMessages(params.maxResults);
-            return {
-              content: [{
-                type: 'text',
-                text: `Unread messages:\n\n${await this.formatMessageList(messages)}`,
-              }],
-            };
-          }
-
-          case 'get_sent': {
-            const params = MaxResultsSchema.parse(args);
-            const messages = await this.gmailClient.getSentMessages(params.maxResults);
-            return {
-              content: [{
-                type: 'text',
-                text: `Sent messages:\n\n${await this.formatMessageList(messages)}`,
-              }],
-            };
-          }
-
-          case 'get_starred': {
-            const params = MaxResultsSchema.parse(args);
-            const messages = await this.gmailClient.getStarredMessages(params.maxResults);
-            return {
-              content: [{
-                type: 'text',
-                text: `Starred messages:\n\n${await this.formatMessageList(messages)}`,
-              }],
-            };
-          }
-
-          case 'get_trashed': {
-            const params = MaxResultsSchema.parse(args);
-            const messages = await this.gmailClient.getTrashedMessages(params.maxResults);
-            return {
-              content: [{
-                type: 'text',
-                text: `Trashed messages:\n\n${await this.formatMessageList(messages)}`,
-              }],
-            };
-          }
-
-          // Thread operations
-          case 'list_threads': {
-            const params = ListMessagesSchema.parse(args);
-            const result = await this.gmailClient.listThreads({
-              maxResults: params.maxResults,
-              pageToken: params.pageToken,
-              q: params.query,
-              labelIds: params.labelIds,
-            });
-            return {
-              content: [{
-                type: 'text',
-                text: this.formatThreadList(result.threads, result.nextPageToken),
-              }],
-            };
-          }
-
-          case 'get_thread': {
-            const params = GetThreadSchema.parse(args);
-            const thread = await this.gmailClient.getThread(params.threadId);
-            return {
-              content: [{
-                type: 'text',
-                text: await this.formatThread(thread),
-              }],
-            };
-          }
-
-          case 'trash_thread': {
-            const params = GetThreadSchema.parse(args);
-            await this.gmailClient.trashThread(params.threadId);
-            return {
-              content: [{
-                type: 'text',
-                text: 'Thread moved to trash',
-              }],
-            };
-          }
-
-          case 'delete_thread': {
-            const params = GetThreadSchema.parse(args);
-            await this.gmailClient.deleteThread(params.threadId);
-            return {
-              content: [{
-                type: 'text',
-                text: 'Thread permanently deleted',
-              }],
-            };
-          }
-
-          // Label operations
-          case 'list_labels': {
-            const labels = await this.gmailClient.listLabels();
-            return {
-              content: [{
-                type: 'text',
-                text: this.formatLabelList(labels),
-              }],
-            };
-          }
-
-          case 'create_label': {
-            const params = CreateLabelSchema.parse(args);
-            const label = await this.gmailClient.createLabel(params);
-            return {
-              content: [{
-                type: 'text',
-                text: `Label created successfully!\n\nID: ${label.id}\nName: ${label.name}`,
-              }],
-            };
-          }
-
-          case 'update_label': {
-            const params = UpdateLabelSchema.parse(args);
-            const label = await this.gmailClient.updateLabel(params);
-            return {
-              content: [{
-                type: 'text',
-                text: `Label updated successfully!\n\nID: ${label.id}\nName: ${label.name}`,
-              }],
-            };
-          }
-
-          case 'delete_label': {
-            const params = DeleteLabelSchema.parse(args);
-            await this.gmailClient.deleteLabel(params.labelId);
-            return {
-              content: [{
-                type: 'text',
-                text: 'Label deleted successfully',
-              }],
-            };
-          }
-
-          // Draft operations
-          case 'list_drafts': {
-            const params = MaxResultsSchema.parse(args);
-            const result = await this.gmailClient.listDrafts(params.maxResults);
-            return {
-              content: [{
-                type: 'text',
-                text: this.formatDraftList(result.drafts),
-              }],
-            };
-          }
-
-          case 'create_draft': {
-            const params = CreateDraftSchema.parse(args);
-            const draft = await this.gmailClient.createDraft(params);
-            return {
-              content: [{
-                type: 'text',
-                text: `Draft created successfully!\n\nDraft ID: ${draft.id}`,
-              }],
-            };
-          }
-
-          case 'delete_draft': {
-            const draftId = (args as { draftId: string }).draftId;
-            await this.gmailClient.deleteDraft(draftId);
-            return {
-              content: [{
-                type: 'text',
-                text: 'Draft deleted successfully',
-              }],
-            };
-          }
-
-          case 'send_draft': {
-            const draftId = (args as { draftId: string }).draftId;
-            const result = await this.gmailClient.sendDraft(draftId);
-            return {
-              content: [{
-                type: 'text',
-                text: `Draft sent successfully!\n\nMessage ID: ${result.id}\nThread ID: ${result.threadId}`,
-              }],
-            };
-          }
-
-          // Attachment operations
-          case 'get_attachment': {
-            const params = GetAttachmentSchema.parse(args);
-            const attachment = await this.gmailClient.getAttachment(params.messageId, params.attachmentId);
-            return {
-              content: [{
-                type: 'text',
-                text: `Attachment retrieved!\n\nSize: ${attachment.size} bytes\nData (base64): ${attachment.data?.substring(0, 100)}...`,
-              }],
-            };
-          }
-
-          // Profile
-          case 'get_profile': {
-            const profile = await this.gmailClient.getProfile();
-            return {
-              content: [{
-                type: 'text',
-                text: `Gmail Profile\n\nEmail: ${profile.emailAddress}\nTotal Messages: ${profile.messagesTotal || 'N/A'}\nTotal Threads: ${profile.threadsTotal || 'N/A'}`,
-              }],
-            };
-          }
-
-          default:
-            throw new Error(`Unknown tool: ${name}`);
-        }
-      } catch (error) {
-        console.error(JSON.stringify({
-          timestamp: new Date().toISOString(),
-          level: 'error',
-          message: `Error calling tool ${name}`,
-          error: error instanceof Error ? error.message : String(error),
-        }));
-        return {
-          content: [{
-            type: 'text',
-            text: `Error: ${error instanceof Error ? error.message : String(error)}`,
-          }],
-          isError: true,
-        };
-      }
-    });
-
-    // List resources
-    this.server.setRequestHandler(ListResourcesRequestSchema, async () => {
-      return {
-        resources: [
-          {
-            uri: 'gmail://inbox',
-            name: 'Inbox',
-            description: 'Gmail inbox messages',
-            mimeType: 'application/json',
-          },
-          {
-            uri: 'gmail://sent',
-            name: 'Sent',
-            description: 'Sent messages',
-            mimeType: 'application/json',
-          },
-          {
-            uri: 'gmail://drafts',
-            name: 'Drafts',
-            description: 'Draft messages',
-            mimeType: 'application/json',
-          },
-          {
-            uri: 'gmail://labels',
-            name: 'Labels',
-            description: 'All labels',
-            mimeType: 'application/json',
-          },
-        ],
-      };
-    });
-
-    // Read resource
-    this.server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
-      const { uri } = request.params;
-
-      if (uri === 'gmail://inbox') {
-        const result = await this.gmailClient.listMessages({ labelIds: [GMAIL_LABELS.INBOX], maxResults: 20 });
-        return {
-          contents: [{
-            uri,
-            mimeType: 'application/json',
-            text: JSON.stringify(result.messages, null, 2),
-          }],
-        };
-      }
-
-      if (uri === 'gmail://sent') {
-        const messages = await this.gmailClient.getSentMessages(20);
-        return {
-          contents: [{
-            uri,
-            mimeType: 'application/json',
-            text: JSON.stringify(messages, null, 2),
-          }],
-        };
-      }
-
-      if (uri === 'gmail://drafts') {
-        const result = await this.gmailClient.listDrafts(20);
-        return {
-          contents: [{
-            uri,
-            mimeType: 'application/json',
-            text: JSON.stringify(result.drafts, null, 2),
-          }],
-        };
-      }
-
-      if (uri === 'gmail://labels') {
-        const labels = await this.gmailClient.listLabels();
-        return {
-          contents: [{
-            uri,
-            mimeType: 'application/json',
-            text: JSON.stringify(labels, null, 2),
-          }],
-        };
-      }
-
-      throw new Error(`Invalid resource URI: ${uri}`);
-    });
-
-    // List prompts
-    this.server.setRequestHandler(ListPromptsRequestSchema, async () => {
-      return {
-        prompts: [
-          {
-            name: 'compose_email',
-            description: 'Help compose a professional email',
-            arguments: [
-              { name: 'purpose', description: 'The purpose of the email', required: true },
-              { name: 'recipient', description: 'Who the email is for', required: false },
-              { name: 'tone', description: 'Desired tone (formal, casual, friendly)', required: false },
-            ],
-          },
-          {
-            name: 'summarize_inbox',
-            description: 'Summarize recent inbox activity',
-            arguments: [],
-          },
-          {
-            name: 'email_cleanup',
-            description: 'Suggest emails to archive or delete',
-            arguments: [],
-          },
-        ],
-      };
-    });
-
-    // Get prompt
-    this.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-      const { name, arguments: args } = request.params;
-
+  protected async callTool(name: string, args: Record<string, unknown>): Promise<CallToolResult> {
+    try {
       switch (name) {
-        case 'compose_email': {
-          const purpose = (args?.purpose as string) || 'general communication';
-          const recipient = (args?.recipient as string) || 'the recipient';
-          const tone = (args?.tone as string) || 'professional';
+        // Message operations
+        case 'list_messages': {
+          const params = ListMessagesSchema.parse(args);
+          const result = await this.gmailClient.listMessages({
+            maxResults: params.maxResults,
+            pageToken: params.pageToken,
+            q: params.query,
+            labelIds: params.labelIds,
+          });
           return {
-            messages: [{
-              role: 'user',
-              content: {
-                type: 'text',
-                text: `Help me compose a ${tone} email to ${recipient} for the following purpose: ${purpose}\n\nPlease provide:\n1. A suitable subject line\n2. The email body\n3. Any suggestions for improving the message`,
-              },
+            content: [{
+              type: 'text' as const,
+              text: await this.formatMessageList(result.messages, result.nextPageToken),
             }],
           };
         }
 
-        case 'summarize_inbox': {
+        case 'get_message': {
+          const params = GetMessageSchema.parse(args);
+          const message = await this.gmailClient.getMessage(params.messageId);
+          const parsed = this.gmailClient.parseMessage(message);
           return {
-            messages: [{
-              role: 'user',
-              content: {
-                type: 'text',
-                text: `Please analyze my recent inbox activity and provide:\n1. Number of unread messages\n2. Key senders and topics\n3. Any urgent or important messages\n4. Recommended actions`,
-              },
+            content: [{
+              type: 'text' as const,
+              text: this.formatParsedEmail(parsed),
             }],
           };
         }
 
-        case 'email_cleanup': {
+        case 'send_message': {
+          const params = SendMessageSchema.parse(args);
+          const result = await this.gmailClient.sendMessage(params);
           return {
-            messages: [{
-              role: 'user',
-              content: {
-                type: 'text',
-                text: `Please help me clean up my inbox by:\n1. Identifying old or unnecessary emails\n2. Suggesting emails to archive\n3. Finding potential spam or promotional emails\n4. Recommending labels or organization strategies`,
-              },
+            content: [{
+              type: 'text' as const,
+              text: `Email sent successfully!\n\nMessage ID: ${result.id}\nThread ID: ${result.threadId}`,
+            }],
+          };
+        }
+
+        case 'reply_to_message': {
+          const params = ReplyMessageSchema.parse(args);
+          const result = await this.gmailClient.replyToMessage(params);
+          return {
+            content: [{
+              type: 'text' as const,
+              text: `Reply sent successfully!\n\nMessage ID: ${result.id}\nThread ID: ${result.threadId}`,
+            }],
+          };
+        }
+
+        case 'forward_message': {
+          const params = ForwardMessageSchema.parse(args);
+          const result = await this.gmailClient.forwardMessage(params);
+          return {
+            content: [{
+              type: 'text' as const,
+              text: `Message forwarded successfully!\n\nMessage ID: ${result.id}\nThread ID: ${result.threadId}`,
+            }],
+          };
+        }
+
+        case 'search_messages': {
+          const params = SearchMessagesSchema.parse(args);
+          const messages = await this.gmailClient.searchMessages(params.query, params.maxResults);
+          return {
+            content: [{
+              type: 'text' as const,
+              text: `Search results for "${params.query}":\n\n${await this.formatMessageList(messages)}`,
+            }],
+          };
+        }
+
+        case 'trash_message': {
+          const params = GetMessageSchema.parse(args);
+          await this.gmailClient.trashMessage(params.messageId);
+          return {
+            content: [{ type: 'text' as const, text: 'Message moved to trash' }],
+          };
+        }
+
+        case 'untrash_message': {
+          const params = GetMessageSchema.parse(args);
+          await this.gmailClient.untrashMessage(params.messageId);
+          return {
+            content: [{ type: 'text' as const, text: 'Message removed from trash' }],
+          };
+        }
+
+        case 'delete_message': {
+          const params = GetMessageSchema.parse(args);
+          await this.gmailClient.deleteMessage(params.messageId);
+          return {
+            content: [{ type: 'text' as const, text: 'Message permanently deleted' }],
+          };
+        }
+
+        case 'mark_as_read': {
+          const params = GetMessageSchema.parse(args);
+          await this.gmailClient.markAsRead(params.messageId);
+          return {
+            content: [{ type: 'text' as const, text: 'Message marked as read' }],
+          };
+        }
+
+        case 'mark_as_unread': {
+          const params = GetMessageSchema.parse(args);
+          await this.gmailClient.markAsUnread(params.messageId);
+          return {
+            content: [{ type: 'text' as const, text: 'Message marked as unread' }],
+          };
+        }
+
+        case 'star_message': {
+          const params = GetMessageSchema.parse(args);
+          await this.gmailClient.starMessage(params.messageId);
+          return {
+            content: [{ type: 'text' as const, text: 'Message starred' }],
+          };
+        }
+
+        case 'unstar_message': {
+          const params = GetMessageSchema.parse(args);
+          await this.gmailClient.unstarMessage(params.messageId);
+          return {
+            content: [{ type: 'text' as const, text: 'Message unstarred' }],
+          };
+        }
+
+        case 'archive_message': {
+          const params = GetMessageSchema.parse(args);
+          await this.gmailClient.archiveMessage(params.messageId);
+          return {
+            content: [{ type: 'text' as const, text: 'Message archived' }],
+          };
+        }
+
+        case 'modify_labels': {
+          const params = ModifyLabelsSchema.parse(args);
+          await this.gmailClient.modifyMessageLabels(params);
+          return {
+            content: [{ type: 'text' as const, text: 'Message labels updated' }],
+          };
+        }
+
+        case 'get_unread': {
+          const params = MaxResultsSchema.parse(args);
+          const messages = await this.gmailClient.getUnreadMessages(params.maxResults);
+          return {
+            content: [{
+              type: 'text' as const,
+              text: `Unread messages:\n\n${await this.formatMessageList(messages)}`,
+            }],
+          };
+        }
+
+        case 'get_sent': {
+          const params = MaxResultsSchema.parse(args);
+          const messages = await this.gmailClient.getSentMessages(params.maxResults);
+          return {
+            content: [{
+              type: 'text' as const,
+              text: `Sent messages:\n\n${await this.formatMessageList(messages)}`,
+            }],
+          };
+        }
+
+        case 'get_starred': {
+          const params = MaxResultsSchema.parse(args);
+          const messages = await this.gmailClient.getStarredMessages(params.maxResults);
+          return {
+            content: [{
+              type: 'text' as const,
+              text: `Starred messages:\n\n${await this.formatMessageList(messages)}`,
+            }],
+          };
+        }
+
+        case 'get_trashed': {
+          const params = MaxResultsSchema.parse(args);
+          const messages = await this.gmailClient.getTrashedMessages(params.maxResults);
+          return {
+            content: [{
+              type: 'text' as const,
+              text: `Trashed messages:\n\n${await this.formatMessageList(messages)}`,
+            }],
+          };
+        }
+
+        // Thread operations
+        case 'list_threads': {
+          const params = ListMessagesSchema.parse(args);
+          const result = await this.gmailClient.listThreads({
+            maxResults: params.maxResults,
+            pageToken: params.pageToken,
+            q: params.query,
+            labelIds: params.labelIds,
+          });
+          return {
+            content: [{
+              type: 'text' as const,
+              text: this.formatThreadList(result.threads, result.nextPageToken),
+            }],
+          };
+        }
+
+        case 'get_thread': {
+          const params = GetThreadSchema.parse(args);
+          const thread = await this.gmailClient.getThread(params.threadId);
+          return {
+            content: [{
+              type: 'text' as const,
+              text: await this.formatThread(thread),
+            }],
+          };
+        }
+
+        case 'trash_thread': {
+          const params = GetThreadSchema.parse(args);
+          await this.gmailClient.trashThread(params.threadId);
+          return {
+            content: [{ type: 'text' as const, text: 'Thread moved to trash' }],
+          };
+        }
+
+        case 'delete_thread': {
+          const params = GetThreadSchema.parse(args);
+          await this.gmailClient.deleteThread(params.threadId);
+          return {
+            content: [{ type: 'text' as const, text: 'Thread permanently deleted' }],
+          };
+        }
+
+        // Label operations
+        case 'list_labels': {
+          const labels = await this.gmailClient.listLabels();
+          return {
+            content: [{
+              type: 'text' as const,
+              text: this.formatLabelList(labels),
+            }],
+          };
+        }
+
+        case 'create_label': {
+          const params = CreateLabelSchema.parse(args);
+          const label = await this.gmailClient.createLabel(params);
+          return {
+            content: [{
+              type: 'text' as const,
+              text: `Label created successfully!\n\nID: ${label.id}\nName: ${label.name}`,
+            }],
+          };
+        }
+
+        case 'update_label': {
+          const params = UpdateLabelSchema.parse(args);
+          const label = await this.gmailClient.updateLabel(params);
+          return {
+            content: [{
+              type: 'text' as const,
+              text: `Label updated successfully!\n\nID: ${label.id}\nName: ${label.name}`,
+            }],
+          };
+        }
+
+        case 'delete_label': {
+          const params = DeleteLabelSchema.parse(args);
+          await this.gmailClient.deleteLabel(params.labelId);
+          return {
+            content: [{ type: 'text' as const, text: 'Label deleted successfully' }],
+          };
+        }
+
+        // Draft operations
+        case 'list_drafts': {
+          const params = MaxResultsSchema.parse(args);
+          const result = await this.gmailClient.listDrafts(params.maxResults);
+          return {
+            content: [{
+              type: 'text' as const,
+              text: this.formatDraftList(result.drafts),
+            }],
+          };
+        }
+
+        case 'create_draft': {
+          const params = CreateDraftSchema.parse(args);
+          const draft = await this.gmailClient.createDraft(params);
+          return {
+            content: [{
+              type: 'text' as const,
+              text: `Draft created successfully!\n\nDraft ID: ${draft.id}`,
+            }],
+          };
+        }
+
+        case 'delete_draft': {
+          const draftId = (args as { draftId: string }).draftId;
+          await this.gmailClient.deleteDraft(draftId);
+          return {
+            content: [{ type: 'text' as const, text: 'Draft deleted successfully' }],
+          };
+        }
+
+        case 'send_draft': {
+          const draftId = (args as { draftId: string }).draftId;
+          const result = await this.gmailClient.sendDraft(draftId);
+          return {
+            content: [{
+              type: 'text' as const,
+              text: `Draft sent successfully!\n\nMessage ID: ${result.id}\nThread ID: ${result.threadId}`,
+            }],
+          };
+        }
+
+        // Attachment operations
+        case 'get_attachment': {
+          const params = GetAttachmentSchema.parse(args);
+          const attachment = await this.gmailClient.getAttachment(params.messageId, params.attachmentId);
+          return {
+            content: [{
+              type: 'text' as const,
+              text: `Attachment retrieved!\n\nSize: ${attachment.size} bytes\nData (base64): ${attachment.data?.substring(0, 100)}...`,
+            }],
+          };
+        }
+
+        // Profile
+        case 'get_profile': {
+          const profile = await this.gmailClient.getProfile();
+          return {
+            content: [{
+              type: 'text' as const,
+              text: `Gmail Profile\n\nEmail: ${profile.emailAddress}\nTotal Messages: ${profile.messagesTotal || 'N/A'}\nTotal Threads: ${profile.threadsTotal || 'N/A'}`,
             }],
           };
         }
 
         default:
-          throw new Error(`Unknown prompt: ${name}`);
+          throw new Error(`Unknown tool: ${name}`);
       }
-    });
+    } catch (error) {
+      this.logger.error(`Error calling tool ${name}`, error as Error);
+      return {
+        content: [{
+          type: 'text' as const,
+          text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+        }],
+        isError: true,
+      };
+    }
+  }
+
+  protected async listResources() {
+    return [
+      {
+        uri: 'gmail://inbox',
+        name: 'Inbox',
+        description: 'Gmail inbox messages',
+        mimeType: 'application/json',
+      },
+      {
+        uri: 'gmail://sent',
+        name: 'Sent',
+        description: 'Sent messages',
+        mimeType: 'application/json',
+      },
+      {
+        uri: 'gmail://drafts',
+        name: 'Drafts',
+        description: 'Draft messages',
+        mimeType: 'application/json',
+      },
+      {
+        uri: 'gmail://labels',
+        name: 'Labels',
+        description: 'All labels',
+        mimeType: 'application/json',
+      },
+    ];
+  }
+
+  protected async readResource(uri: string): Promise<ReadResourceResult> {
+    if (uri === 'gmail://inbox') {
+      const result = await this.gmailClient.listMessages({ labelIds: [GMAIL_LABELS.INBOX], maxResults: 20 });
+      return {
+        contents: [{
+          uri,
+          mimeType: 'application/json',
+          text: JSON.stringify(result.messages, null, 2),
+        }],
+      };
+    }
+
+    if (uri === 'gmail://sent') {
+      const messages = await this.gmailClient.getSentMessages(20);
+      return {
+        contents: [{
+          uri,
+          mimeType: 'application/json',
+          text: JSON.stringify(messages, null, 2),
+        }],
+      };
+    }
+
+    if (uri === 'gmail://drafts') {
+      const result = await this.gmailClient.listDrafts(20);
+      return {
+        contents: [{
+          uri,
+          mimeType: 'application/json',
+          text: JSON.stringify(result.drafts, null, 2),
+        }],
+      };
+    }
+
+    if (uri === 'gmail://labels') {
+      const labels = await this.gmailClient.listLabels();
+      return {
+        contents: [{
+          uri,
+          mimeType: 'application/json',
+          text: JSON.stringify(labels, null, 2),
+        }],
+      };
+    }
+
+    throw new Error(`Invalid resource URI: ${uri}`);
+  }
+
+  protected async listPrompts() {
+    return [
+      {
+        name: 'compose_email',
+        description: 'Help compose a professional email',
+        arguments: [
+          { name: 'purpose', description: 'The purpose of the email', required: true },
+          { name: 'recipient', description: 'Who the email is for', required: false },
+          { name: 'tone', description: 'Desired tone (formal, casual, friendly)', required: false },
+        ],
+      },
+      {
+        name: 'summarize_inbox',
+        description: 'Summarize recent inbox activity',
+        arguments: [],
+      },
+      {
+        name: 'email_cleanup',
+        description: 'Suggest emails to archive or delete',
+        arguments: [],
+      },
+    ];
+  }
+
+  protected async getPrompt(name: string, args: Record<string, unknown>): Promise<GetPromptResult> {
+    switch (name) {
+      case 'compose_email': {
+        const purpose = (args?.purpose as string) || 'general communication';
+        const recipient = (args?.recipient as string) || 'the recipient';
+        const tone = (args?.tone as string) || 'professional';
+        return {
+          messages: [{
+            role: 'user' as const,
+            content: {
+              type: 'text' as const,
+              text: `Help me compose a ${tone} email to ${recipient} for the following purpose: ${purpose}\n\nPlease provide:\n1. A suitable subject line\n2. The email body\n3. Any suggestions for improving the message`,
+            },
+          }],
+        };
+      }
+
+      case 'summarize_inbox': {
+        return {
+          messages: [{
+            role: 'user' as const,
+            content: {
+              type: 'text' as const,
+              text: `Please analyze my recent inbox activity and provide:\n1. Number of unread messages\n2. Key senders and topics\n3. Any urgent or important messages\n4. Recommended actions`,
+            },
+          }],
+        };
+      }
+
+      case 'email_cleanup': {
+        return {
+          messages: [{
+            role: 'user' as const,
+            content: {
+              type: 'text' as const,
+              text: `Please help me clean up my inbox by:\n1. Identifying old or unnecessary emails\n2. Suggesting emails to archive\n3. Finding potential spam or promotional emails\n4. Recommending labels or organization strategies`,
+            },
+          }],
+        };
+      }
+
+      default:
+        throw new Error(`Unknown prompt: ${name}`);
+    }
   }
 
   private async formatMessageList(messages: any[], nextPageToken?: string): Promise<string> {
@@ -1206,16 +1119,5 @@ ${email.body}`;
     return drafts.map((draft, i) =>
       `${i + 1}. Draft ID: ${draft.id}`
     ).join('\n');
-  }
-
-  async start(): Promise<void> {
-    const transport = new StdioServerTransport();
-    await this.server.connect(transport);
-
-    console.error(JSON.stringify({
-      timestamp: new Date().toISOString(),
-      level: 'info',
-      message: 'Gmail MCP Server started on STDIO',
-    }));
   }
 }

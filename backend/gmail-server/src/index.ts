@@ -105,7 +105,7 @@ async function performOAuth(
             <html>
               <body style="font-family: system-ui; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <div style="text-align: center; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
-                  <div style="font-size: 64px; margin-bottom: 20px;">✅</div>
+                  <div style="font-size: 64px; margin-bottom: 20px;">&#x2705;</div>
                   <h1 style="color: #28a745; margin: 0 0 10px 0;">Authentication Successful!</h1>
                   <p style="color: #666; margin: 0;">Gmail MCP Server is now connected.</p>
                   <p style="color: #999; margin-top: 20px; font-size: 14px;">You can close this window and return to MCP Inspector.</p>
@@ -230,10 +230,9 @@ async function main(): Promise<void> {
       }));
     }
 
-    // Start the server
+    // Start the server using NeurixBaseServer's run() method
     const server = new GmailServer(clientId, clientSecret, redirectUri, tokenPath);
-    await server.initialize();
-    await server.start();
+    await server.run();
 
     console.error(JSON.stringify({
       timestamp: new Date().toISOString(),
