@@ -208,7 +208,11 @@ export function Header({
                                             >
                                                 <div className={cn(
                                                     "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 border border-border",
-                                                    item.server === 'gdrive' ? "bg-blue-500/10 text-blue-500 dark:text-blue-400" : "bg-neurix-orange/10 text-neurix-orange"
+                                                    item.server === 'gdrive' ? "bg-blue-500/10 text-blue-500 dark:text-blue-400" :
+                                                    item.server === 'gmail' ? "bg-red-500/10 text-red-500 dark:text-red-400" :
+                                                    item.server === 'gforms' ? "bg-purple-500/10 text-purple-500 dark:text-purple-400" :
+                                                    item.server === 'gcalendar' ? "bg-teal-500/10 text-teal-500 dark:text-teal-400" :
+                                                    "bg-neurix-orange/10 text-neurix-orange"
                                                 )}>
                                                     <IconComp className="w-4 h-4" />
                                                 </div>

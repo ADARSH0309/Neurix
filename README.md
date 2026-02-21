@@ -13,6 +13,7 @@ A universal chat interface that connects AI with Google Drive, Forms & Gmail usi
 ### Features
 
 - **Google Drive** — Search, create, share, and organize files and folders
+- **Google Calendar** — Create events, manage calendars, check availability
 - **Google Forms** — Create surveys, manage questions, analyze responses
 - **Gmail** — Send, reply, search emails, manage labels and drafts
 - **Chat Interface** — Multi-server chat with persistent sessions and smart tool matching
@@ -37,6 +38,7 @@ A universal chat interface that connects AI with Google Drive, Forms & Gmail usi
 ```
 Neurix/
 ├── backend/
+│   ├── gcalendar-server/   # Google Calendar MCP server
 │   ├── gdrive-server/      # Google Drive MCP server
 │   ├── gforms-server/      # Google Forms MCP server
 │   ├── gmail-server/       # Gmail MCP server

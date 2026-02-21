@@ -5,6 +5,7 @@ import {
     MessageSquare,
     FileText,
     Mail,
+    Calendar,
     Sparkles,
 } from 'lucide-react';
 
@@ -58,6 +59,13 @@ const serverVisuals: Record<string, ServerVisual> = {
         accent: 'red',
         lightBg: 'bg-red-50',
         darkBg: 'bg-red-500/10',
+    },
+    gcalendar: {
+        icon: Calendar,
+        gradient: 'from-teal-500 to-cyan-600',
+        accent: 'teal',
+        lightBg: 'bg-teal-50',
+        darkBg: 'bg-teal-500/10',
     },
 };
 

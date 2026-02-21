@@ -253,6 +253,100 @@ function formatToolResponse(text: string, _toolName: string): string {
         `[Open Form](${data.responderUri})`;
     }
 
+    // ── Google Calendar: Events list ──
+    if (data.events && Array.isArray(data.events)) {
+      if (data.events.length === 0) return 'No upcoming events in the next 30 days.';
+
+      const formatEventDate = (evt: any) => {
+        if (evt.start?.dateTime) {
+          const d = new Date(evt.start.dateTime);
+          return { date: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }), time: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }), isAllDay: false };
+        }
+        if (evt.start?.date) {
+          const d = new Date(evt.start.date + 'T00:00:00');
+          return { date: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }), time: 'All day', isAllDay: true };
+        }
+        return { date: 'Unknown', time: '', isAllDay: false };
+      };
+
+      const formatEndTime = (evt: any) => {
+        if (evt.end?.dateTime) return new Date(evt.end.dateTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        return '';
+      };
+
+      let output = `**Upcoming Events** (${data.events.length})\n\n`;
+      let lastDate = '';
+
+      data.events.slice(0, 20).forEach((evt: any) => {
+        const { date, time, isAllDay } = formatEventDate(evt);
+        if (date !== lastDate) {
+          output += `---\n**${date}**\n\n`;
+          lastDate = date;
+        }
+        const timeStr = isAllDay ? '🕐 All day' : `🕐 ${time}${formatEndTime(evt) ? ` – ${formatEndTime(evt)}` : ''}`;
+        output += `> **${evt.summary || '(No Title)'}**\n`;
+        output += `> ${timeStr}\n`;
+        if (evt.location) output += `> 📍 ${evt.location}\n`;
+        if (evt.hangoutLink) output += `> 🔗 [Join Meet](${evt.hangoutLink})\n`;
+        if (evt.htmlLink) output += `> [Open in Calendar](${evt.htmlLink})\n`;
+        output += '\n';
+      });
+      if (data.events.length > 20) output += `\n*...and ${data.events.length - 20} more events.*`;
+      return output;
+    }
+
+    // ── Google Calendar: Single event ──
+    if (data.event && data.event.summary !== undefined) {
+      const evt = data.event;
+      const start = evt.start?.dateTime ? new Date(evt.start.dateTime).toLocaleString() : evt.start?.date || 'N/A';
+      const end = evt.end?.dateTime ? new Date(evt.end.dateTime).toLocaleString() : evt.end?.date || '';
+      let output = `**${evt.summary || '(No Title)'}**\n\n`;
+      output += `**When:** ${start}${end ? ` - ${end}` : ''}\n`;
+      if (evt.location) output += `**Where:** ${evt.location}\n`;
+      if (evt.description) output += `**Description:** ${evt.description}\n`;
+      if (evt.organizer?.email) output += `**Organizer:** ${evt.organizer.displayName || evt.organizer.email}\n`;
+      if (evt.attendees?.length) {
+        output += `**Attendees:** ${evt.attendees.map((a: any) => `${a.displayName || a.email} (${a.responseStatus || 'unknown'})`).join(', ')}\n`;
+      }
+      if (evt.hangoutLink) output += `**Google Meet:** [Join Meeting](${evt.hangoutLink})\n`;
+      if (evt.htmlLink) output += `\n[Open in Calendar](${evt.htmlLink})`;
+      return output;
+    }
+
+    // ── Google Calendar: Calendars list ──
+    if (data.calendars && Array.isArray(data.calendars)) {
+      if (data.calendars.length === 0) return 'No calendars found.';
+      let output = `Found **${data.calendars.length}** calendar(s):\n\n`;
+      data.calendars.forEach((cal: any, i: number) => {
+        output += `${i + 1}. **${cal.summary || cal.id}**${cal.primary ? ' (Primary)' : ''}\n`;
+        if (cal.description) output += `   ${cal.description}\n`;
+        if (cal.timeZone) output += `   Timezone: ${cal.timeZone}\n`;
+        output += '\n';
+      });
+      return output;
+    }
+
+    // ── Google Calendar: Single calendar ──
+    if (data.calendar && data.calendar.summary !== undefined) {
+      const cal = data.calendar;
+      let output = `**${cal.summary || cal.id}**${cal.primary ? ' (Primary)' : ''}\n\n`;
+      if (cal.description) output += `**Description:** ${cal.description}\n`;
+      if (cal.timeZone) output += `**Timezone:** ${cal.timeZone}\n`;
+      if (cal.accessRole) output += `**Access:** ${cal.accessRole}\n`;
+      return output;
+    }
+
+    // ── Google Calendar: Search results ──
+    if (data.query && data.events && Array.isArray(data.events)) {
+      if (data.events.length === 0) return `No events found matching "${data.query}".`;
+      let output = `Found **${data.events.length}** event(s) for "${data.query}":\n\n`;
+      data.events.forEach((evt: any, i: number) => {
+        const start = evt.start?.dateTime ? new Date(evt.start.dateTime).toLocaleString() : evt.start?.date || '';
+        output += `${i + 1}. **${evt.summary || '(No Title)'}** - ${start}\n`;
+      });
+      return output;
+    }
+
     // Default: return formatted JSON in a code block
     return '```json\n' + JSON.stringify(data, null, 2) + '\n```';
   } catch {

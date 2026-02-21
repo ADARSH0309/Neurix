@@ -11,8 +11,6 @@
  */
 
 import CircuitBreaker from 'opossum';
-import { circuitBreakerState, circuitBreakerEvents } from '../lib/metrics.js';
-import { logger } from '../lib/logger.js';
 
 export interface GmailCircuitBreakerOptions {
   /** Timeout in milliseconds before request is considered failed (default: 10000ms) */
@@ -32,7 +30,7 @@ export interface GmailCircuitBreakerOptions {
 }
 
 const DEFAULT_OPTIONS: Required<Omit<GmailCircuitBreakerOptions, 'name'>> = {
-  timeout: 10000, // 10 seconds
+  timeout: 10000, // 10 seconds (Gmail operations can be slower)
   errorThresholdPercentage: 50,
   resetTimeout: 30000,
   rollingCountTimeout: 10000,
@@ -61,54 +59,77 @@ export function createGmailCircuitBreaker<T extends (...args: any[]) => Promise<
   });
 
   breaker.on('open', () => {
-    logger.error(`Circuit breaker opened for ${name}`, {
-      circuit: name,
-      state: 'open',
-    });
-    circuitBreakerState.set({ operation: name }, 2); // 2 = open
-    circuitBreakerEvents.inc({ operation: name, event: 'open' });
+    console.error(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'error',
+        message: `Circuit breaker opened for ${name}`,
+        circuit: name,
+        state: 'open',
+      })
+    );
     onStateChange?.('open');
   });
 
   breaker.on('halfOpen', () => {
-    logger.warn(`Circuit breaker half-open for ${name} - testing recovery`, {
-      circuit: name,
-      state: 'halfOpen',
-    });
-    circuitBreakerState.set({ operation: name }, 1); // 1 = half-open
-    circuitBreakerEvents.inc({ operation: name, event: 'half_open' });
+    console.warn(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'warn',
+        message: `Circuit breaker half-open for ${name} - testing recovery`,
+        circuit: name,
+        state: 'halfOpen',
+      })
+    );
     onStateChange?.('halfOpen');
   });
 
   breaker.on('close', () => {
-    logger.info(`Circuit breaker closed for ${name} - API recovered`, {
-      circuit: name,
-      state: 'close',
-    });
-    circuitBreakerState.set({ operation: name }, 0); // 0 = closed
-    circuitBreakerEvents.inc({ operation: name, event: 'close' });
+    console.info(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'info',
+        message: `Circuit breaker closed for ${name} - API recovered`,
+        circuit: name,
+        state: 'close',
+      })
+    );
     onStateChange?.('close');
   });
 
   breaker.on('timeout', () => {
-    logger.error(`Circuit breaker timeout for ${name}`, {
-      circuit: name,
-      timeout: config.timeout,
-    });
+    console.error(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'error',
+        message: `Circuit breaker timeout for ${name}`,
+        circuit: name,
+        timeout: config.timeout,
+      })
+    );
   });
 
   breaker.on('reject', () => {
-    logger.warn(`Circuit breaker rejected request for ${name} - circuit is open`, {
-      circuit: name,
-    });
-    circuitBreakerEvents.inc({ operation: name, event: 'reject' });
+    console.warn(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'warn',
+        message: `Circuit breaker rejected request for ${name} - circuit is open`,
+        circuit: name,
+      })
+    );
   });
 
   breaker.on('failure', (error) => {
-    logger.error(`Circuit breaker request failed for ${name}`, {
-      circuit: name,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    });
+    console.error(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'error',
+        message: `Circuit breaker request failed for ${name}`,
+        circuit: name,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+    );
   });
 
   return breaker;

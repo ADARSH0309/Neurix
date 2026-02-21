@@ -26,10 +26,11 @@ function buildDefaultServers(): Record<string, McpServer> {
     return {
         gdrive: { id: 'gdrive', name: 'Google Drive', description: 'Access and manage your Drive files', baseUrl: 'http://localhost:8080', connected: false, status: 'available' },
         gforms: { id: 'gforms', name: 'Google Forms', description: 'Create and manage forms & surveys', baseUrl: 'http://localhost:8081', connected: false, status: 'available' },
+        gmail: { id: 'gmail', name: 'Gmail', description: 'Read and send emails', baseUrl: 'http://localhost:8082', connected: false, status: 'available' },
+        gcalendar: { id: 'gcalendar', name: 'Google Calendar', description: 'Manage calendars, events & scheduling', baseUrl: 'http://localhost:8083', connected: false, status: 'available' },
         github: { id: 'github', name: 'GitHub', description: 'Manage repositories and issues', baseUrl: '', connected: false, status: 'coming_soon' },
         slack: { id: 'slack', name: 'Slack', description: 'Team messaging and channels', baseUrl: '', connected: false, status: 'coming_soon' },
         notion: { id: 'notion', name: 'Notion', description: 'Documents, wikis and databases', baseUrl: '', connected: false, status: 'coming_soon' },
-        gmail: { id: 'gmail', name: 'Gmail', description: 'Read and send emails', baseUrl: 'http://localhost:8082', connected: false, status: 'available' },
     };
 }
 

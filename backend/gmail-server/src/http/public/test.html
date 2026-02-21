@@ -1,266 +1,775 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gmail MCP Server Test</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      padding: 20px;
-    }
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    h1 {
-      color: white;
-      text-align: center;
-      margin-bottom: 30px;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 20px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-    }
-    .card h2 {
-      color: #333;
-      margin-bottom: 16px;
-      font-size: 18px;
-    }
-    .status {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 16px;
-      background: #f8f9fa;
-      border-radius: 8px;
-      margin-bottom: 16px;
-    }
-    .status-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: #dc3545;
-    }
-    .status-dot.connected {
-      background: #28a745;
-    }
-    .form-group {
-      margin-bottom: 16px;
-    }
-    label {
-      display: block;
-      margin-bottom: 6px;
-      color: #555;
-      font-weight: 500;
-    }
-    select, input, textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 14px;
-    }
-    textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
-    button {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    }
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-    .result {
-      background: #1e1e1e;
-      color: #d4d4d4;
-      padding: 16px;
-      border-radius: 8px;
-      font-family: 'Monaco', 'Menlo', monospace;
-      font-size: 13px;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-    .auth-link {
-      display: inline-block;
-      padding: 10px 20px;
-      background: #28a745;
-      color: white;
-      text-decoration: none;
-      border-radius: 6px;
-      font-weight: 600;
-    }
-    .auth-link:hover {
-      background: #218838;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gmail MCP Server - Test Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #ea4335 0%, #fbbc04 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #ea4335;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .status-item {
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+
+        .status-item.connected {
+            background: #34a853;
+            color: white;
+        }
+
+        .status-item.disconnected {
+            background: #ea4335;
+            color: white;
+        }
+
+        .panel {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #ea4335;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .btn {
+            background: #ea4335;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #d93025;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(234, 67, 53, 0.4);
+        }
+
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .tool-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tool-card:hover {
+            border-color: #ea4335;
+            box-shadow: 0 4px 12px rgba(234, 67, 53, 0.2);
+        }
+
+        .tool-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .tool-description {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .response-area {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            margin-top: 15px;
+        }
+
+        .auth-warning {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .auth-warning a {
+            color: #d97706;
+            font-weight: 600;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f4f6;
+            border-top-color: #ea4335;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .token-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .token-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .token-value {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 5px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            word-break: break-all;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copy-btn {
+            background: #34a853;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+            white-space: nowrap;
+        }
+
+        .copy-btn:hover {
+            background: #2d8e47;
+        }
+
+        .copy-btn.copied {
+            background: #6b7280;
+        }
+
+        .token-info {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .token-expiry {
+            font-weight: 600;
+            color: #fbbc04;
+        }
+
+        .token-expiry.expired {
+            color: #ea4335;
+        }
+
+        .token-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        .btn-danger {
+            background: #ea4335;
+        }
+
+        .btn-danger:hover {
+            background: #d93025;
+        }
+
+        .setup-instructions {
+            background: #fce8e6;
+            border: 1px solid #f5c6c2;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .setup-instructions h3 {
+            color: #c5221f;
+            margin-bottom: 15px;
+        }
+
+        .setup-instructions code {
+            background: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #137333;
+        }
+
+        .setup-instructions ol {
+            margin-left: 20px;
+            color: #374151;
+        }
+
+        .setup-instructions li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Gmail MCP Server Test</h1>
-
-    <div class="card">
-      <h2>Connection Status</h2>
-      <div class="status">
-        <div class="status-dot" id="statusDot"></div>
-        <span id="statusText">Checking...</span>
-      </div>
-      <a href="/auth/login" class="auth-link" id="authLink" style="display: none;">Authenticate with Google</a>
-    </div>
-
-    <div class="card">
-      <h2>Test Tools</h2>
-      <div class="form-group">
-        <label>Select Tool</label>
-        <select id="toolSelect">
-          <option value="get_profile">Get Profile</option>
-          <option value="list_messages">List Messages</option>
-          <option value="list_labels">List Labels</option>
-          <option value="search_messages">Search Messages</option>
-          <option value="send_message">Send Message</option>
-        </select>
-      </div>
-
-      <div id="toolParams"></div>
-
-      <button onclick="executeTool()" id="executeBtn">Execute</button>
-    </div>
-
-    <div class="card">
-      <h2>Result</h2>
-      <div class="result" id="result">Click "Execute" to see results...</div>
-    </div>
-  </div>
-
-  <script>
-    const toolParams = {
-      get_profile: [],
-      list_messages: [
-        { name: 'maxResults', type: 'number', label: 'Max Results', default: 10 },
-        { name: 'query', type: 'text', label: 'Search Query (optional)', default: '' }
-      ],
-      list_labels: [],
-      search_messages: [
-        { name: 'query', type: 'text', label: 'Search Query', required: true },
-        { name: 'maxResults', type: 'number', label: 'Max Results', default: 10 }
-      ],
-      send_message: [
-        { name: 'to', type: 'email', label: 'To', required: true },
-        { name: 'subject', type: 'text', label: 'Subject', required: true },
-        { name: 'body', type: 'textarea', label: 'Body', required: true }
-      ]
-    };
-
-    // Check health on load
-    async function checkHealth() {
-      try {
-        const res = await fetch('/health');
-        const data = await res.json();
-
-        const dot = document.getElementById('statusDot');
-        const text = document.getElementById('statusText');
-        const authLink = document.getElementById('authLink');
-
-        if (data.authenticated) {
-          dot.classList.add('connected');
-          text.textContent = 'Connected & Authenticated';
-          authLink.style.display = 'none';
-        } else {
-          text.textContent = 'Not authenticated';
-          authLink.style.display = 'inline-block';
-        }
-      } catch (err) {
-        document.getElementById('statusText').textContent = 'Server not reachable';
-      }
-    }
-
-    // Update params form when tool changes
-    document.getElementById('toolSelect').addEventListener('change', updateParamsForm);
-
-    function updateParamsForm() {
-      const tool = document.getElementById('toolSelect').value;
-      const params = toolParams[tool] || [];
-      const container = document.getElementById('toolParams');
-
-      container.innerHTML = params.map(p => `
-        <div class="form-group">
-          <label>${p.label}${p.required ? ' *' : ''}</label>
-          ${p.type === 'textarea'
-            ? `<textarea id="param_${p.name}" placeholder="${p.default || ''}">${p.default || ''}</textarea>`
-            : `<input type="${p.type}" id="param_${p.name}" value="${p.default || ''}" placeholder="${p.label}">`
-          }
+    <div class="container">
+        <div class="header">
+            <h1>Gmail MCP Server - Test Interface</h1>
+            <p>Test your Gmail MCP Server connection</p>
+            <div class="status">
+                <div id="authStatus" class="status-item disconnected">Not Authenticated</div>
+                <div id="serverStatus" class="status-item disconnected">Not Connected</div>
+            </div>
         </div>
-      `).join('');
-    }
 
-    async function executeTool() {
-      const tool = document.getElementById('toolSelect').value;
-      const params = toolParams[tool] || [];
-      const args = {};
+        <div id="authWarning" class="auth-warning hidden">
+            <strong>Authentication Required</strong><br>
+            You need to authenticate first. <a href="/auth/login">Click here to login with Google</a>
+        </div>
 
-      params.forEach(p => {
-        const el = document.getElementById(`param_${p.name}`);
-        if (el && el.value) {
-          args[p.name] = p.type === 'number' ? parseInt(el.value) : el.value;
+        <div class="panel">
+            <h2>Quick Actions</h2>
+            <button class="btn" onclick="checkAuth()">Check Auth Status</button>
+            <button class="btn" onclick="initialize()">Initialize Connection</button>
+            <button class="btn" onclick="listTools()">List Tools</button>
+            <button class="btn" onclick="listResources()">List Resources</button>
+            <button class="btn" onclick="listPrompts()">List Prompts</button>
+        </div>
+
+        <div class="panel">
+            <h2>API Tokens (MCP Inspector)</h2>
+            <p style="margin-bottom: 15px; color: #6b7280;">
+                Generate bearer tokens to use with MCP Inspector or other API clients.
+                Tokens are valid for 24 hours.
+            </p>
+            <button class="btn" onclick="generateToken()">Generate New Token</button>
+            <button class="btn btn-sm" onclick="loadTokens()">Refresh Token List</button>
+            <button class="btn btn-sm btn-danger" onclick="revokeAllTokens()">Revoke All Tokens</button>
+
+            <div id="tokensContainer" style="margin-top: 20px;">
+                <div class="empty-state">
+                    Click "Generate New Token" to create a bearer token for MCP Inspector
+                </div>
+            </div>
+
+            <div class="setup-instructions">
+                <h3>Using with MCP Inspector</h3>
+                <ol>
+                    <li>Generate a token using the button above</li>
+                    <li>Copy the token value</li>
+                    <li>Run MCP Inspector: <code>npx @modelcontextprotocol/inspector</code></li>
+                    <li>Configure connection:
+                        <ul style="margin-top: 8px;">
+                            <li>URL: <code>http://localhost:8082</code></li>
+                            <li>Add header: <code>Authorization: Bearer &lt;your-token&gt;</code></li>
+                        </ul>
+                    </li>
+                    <li>Connect and test all Gmail MCP tools!</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Available Tools</h2>
+            <div id="toolsGrid" class="tools-grid">
+                <p style="color: #6b7280;">Click "List Tools" to load available tools...</p>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Response</h2>
+            <div id="response" class="response-area">Waiting for action...</div>
+        </div>
+    </div>
+
+    <!-- Tool Call Modal -->
+    <div id="toolModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalToolName">Call Tool</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Tool Parameters (JSON)</label>
+                <textarea id="toolParams" placeholder='{"param1": "value1"}'></textarea>
+            </div>
+            <button class="btn" onclick="executeTool()">Execute Tool</button>
+        </div>
+    </div>
+
+    <script>
+        let currentTool = null;
+        let requestId = 1;
+
+        async function makeRequest(method, params = {}) {
+            const response = document.getElementById('response');
+            response.textContent = 'Loading...';
+
+            try {
+                const res = await fetch('/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        method: method,
+                        params: params,
+                        id: requestId++
+                    })
+                });
+
+                const data = await res.json();
+                response.textContent = JSON.stringify(data, null, 2);
+
+                if (data.error) {
+                    if (data.error.message.includes('session cookie')) {
+                        document.getElementById('authWarning').style.display = 'block';
+                        document.getElementById('authStatus').textContent = 'Not Authenticated';
+                        document.getElementById('authStatus').className = 'status-item disconnected';
+                    }
+                    return null;
+                }
+
+                return data.result;
+            } catch (error) {
+                response.textContent = 'Error: ' + error.message;
+                return null;
+            }
         }
-      });
 
-      const btn = document.getElementById('executeBtn');
-      btn.disabled = true;
-      btn.textContent = 'Executing...';
+        async function checkAuth() {
+            try {
+                const res = await fetch('/auth/status', { credentials: 'include' });
+                const data = await res.json();
 
-      try {
-        const res = await fetch('/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jsonrpc: '2.0',
-            id: Date.now(),
-            method: 'tools/call',
-            params: { name: tool, arguments: args }
-          })
-        });
+                const authStatus = document.getElementById('authStatus');
+                const authWarning = document.getElementById('authWarning');
 
-        const data = await res.json();
-        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
-      } catch (err) {
-        document.getElementById('result').textContent = `Error: ${err.message}`;
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Execute';
-      }
-    }
+                if (data.authenticated) {
+                    authStatus.textContent = `Authenticated: ${data.userEmail}`;
+                    authStatus.className = 'status-item connected';
+                    authWarning.style.display = 'none';
+                } else {
+                    authStatus.textContent = 'Not Authenticated';
+                    authStatus.className = 'status-item disconnected';
+                    authWarning.style.display = 'block';
+                }
 
-    // Initialize
-    checkHealth();
-    updateParamsForm();
-  </script>
+                document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('response').textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function initialize() {
+            const result = await makeRequest('initialize', {
+                protocolVersion: '2024-11-05',
+                capabilities: {},
+                clientInfo: {
+                    name: 'test-interface',
+                    version: '1.0.0'
+                }
+            });
+
+            if (result) {
+                document.getElementById('serverStatus').textContent = 'Connected';
+                document.getElementById('serverStatus').className = 'status-item connected';
+            }
+        }
+
+        async function listTools() {
+            const result = await makeRequest('tools/list');
+
+            if (result && result.tools) {
+                const toolsGrid = document.getElementById('toolsGrid');
+                toolsGrid.innerHTML = '';
+
+                result.tools.forEach(tool => {
+                    const card = document.createElement('div');
+                    card.className = 'tool-card';
+                    card.onclick = () => openToolModal(tool);
+                    card.innerHTML = `
+                        <div class="tool-name">${tool.name}</div>
+                        <div class="tool-description">${tool.description || 'No description'}</div>
+                    `;
+                    toolsGrid.appendChild(card);
+                });
+            }
+        }
+
+        async function listResources() {
+            await makeRequest('resources/list');
+        }
+
+        async function listPrompts() {
+            await makeRequest('prompts/list');
+        }
+
+        function openToolModal(tool) {
+            currentTool = tool;
+            document.getElementById('modalToolName').textContent = `Call Tool: ${tool.name}`;
+            document.getElementById('toolParams').value = JSON.stringify(
+                tool.inputSchema?.properties ?
+                Object.fromEntries(
+                    Object.entries(tool.inputSchema.properties).map(([key, schema]) => [
+                        key,
+                        schema.type === 'string' ? '' :
+                        schema.type === 'number' ? 0 :
+                        schema.type === 'boolean' ? false : null
+                    ])
+                ) : {},
+                null,
+                2
+            );
+            document.getElementById('toolModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('toolModal').classList.remove('active');
+        }
+
+        async function executeTool() {
+            if (!currentTool) return;
+
+            try {
+                const params = JSON.parse(document.getElementById('toolParams').value);
+                closeModal();
+
+                await makeRequest('tools/call', {
+                    name: currentTool.name,
+                    arguments: params
+                });
+            } catch (error) {
+                alert('Invalid JSON parameters: ' + error.message);
+            }
+        }
+
+        // Token Management Functions
+
+        async function generateToken() {
+            try {
+                const res = await fetch('/api/generate-token', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.access_token) {
+                    alert('Token generated successfully! It will appear in the list below.');
+                    await loadTokens();
+                } else {
+                    alert('Failed to generate token: ' + (data.error_description || data.error || 'Unknown error'));
+                    if (data.error === 'unauthorized') {
+                        document.getElementById('authWarning').style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                alert('Error generating token: ' + error.message);
+            }
+        }
+
+        async function loadTokens() {
+            const container = document.getElementById('tokensContainer');
+
+            try {
+                const res = await fetch('/api/tokens', { credentials: 'include' });
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    container.innerHTML = '<div class="empty-state">Failed to load tokens</div>';
+                    return;
+                }
+
+                if (data.tokens.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No active tokens. Generate one to get started!</div>';
+                    return;
+                }
+
+                container.innerHTML = data.tokens.map(token => {
+                    const createdAt = new Date(token.createdAt);
+                    const expiresAt = new Date(token.expiresAt);
+                    const now = new Date();
+                    const isExpired = expiresAt <= now;
+                    const timeRemaining = formatTimeRemaining(expiresAt - now);
+
+                    return `
+                        <div class="token-card" data-token="${token.token}" data-expires="${token.expiresAt}">
+                            <div class="token-header">
+                                <strong>Token</strong>
+                                <span class="token-expiry ${isExpired ? 'expired' : ''}" data-countdown>
+                                    ${isExpired ? 'EXPIRED' : 'Expires in: ' + timeRemaining}
+                                </span>
+                            </div>
+                            <div class="token-value">
+                                <code>${token.token}</code>
+                                <button class="copy-btn" onclick="copyToClipboard('${token.token}', this)">Copy</button>
+                            </div>
+                            <div class="token-info">
+                                <div>Created: ${createdAt.toLocaleString()}</div>
+                                <div>Expires: ${expiresAt.toLocaleString()}</div>
+                            </div>
+                            <div class="token-actions">
+                                <button class="btn btn-sm btn-danger" onclick="revokeToken('${token.token}')">
+                                    Revoke This Token
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // Start countdown updates
+                updateTokenCountdowns();
+            } catch (error) {
+                container.innerHTML = `<div class="empty-state">Error: ${error.message}</div>`;
+            }
+        }
+
+        async function revokeToken(token) {
+            if (!confirm('Are you sure you want to revoke this token? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/token/${token}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    alert('Token revoked successfully');
+                    await loadTokens();
+                } else {
+                    alert('Failed to revoke token: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error revoking token: ' + error.message);
+            }
+        }
+
+        async function revokeAllTokens() {
+            if (!confirm('Are you sure you want to revoke ALL tokens? This will invalidate all active bearer tokens.')) {
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/tokens', {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    alert(`${data.revokedCount} token(s) revoked successfully`);
+                    await loadTokens();
+                } else {
+                    alert('Failed to revoke tokens: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error revoking tokens: ' + error.message);
+            }
+        }
+
+        function copyToClipboard(text, button) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                alert('Failed to copy to clipboard: ' + err.message);
+            });
+        }
+
+        function formatTimeRemaining(ms) {
+            if (ms <= 0) return 'EXPIRED';
+
+            const hours = Math.floor(ms / (1000 * 60 * 60));
+            const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+
+            if (hours > 0) {
+                return `${hours}h ${minutes}m`;
+            } else {
+                return `${minutes}m`;
+            }
+        }
+
+        function updateTokenCountdowns() {
+            const countdownElements = document.querySelectorAll('[data-countdown]');
+            const now = new Date();
+
+            countdownElements.forEach(element => {
+                const card = element.closest('.token-card');
+                if (!card) return;
+
+                const expiresAt = new Date(card.dataset.expires);
+                const timeRemaining = expiresAt - now;
+                const isExpired = timeRemaining <= 0;
+
+                element.textContent = isExpired ? 'EXPIRED' : 'Expires in: ' + formatTimeRemaining(timeRemaining);
+                element.className = 'token-expiry' + (isExpired ? ' expired' : '');
+            });
+
+            // Update every minute
+            setTimeout(updateTokenCountdowns, 60000);
+        }
+
+        // Check auth on load
+        window.onload = () => {
+            checkAuth();
+            loadTokens();
+        };
+    </script>
 </body>
 </html>

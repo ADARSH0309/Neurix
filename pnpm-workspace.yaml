@@ -4,4 +4,5 @@ packages:
   - 'backend/gdrive-server'
   - 'backend/gforms-server'
   - 'backend/gmail-server'
+  - 'backend/gcalendar-server'
   - 'backend/shared/mcp-sdk'
