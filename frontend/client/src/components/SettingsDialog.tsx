@@ -27,8 +27,8 @@ function Toggle({ enabled, onToggle, label }: { enabled: boolean; onToggle: () =
             aria-checked={enabled}
             aria-label={label}
             className={cn(
-                "relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-purple/50",
-                enabled ? "bg-electric-purple" : "bg-white/10"
+                "relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neurix-orange/50",
+                enabled ? "bg-neurix-orange" : "bg-white/10"
             )}
         >
             <span
@@ -93,14 +93,14 @@ export function SettingsDialog({ open, onOpenChange, settings, onSave, onClearDa
                                     className={cn(
                                         "flex flex-col items-center gap-2 p-3 rounded-xl border transition-all",
                                         settings.theme === option.value
-                                            ? "border-electric-purple/50 bg-electric-purple/10 text-white"
+                                            ? "border-neurix-orange/50 bg-neurix-orange/10 text-white"
                                             : "border-white/5 bg-white/5 text-slate-grey hover:bg-white/10 hover:text-white"
                                     )}
                                 >
                                     <option.icon
                                         className={cn(
                                             "w-5 h-5",
-                                            settings.theme === option.value ? "text-electric-purple" : "text-slate-grey"
+                                            settings.theme === option.value ? "text-neurix-orange" : "text-slate-grey"
                                         )}
                                     />
                                     <span className="text-xs font-medium">{option.label}</span>
@@ -139,7 +139,7 @@ export function SettingsDialog({ open, onOpenChange, settings, onSave, onClearDa
                     <div className="space-y-3">
                         <label className="text-xs font-bold text-slate-grey uppercase tracking-wider">About</label>
                         <div className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
-                            <Info className="w-4 h-4 text-electric-purple mt-0.5 shrink-0" />
+                            <Info className="w-4 h-4 text-neurix-orange mt-0.5 shrink-0" />
                             <div className="text-xs text-slate-grey space-y-1">
                                 <p><strong className="text-white">Neurix</strong> v1.0.0</p>
                                 <p>AI-powered MCP chat interface for connecting and managing your services through natural conversation.</p>

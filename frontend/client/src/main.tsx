@@ -30,7 +30,7 @@ function Root(): React.ReactElement {
   }
 
   if (showApp) {
-    return <App onBackToLanding={handleBackToLanding} />
+    return <App />
   }
 
   return <LandingPage onGetStarted={handleGetStarted} />

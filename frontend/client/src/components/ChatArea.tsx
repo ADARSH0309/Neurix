@@ -2,18 +2,17 @@ import { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import {
     Send,
-    Bot,
-    User,
+    Terminal,
     Paperclip,
     Copy,
     Check,
     RotateCcw,
-    Code,
+    MoreHorizontal,
     FileText,
     Mic,
-    MoreHorizontal,
-    Terminal,
-    ChevronDown,
+    Bot,
+    User,
+    Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Message, McpServer, UserProfile } from '@/types';
@@ -36,58 +35,35 @@ import {
 import { toast } from 'sonner';
 import { getServerIcon } from '@/lib/server-utils';
 
-interface ChatAreaProps {
-    activeServer: McpServer | null;
-    servers: Record<string, McpServer>;
-    activeServerId: string | null;
-    onSelectServer: (serverId: string) => void;
-    messages: Message[];
-    onSendMessage: (text: string) => void;
-    isLoading: boolean;
-    profile: UserProfile;
-    isToolsPanelOpen?: boolean;
-    onToggleToolsPanel?: () => void;
-    compactMode?: boolean;
-    sessionTitle?: string;
-    sessionId?: string | null;
-    onRenameSession?: (sessionId: string, newTitle: string) => void;
-}
+import { useChat } from '@/context/ChatContext';
+import { useServer } from '@/context/ServerContext';
+import { useUI } from '@/context/UIContext';
 
-// --- Minimalist Typing Indicator ---
+// --- Nebula UI Components ---
+
+// --- Neurix AI Reference UI Components ---
+
 function TypingIndicator(): React.ReactElement {
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3"
-        >
-            <div className="w-8 h-8 rounded bg-electric-purple/10 flex items-center justify-center shrink-0">
-                <div className="font-bold text-electric-purple text-xs">N</div>
-            </div>
-            <div className="flex gap-1">
-                {[0, 1, 2].map((i) => (
-                    <motion.div
-                        key={i}
-                        className="w-1.5 h-1.5 rounded-full bg-slate-grey/40"
-                        animate={{ scale: [1, 1.2, 1], opacity: [0.4, 1, 0.4] }}
-                        transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.2 }}
-                    />
-                ))}
-            </div>
-        </motion.div>
+        <div className="flex space-x-1.5 py-1.5 items-center">
+            <div className="w-1 h-1 bg-indigo-500 rounded-full animate-bounce"></div>
+            <div className="w-1 h-1 bg-indigo-500 rounded-full animate-bounce [animation-delay:200ms]"></div>
+            <div className="w-1 h-1 bg-indigo-500 rounded-full animate-bounce [animation-delay:400ms]"></div>
+        </div>
     );
 }
 
-export function ChatArea({
-    activeServer,
-    servers,
-    activeServerId,
-    onSelectServer,
-    messages,
-    onSendMessage,
-    isLoading,
-    profile,
-}: ChatAreaProps): React.ReactElement {
+export function ChatArea(): React.ReactElement {
+    const { currentSession, sendMessage, isLoading } = useChat();
+    const { servers, activeServerId, setActiveServerId } = useServer();
+    const { profile, setIsToolsPanelOpen, isToolsPanelOpen } = useUI();
+
+    const activeServer = activeServerId ? servers[activeServerId] : null;
+    const messages = currentSession?.messages || [];
+    const onSelectServer = setActiveServerId;
+    const onSendMessage = sendMessage;
+    const onToggleToolsPanel = () => setIsToolsPanelOpen(!isToolsPanelOpen);
+
     const [input, setInput] = useState('');
     const [copiedId, setCopiedId] = useState<string | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -104,7 +80,7 @@ export function ChatArea({
         if (!input.trim() || isLoading) return;
         onSendMessage(input);
         setInput('');
-        if (inputRef.current) inputRef.current.style.height = 'auto'; // Reset height
+        if (inputRef.current) inputRef.current.style.height = 'auto';
     };
 
     const handleKeyDown = (e: React.KeyboardEvent): void => {
@@ -121,256 +97,371 @@ export function ChatArea({
         setTimeout(() => setCopiedId(null), 2000);
     };
 
-    // Empty State
+    const adjustHeight = () => {
+        const textarea = inputRef.current;
+        if (textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = `${Math.min(textarea.scrollHeight, 128)}px`;
+        }
+    };
+
+    useEffect(() => {
+        adjustHeight();
+    }, [input]);
+
+    // Empty State - Neurix AI Reference Style
     if (messages.length === 0) {
         return (
-            <div className="flex-1 flex flex-col items-center justify-center bg-obsidian relative">
-                <div className="text-center space-y-6 max-w-md px-6">
-                    <div className="w-16 h-16 mx-auto rounded-2xl bg-[#1F2937] flex items-center justify-center mb-4">
-                        <Terminal className="w-8 h-8 text-electric-purple" />
-                    </div>
-                    <div>
-                        <h2 className="text-2xl font-semibold text-white mb-2">
-                            Hello, <span className="text-electric-purple">{profile.name}</span>
-                        </h2>
-                        <p className="text-slate-grey text-sm leading-relaxed">
-                            {activeServer
-                                ? `Connected to ${activeServer.name}. System ready.`
-                                : 'Select a neural node to begin operations.'}
-                        </p>
+            <div className="flex-1 flex flex-col h-full bg-background relative overflow-hidden">
+                {/* Background Effect */}
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/5 via-background to-background opacity-50 pointer-events-none" />
+
+                <div className="flex-1 flex flex-col items-center justify-center text-center max-w-xl mx-auto py-10 px-6 relative z-10 animate-in fade-in zoom-in duration-500">
+                    <div className="relative mb-8 group">
+                        <div className="absolute inset-0 bg-indigo-500/10 blur-3xl rounded-full animate-pulse"></div>
+                        <div className="relative w-24 h-24 rounded-[2rem] bg-background border border-white/5 flex items-center justify-center text-5xl shadow-2xl transition-transform group-hover:scale-105 duration-700">
+                            {activeServer ? (
+                                (() => {
+                                    const Icon = getServerIcon(activeServer.id);
+                                    return <Icon className="w-10 h-10 text-primary" />;
+                                })()
+                            ) : (
+                                <Terminal className="w-10 h-10 text-primary animate-pulse-slow" />
+                            )}
+                        </div>
                     </div>
 
-                    {!activeServer && (
-                        <div className="grid grid-cols-2 gap-3 mt-8">
-                            {Object.values(servers).filter(s => s.status === 'available').slice(0, 4).map(server => {
+                    <h1 className="text-3xl font-black tracking-tighter uppercase mb-4 italic text-foreground">
+                        {activeServer ? 'Enclave Assigned' : 'Neurix Terminal'}
+                    </h1>
+                    <p className="text-muted-foreground text-sm font-medium leading-relaxed tracking-tight mb-10 max-w-sm">
+                        {activeServer ? (
+                            <>Current bridge established to the <span className="text-indigo-500 font-bold uppercase">{activeServer.name}</span> MCP. Operational parameters are synchronized.</>
+                        ) : (
+                            'Select a neural node to initialize uplink operations.'
+                        )}
+                    </p>
+
+                    {!activeServer ? (
+                        <div className="grid grid-cols-2 gap-4 w-full">
+                            {Object.values(servers).filter(s => s.status === 'available').slice(0, 4).map((server, i) => {
                                 const Icon = getServerIcon(server.id);
                                 return (
-                                    <button
+                                    <motion.button
                                         key={server.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: i * 0.1 }}
                                         onClick={() => onSelectServer(server.id)}
-                                        className="flex items-center gap-3 p-3 rounded-lg border border-[#1F2937] hover:bg-[#1F2937] hover:border-electric-purple/30 transition-all text-left group"
+                                        className="flex items-center gap-3 p-4 rounded-xl border border-white/5 hover:border-indigo-500/30 bg-white/[0.02] hover:bg-white/5 transition-all group text-left"
                                     >
-                                        <div className="p-1.5 rounded bg-[#0F1115] text-slate-grey group-hover:text-electric-purple transition-colors">
+                                        <div className="p-2 rounded-lg bg-white/5 text-primary group-hover:scale-110 transition-transform">
                                             <Icon className="w-4 h-4" />
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="text-xs font-medium text-white">{server.name}</span>
-                                            <span className="text-[10px] text-slate-grey">Connect</span>
+                                            <span className="text-sm font-bold text-foreground">{server.name}</span>
+                                            <span className="text-[10px] font-mono text-muted-foreground uppercase">Connect</span>
                                         </div>
-                                    </button>
+                                    </motion.button>
                                 )
                             })}
                         </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
+                            {[
+                                `Status inquiry: ${activeServer.name}`,
+                                `Execute protocol audit`,
+                                `List active directory`,
+                                `Initialize optimized workflow`
+                            ].map((p, i) => (
+                                <motion.button
+                                    key={p}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: i * 0.1 }}
+                                    onClick={() => onSendMessage(p)}
+                                    className="p-4 border rounded-2xl text-left transition-all text-[10px] font-black uppercase tracking-widest flex items-center justify-between group bg-white/[0.02] border-white/5 text-muted-foreground hover:border-indigo-500/30 hover:text-white"
+                                >
+                                    <span className="truncate pr-4">{p}</span>
+                                    <Send className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                                </motion.button>
+                            ))}
+                        </div>
                     )}
                 </div>
+
                 {/* Floating Input for Empty State */}
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4">
-                    <div className="relative group">
-                        <div className="absolute inset-0 bg-gradient-to-r from-electric-purple/20 to-mint-green/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        <div className="relative bg-[#15171C] border border-[#1F2937] rounded-full flex items-center p-1.5 shadow-2xl">
-                            <div className="pl-4 pr-2">
-                                <Paperclip className="w-5 h-5 text-slate-grey hover:text-white cursor-pointer transition-colors" />
+                <div className="absolute bottom-0 left-0 right-0 p-6 z-20 bg-gradient-to-t from-background via-background/90 to-transparent pt-20">
+                    <div className="max-w-3xl mx-auto w-full">
+                        <div className="backdrop-blur-3xl border rounded-[2.5rem] p-1.5 shadow-2xl ring-1 bg-[#0b0f1a]/80 border-white/10 ring-white/5 transition-all focus-within:ring-indigo-500/50">
+                            <div className="flex items-end px-3 py-1 space-x-1">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <div className="p-3.5 text-muted-foreground hover:text-indigo-400 transition-all cursor-pointer group rounded-2xl hover:bg-white/5 active:scale-90">
+                                            <Paperclip className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                                        </div>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="start" className="w-56 bg-[#0b0f1a] border-white/10 text-gray-300">
+                                        <DropdownMenuItem className="focus:bg-white/5 focus:text-white cursor-pointer">
+                                            <FileText className="mr-2 h-4 w-4" />
+                                            <span>Upload Document</span>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem className="focus:bg-white/5 focus:text-white cursor-pointer">
+                                            <Terminal className="mr-2 h-4 w-4" />
+                                            <span>Run Script</span>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+
+                                <Textarea
+                                    ref={inputRef}
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    disabled={!activeServer}
+                                    placeholder={activeServer ? "Transmit instruction to the grid..." : "Select a neural node to begin..."}
+                                    className="flex-1 bg-transparent border-none focus-visible:ring-0 text-foreground py-4 text-[15px] resize-none max-h-[300px] overflow-y-auto placeholder:text-muted-foreground/40 font-medium tracking-tight shadow-none"
+                                    rows={1}
+                                />
+                                <div className="flex items-center space-x-2 pb-2 pr-1">
+                                    <Button
+                                        onClick={() => handleSubmit()}
+                                        disabled={!input.trim() || isLoading || !activeServer}
+                                        className={cn(
+                                            "w-12 h-12 rounded-[1.25rem] transition-all flex items-center justify-center border shadow-lg",
+                                            !input.trim() || isLoading || !activeServer
+                                                ? "bg-white/5 text-muted-foreground cursor-not-allowed border-transparent"
+                                                : "bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-500/20 active:scale-95 border-indigo-400/20"
+                                        )}
+                                    >
+                                        {isLoading ? (
+                                            <Sparkles className="w-5 h-5 animate-spin" />
+                                        ) : (
+                                            <Send className="w-5 h-5 ml-0.5" />
+                                        )}
+                                    </Button>
+                                </div>
                             </div>
-                            <input
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                onKeyDown={handleKeyDown}
-                                disabled={!activeServer}
-                                placeholder={activeServer ? "Ask anything..." : "Select a server first..."}
-                                className="flex-1 bg-transparent border-0 outline-none text-sm text-white placeholder:text-slate-grey/50 py-3"
-                            />
-                            <Button
-                                onClick={() => handleSubmit()}
-                                disabled={!input.trim() || isLoading || !activeServer}
-                                size="icon"
-                                className="h-9 w-9 rounded-full bg-electric-purple hover:bg-electric-purple/90 text-white shrink-0 ml-2"
-                            >
-                                <Send className="w-4 h-4" />
-                            </Button>
                         </div>
+                        <p className="text-[10px] text-center text-muted-foreground/30 font-black uppercase tracking-[0.3em] mt-4">
+                            UPLINK SECURED • {activeServer?.id.toUpperCase() || 'NULL'} DOMAIN • NEURIX 2.0
+                        </p>
                     </div>
                 </div>
             </div>
         );
     }
 
+    // Main Chat View - Neurix AI Reference Style
     return (
         <TooltipProvider>
-            <div className="flex-1 flex flex-col h-full bg-obsidian relative">
-                {/* Header */}
-                <header className="h-14 border-b border-[#1F2937] flex items-center justify-between px-6 shrink-0 bg-obsidian/95 backdrop-blur z-20">
-                    <div className="flex items-center gap-3">
-                        <h1 className="text-sm font-medium text-white tracking-wide">
-                            {activeServer?.name || 'Neurix Terminal'}
-                        </h1>
-                        {activeServer?.connected && (
-                            <span className="text-[10px] font-mono text-mint-green px-1.5 py-0.5 rounded bg-mint-green/10">
-                                ACTIVE
-                            </span>
-                        )}
+            <div className="flex-1 flex flex-col h-full bg-background relative z-10">
+                {/* Header - Transparent/Glass */}
+                <header className="h-16 flex items-center justify-between px-6 border-b border-white/5 backdrop-blur-xl sticky top-0 z-[50] bg-background/80">
+                    <div className="flex items-center space-x-4 min-w-0">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={onToggleToolsPanel}
+                            className="text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                        >
+                            <MoreHorizontal className="w-5 h-5" />
+                        </Button>
+
+                        <div className="h-8 w-px bg-white/10 hidden sm:block" />
+
+                        <div className="flex items-center space-x-3 overflow-hidden">
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg bg-secondary/20 border border-white/5 shadow-inner flex-shrink-0 text-primary">
+                                {activeServer ? (
+                                    (() => {
+                                        const Icon = getServerIcon(activeServer.id);
+                                        return <Icon className="w-4 h-4" />;
+                                    })()
+                                ) : (
+                                    <Terminal className="w-4 h-4" />
+                                )}
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                <div className="flex items-center space-x-1.5">
+                                    <span className="text-[9px] font-black uppercase tracking-widest leading-none text-indigo-500">UPLINK ACTIVE</span>
+                                    <span className={cn("w-1 h-1 rounded-full bg-emerald-500 flex-shrink-0", activeServer?.connected && "animate-pulse")}></span>
+                                </div>
+                                <h2 className="text-[11px] font-black uppercase tracking-wider leading-none mt-1 truncate text-foreground">
+                                    {activeServer?.name || 'Neural'} Protocol
+                                </h2>
+                            </div>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <span className="text-[10px] text-slate-grey font-mono">
-                            session-id: {messages[0]?.id.slice(0, 8) || 'init'}
+
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono text-muted-foreground/50 border border-white/5 px-2 py-1 rounded bg-white/[0.02]">
+                            ID: {messages[0]?.id.substring(0, 8) || 'INIT'}
                         </span>
                     </div>
                 </header>
 
-                <ScrollArea className="flex-1 px-4 py-6">
-                    <div className="max-w-3xl mx-auto space-y-8 pb-4">
-                        {messages.map((msg) => (
-                            <motion.div
+                <ScrollArea className="flex-1 px-6 py-8">
+                    <div className="max-w-3xl mx-auto space-y-10 pb-44">
+                        {messages.map((msg, idx) => (
+                            <div
                                 key={msg.id}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
                                 className={cn(
-                                    "flex gap-4 group",
-                                    msg.role === 'user' ? "flex-row-reverse" : "flex-row"
+                                    "flex w-full group animate-in fade-in slide-in-from-bottom-4 duration-500",
+                                    msg.role === 'user' ? 'justify-end' : 'justify-start'
                                 )}
                             >
-                                {/* Avatar */}
                                 <div className={cn(
-                                    "w-8 h-8 rounded flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs select-none",
-                                    msg.role === 'user'
-                                        ? "bg-[#1F2937] text-slate-grey"
-                                        : "bg-electric-purple text-white shadow-[0_0_15px_-3px_rgba(139,92,246,0.5)]"
+                                    "flex max-w-[90%] md:max-w-[85%] space-x-4",
+                                    msg.role === 'user' ? "flex-row-reverse space-x-reverse" : "flex-row"
                                 )}>
-                                    {msg.role === 'user' ? 'U' : 'N'}
-                                </div>
-
-                                <div className={cn(
-                                    "flex-1 max-w-[85%] space-y-2",
-                                    msg.role === 'user' ? "text-right" : "text-left"
-                                )}>
+                                    {/* Profile */}
                                     <div className={cn(
-                                        "flex items-center gap-2 text-[10px] font-mono text-slate-grey/60 uppercase tracking-widest",
-                                        msg.role === 'user' ? "justify-end" : "justify-start"
+                                        "flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center font-black text-xs shadow-xl",
+                                        msg.role === 'user'
+                                            ? "bg-gradient-to-br from-indigo-500 to-indigo-700 text-white"
+                                            : "bg-background/40 hover:bg-background text-indigo-400 border border-white/5 backdrop-blur-sm transition-colors"
                                     )}>
-                                        <span>{msg.role === 'user' ? 'User Input' : 'Neurix Output'}</span>
-                                        <span>•</span>
-                                        <span>{msg.timestamp}</span>
+                                        {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-5 h-5" />}
                                     </div>
 
-                                    <div className={cn(
-                                        "text-sm leading-7 font-sans",
-                                        msg.role === 'user' ? "text-white/90 bg-[#1F2937]/50 px-4 py-2 rounded-2xl rounded-tr-sm" : "text-slate-grey"
-                                    )}>
-                                        {msg.role === 'user' ? (
-                                            <p className="whitespace-pre-wrap">{msg.content}</p>
-                                        ) : (
-                                            <div className="prose prose-sm dark:prose-invert max-w-none">
-                                                <ReactMarkdown
-                                                    components={{
-                                                        code(props) {
-                                                            const { className, children, ...rest } = props;
-                                                            const isInline = !String(children).includes('\n');
-                                                            if (isInline) {
-                                                                return <code className="bg-[#1F2937] text-mint-green px-1.5 py-0.5 rounded text-xs font-mono border border-white/5" {...rest}>{children}</code>;
-                                                            }
-                                                            return (
-                                                                <div className="my-4 rounded-lg border border-[#1F2937] bg-[#050505] overflow-hidden">
-                                                                    <div className="flex items-center justify-between px-4 py-2 bg-[#15171C] border-b border-[#1F2937]">
-                                                                        <div className="flex items-center gap-2">
-                                                                            <FileText className="w-3.5 h-3.5 text-electric-purple" />
-                                                                            <span className="text-xs font-mono text-slate-grey">script.py</span>
+                                    {/* Text Area */}
+                                    <div className={cn("flex flex-col space-y-2", msg.role === 'user' ? "items-end" : "items-start")}>
+                                        <div className={cn(
+                                            "relative px-6 py-4 rounded-[1.75rem] text-[14px] leading-relaxed shadow-lg transition-all",
+                                            msg.role === 'user'
+                                                ? "bg-indigo-600 text-white rounded-tr-none px-6"
+                                                : "bg-secondary/10 border border-white/5 text-foreground rounded-tl-none backdrop-blur-sm"
+                                        )}>
+                                            <div className="whitespace-pre-wrap">
+                                                {msg.role === 'user' ? (
+                                                    <p>{msg.content}</p>
+                                                ) : (
+                                                    <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-black/30 prose-pre:border prose-pre:border-white/10 prose-code:text-indigo-300">
+                                                        <ReactMarkdown
+                                                            components={{
+                                                                code(props) {
+                                                                    const { className, children, ...rest } = props;
+                                                                    const isInline = !String(children).includes('\n');
+                                                                    if (isInline) {
+                                                                        return <code className="bg-white/10 text-primary px-1.5 py-0.5 rounded text-xs font-mono border border-white/10" {...rest}>{children}</code>;
+                                                                    }
+                                                                    return (
+                                                                        <div className="my-4 rounded-xl border border-white/10 bg-[#0b0f1a] overflow-hidden shadow-sm">
+                                                                            <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/10">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <FileText className="w-3.5 h-3.5 text-indigo-400" />
+                                                                                    <span className="text-xs font-mono text-muted-foreground">code block</span>
+                                                                                </div>
+                                                                                <Button variant="ghost" size="sm" className="h-6 text-[10px] uppercase font-mono text-muted-foreground hover:text-foreground" onClick={() => handleCopy(String(children), msg.id)}>
+                                                                                    {copiedId === msg.id ? <Check className="w-3 h-3 mr-1 text-emerald-500" /> : <Copy className="w-3 h-3 mr-1" />} Copy
+                                                                                </Button>
+                                                                            </div>
+                                                                            <div className="p-4 overflow-x-auto">
+                                                                                <code className={cn(className, "text-xs font-mono text-gray-300")} {...rest}>
+                                                                                    {children}
+                                                                                </code>
+                                                                            </div>
                                                                         </div>
-                                                                        <div className="flex items-center gap-2">
-                                                                            <span className="text-[10px] text-slate-grey font-mono uppercase">Python</span>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="p-4 overflow-x-auto">
-                                                                        <code className={cn(className, "text-xs font-mono text-white")} {...rest}>
-                                                                            {children}
-                                                                        </code>
-                                                                    </div>
-                                                                    <div className="px-3 py-2 border-t border-[#1F2937] bg-[#15171C] flex justify-end">
-                                                                        <Button variant="ghost" size="sm" className="h-6 text-[10px] text-slate-grey hover:text-white" onClick={() => handleCopy(String(children), msg.id)}>
-                                                                            <Copy className="w-3 h-3 mr-1" /> Copy Code
-                                                                        </Button>
-                                                                    </div>
-                                                                </div>
-                                                            );
-                                                        },
-                                                        p({ children }) { return <p className="mb-3 last:mb-0">{children}</p>; },
-                                                        ul({ children }) { return <ul className="list-disc list-inside space-y-1 mb-3 marker:text-mint-green">{children}</ul>; },
-                                                    }}
-                                                >
-                                                    {msg.content}
-                                                </ReactMarkdown>
+                                                                    );
+                                                                }
+                                                            }}
+                                                        >
+                                                            {msg.content}
+                                                        </ReactMarkdown>
+                                                    </div>
+                                                )}
+                                                {msg.role === 'assistant' && isLoading && idx === messages.length - 1 && (
+                                                    <TypingIndicator />
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
-                                    {/* Action Buttons for AI */}
-                                    {msg.role === 'assistant' && (
-                                        <div className="flex items-center gap-1 mt-1">
-                                            <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-grey hover:text-white" onClick={() => handleCopy(msg.content, msg.id)}>
-                                                {copiedId === msg.id ? <Check className="w-3 h-3 text-mint-green" /> : <Copy className="w-3 h-3" />}
-                                            </Button>
-                                            <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-grey hover:text-white">
-                                                <RotateCcw className="w-3 h-3" />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-grey hover:text-white">
-                                                <MoreHorizontal className="w-3 h-3" />
-                                            </Button>
+
+                                            {/* Copy Button */}
+                                            {msg.role !== 'user' && !isLoading && msg.content && (
+                                                <div className="absolute top-2 -right-12 flex opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-white/10" onClick={() => handleCopy(msg.content, msg.id)}>
+                                                        <Copy className="w-4 h-4" />
+                                                    </Button>
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
+
+                                        <span className="text-[8px] text-muted-foreground/50 font-black uppercase tracking-widest px-2">
+                                            SYNCED • {msg.timestamp}
+                                        </span>
+                                    </div>
                                 </div>
-                            </motion.div>
+                            </div>
                         ))}
-                        {isLoading && <TypingIndicator />}
+                        {isLoading && (
+                            <div className="flex gap-4 animate-in fade-in slide-in-from-bottom-2">
+                                <div className="w-10 h-10 rounded-2xl bg-background/40 flex items-center justify-center text-indigo-400 border border-white/5 shadow-xl">
+                                    <Bot className="w-5 h-5 animate-pulse" />
+                                </div>
+                                <div className="bg-secondary/10 border border-white/5 px-6 py-4 rounded-[1.75rem] rounded-tl-none">
+                                    <TypingIndicator />
+                                </div>
+                            </div>
+                        )}
                         <div ref={messagesEndRef} />
                     </div>
                 </ScrollArea>
 
-                {/* Floating Input Area (Pill) */}
-                <div className="p-6 shrink-0 z-20">
-                    <div className="max-w-2xl mx-auto relative group">
-                        <div className="absolute inset-0 bg-gradient-to-r from-electric-purple/10 to-mint-green/10 rounded-[28px] blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        <div className="relative bg-[#0F1115] border border-[#1F2937] rounded-[28px] flex items-end p-2 shadow-2xl transition-all focus-within:border-electric-purple/50">
-                            <div className="pb-2.5 pl-3 pr-2">
+                {/* Floating Input Area - Unified Gradient */}
+                <div className="absolute bottom-0 left-0 right-0 p-6 z-20 bg-gradient-to-t from-background via-background/90 to-transparent pt-20">
+                    <div className="max-w-3xl mx-auto w-full">
+                        <div className="backdrop-blur-3xl border rounded-[2.5rem] p-1.5 shadow-2xl ring-1 bg-[#0b0f1a]/80 border-white/10 ring-white/5 transition-all focus-within:ring-indigo-500/50">
+                            <div className="flex items-end px-3 py-1 space-x-1">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-[#1F2937] text-slate-grey hover:text-white">
-                                            <Paperclip className="w-4 h-4" />
-                                        </Button>
+                                        <div className="p-3.5 text-muted-foreground hover:text-indigo-400 transition-all cursor-pointer group rounded-2xl hover:bg-white/5 active:scale-90">
+                                            <Paperclip className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                                        </div>
                                     </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="start" className="w-56 bg-[#0b0f1a] border-white/10 text-gray-300">
+                                        <DropdownMenuItem className="focus:bg-white/5 focus:text-white cursor-pointer">
+                                            <FileText className="mr-2 h-4 w-4" />
+                                            <span>Upload Document</span>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem className="focus:bg-white/5 focus:text-white cursor-pointer">
+                                            <Terminal className="mr-2 h-4 w-4" />
+                                            <span>Run Script</span>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
                                 </DropdownMenu>
-                            </div>
-                            <Textarea
-                                ref={inputRef}
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                onKeyDown={handleKeyDown}
-                                placeholder={activeServer ? "Ask anything..." : "Select a server first..."}
-                                disabled={!activeServer && messages.length > 0} // Only disable if no server and not empty state (handled above)
-                                className="flex-1 min-h-[44px] max-h-32 resize-none border-0 bg-transparent py-3 px-2 text-sm text-white placeholder:text-slate-grey/50 focus-visible:ring-0"
-                                rows={1}
-                                onInput={(e) => {
-                                    const target = e.target as HTMLTextAreaElement;
-                                    target.style.height = 'auto';
-                                    target.style.height = `${Math.min(target.scrollHeight, 128)}px`;
-                                }}
-                            />
-                            <div className="pb-1.5 pr-1.5 flex gap-1">
-                                {input.trim() ? (
+
+                                <Textarea
+                                    ref={inputRef}
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    disabled={!activeServer}
+                                    placeholder="Transmit instruction to the grid..."
+                                    className="flex-1 bg-transparent border-none focus-visible:ring-0 text-foreground py-4 text-[15px] resize-none max-h-[300px] overflow-y-auto placeholder:text-muted-foreground/40 font-medium tracking-tight shadow-none"
+                                    rows={1}
+                                />
+                                <div className="flex items-center space-x-2 pb-2 pr-1">
                                     <Button
                                         onClick={() => handleSubmit()}
-                                        disabled={isLoading}
-                                        size="icon"
-                                        className="h-8 w-8 rounded-full bg-electric-purple hover:bg-electric-purple/90 text-white shadow-lg shadow-electric-purple/20 transition-all"
+                                        disabled={!input.trim() || isLoading || !activeServer}
+                                        className={cn(
+                                            "w-12 h-12 rounded-[1.25rem] transition-all flex items-center justify-center border shadow-lg",
+                                            !input.trim() || isLoading || !activeServer
+                                                ? "bg-white/5 text-muted-foreground cursor-not-allowed border-transparent"
+                                                : "bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-500/20 active:scale-95 border-indigo-400/20"
+                                        )}
                                     >
-                                        <Send className="w-4 h-4" />
+                                        {isLoading ? (
+                                            <Sparkles className="w-5 h-5 animate-spin" />
+                                        ) : (
+                                            <Send className="w-5 h-5 ml-0.5" />
+                                        )}
                                     </Button>
-                                ) : (
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-[#1F2937] text-slate-grey hover:text-white">
-                                        <Mic className="w-4 h-4" />
-                                    </Button>
-                                )}
+                                </div>
                             </div>
                         </div>
-                        <div className="text-center mt-3">
-                            <p className="text-[10px] text-slate-grey/30 font-mono">NEURIX v2.0 • AI-POWERED WORKSTATION</p>
-                        </div>
+                        <p className="text-[10px] text-center text-muted-foreground/30 font-black uppercase tracking-[0.3em] mt-4">
+                            UPLINK SECURED • {activeServer?.id.toUpperCase() || 'NULL'} DOMAIN • NEURIX 2.0
+                        </p>
                     </div>
                 </div>
             </div>

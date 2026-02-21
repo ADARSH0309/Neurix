@@ -47,10 +47,10 @@ export function ProfileDialog({ open, onOpenChange, profile, onSave }: ProfileDi
                     {/* Avatar preview */}
                     <div className="flex justify-center">
                         <div className="relative group">
-                            <div className="absolute inset-0 bg-electric-purple/20 rounded-full blur-md group-hover:blur-lg transition-all" />
+                            <div className="absolute inset-0 bg-neurix-orange/20 rounded-full blur-md group-hover:blur-lg transition-all" />
                             <Avatar className="h-24 w-24 border-2 border-white/10 relative">
                                 <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`} />
-                                <AvatarFallback className="bg-gradient-to-br from-midnight to-obsidian text-electric-purple text-3xl font-heading border border-white/5">
+                                <AvatarFallback className="bg-gradient-to-br from-midnight to-obsidian text-neurix-orange text-3xl font-heading border border-white/5">
                                     {name.charAt(0).toUpperCase()}
                                 </AvatarFallback>
                             </Avatar>
@@ -63,13 +63,13 @@ export function ProfileDialog({ open, onOpenChange, profile, onSave }: ProfileDi
                             Display Name
                         </label>
                         <div className="relative group">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-grey group-focus-within:text-electric-purple transition-colors" />
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-grey group-focus-within:text-neurix-orange transition-colors" />
                             <Input
                                 id="profile-name"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="Your name"
-                                className="pl-10 bg-black/20 border-white/5 focus:border-electric-purple/50 focus:bg-black/40 text-white placeholder:text-slate-grey/50"
+                                className="pl-10 bg-black/20 border-white/5 focus:border-neurix-orange/50 focus:bg-black/40 text-white placeholder:text-slate-grey/50"
                                 onKeyDown={(e) => e.key === 'Enter' && handleSave()}
                             />
                         </div>
@@ -81,13 +81,13 @@ export function ProfileDialog({ open, onOpenChange, profile, onSave }: ProfileDi
                             Email Address
                         </label>
                         <div className="relative group">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-grey group-focus-within:text-electric-purple transition-colors" />
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-grey group-focus-within:text-neurix-orange transition-colors" />
                             <Input
                                 id="profile-email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="you@example.com"
-                                className="pl-10 bg-black/20 border-white/5 focus:border-electric-purple/50 focus:bg-black/40 text-white placeholder:text-slate-grey/50"
+                                className="pl-10 bg-black/20 border-white/5 focus:border-neurix-orange/50 focus:bg-black/40 text-white placeholder:text-slate-grey/50"
                                 type="email"
                                 onKeyDown={(e) => e.key === 'Enter' && handleSave()}
                             />
@@ -104,7 +104,7 @@ export function ProfileDialog({ open, onOpenChange, profile, onSave }: ProfileDi
                     </Button>
                     <Button
                         onClick={handleSave}
-                        className="bg-electric-purple text-white hover:bg-electric-purple/90 shadow-lg shadow-electric-purple/20"
+                        className="bg-neurix-orange text-white hover:bg-neurix-orange-light shadow-lg shadow-neurix-orange/20"
                     >
                         <Save className="w-4 h-4 mr-2" />
                         Save Changes

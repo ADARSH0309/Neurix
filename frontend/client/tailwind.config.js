@@ -61,7 +61,9 @@ export default {
                 // Neurix Visual Identity System
                 obsidian: '#0F1115', // Primary Background
                 midnight: '#050505', // Sidebar Background
-                'electric-purple': '#8B5CF6', // AI Accent
+                'electric-purple': '#8B5CF6', // AI Accent (legacy)
+                'neurix-orange': '#FF5500', // Brand Accent
+                'neurix-orange-light': '#FF7A33', // Brand Accent Hover
                 'mint-green': '#10B981', // Status Accent
                 'slate-grey': '#8899A6', // Secondary Text
             },

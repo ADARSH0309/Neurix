@@ -24,6 +24,8 @@ export interface Message {
     role: 'user' | 'assistant' | 'system' | 'error';
     content: string;
     timestamp: string;
+    createdAt?: string;
+    suggestions?: string[];
 }
 
 export interface ChatSession {
@@ -32,6 +34,7 @@ export interface ChatSession {
     messages: Message[];
     createdAt: string;
     updatedAt: string;
+    pinned?: boolean;
 }
 
 export interface ActivityItem {

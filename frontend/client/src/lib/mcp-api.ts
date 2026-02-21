@@ -53,9 +53,7 @@ async function sendJsonRpcRequest<T>(
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
-      'Origin': window.location.origin,
     },
-    credentials: 'include',
     body: JSON.stringify({
       jsonrpc: '2.0',
       id: getNextRequestId(),
@@ -153,17 +151,61 @@ function formatToolResponse(text: string, _toolName: string): string {
   try {
     const data = JSON.parse(text);
 
+    // ── Gmail: Success action responses ──
+    if (data.success && data.action) {
+      return formatGmailActionResponse(data);
+    }
+
+    // ── Gmail: Profile ──
+    if (data.action === 'get_profile' && data.emailAddress) {
+      return `**Gmail Profile**\n\n` +
+        `**Email:** ${data.emailAddress}\n` +
+        `**Total Messages:** ${data.messagesTotal?.toLocaleString() || 'N/A'}\n` +
+        `**Total Threads:** ${data.threadsTotal?.toLocaleString() || 'N/A'}\n` +
+        (data.historyId ? `**History ID:** \`${data.historyId}\`` : '');
+    }
+
+    // ── Gmail: Labels list ──
+    if (data.action === 'list_labels' && data.labels) {
+      return formatGmailLabels(data.labels);
+    }
+
+    // ── Gmail: Threads list ──
+    if (data.action === 'list_threads' && data.threads) {
+      return formatGmailThreads(data.threads);
+    }
+
+    // ── Gmail: Thread detail ──
+    if (data.action === 'get_thread' && data.messages) {
+      return formatGmailThreadDetail(data);
+    }
+
+    // ── Gmail: Drafts list ──
+    if (data.action === 'list_drafts' && data.drafts) {
+      return formatGmailDrafts(data.drafts);
+    }
+
+    // ── Gmail: Message array (list_messages, search, get_unread, etc.) ──
+    if (Array.isArray(data) && data.length > 0 && data[0].from !== undefined) {
+      return formatGmailMessages(data);
+    }
+
+    // ── Gmail: Single email detail (get_message) ──
+    if (data.from !== undefined && data.subject !== undefined && data.body !== undefined) {
+      return formatGmailSingleMessage(data);
+    }
+
     // Handle files list (Google Drive)
     if (data.files && Array.isArray(data.files)) {
       if (data.files.length === 0) {
-        return '📂 No files found.';
+        return 'No files found.';
       }
-      let output = `📂 Found **${data.files.length}** file(s):\n\n`;
+      let output = `Found **${data.files.length}** file(s):\n\n`;
       data.files.slice(0, 15).forEach((file: any, index: number) => {
         const icon = getFileIconEmoji(file.mimeType);
         output += `${index + 1}. ${icon} **${file.name}**\n`;
         if (file.modifiedTime) {
-          output += `   📅 ${new Date(file.modifiedTime).toLocaleDateString()}\n`;
+          output += `   Modified: ${new Date(file.modifiedTime).toLocaleDateString()}\n`;
         }
         if (file.webViewLink) {
           output += `   [Open in Drive](${file.webViewLink})\n`;
@@ -179,11 +221,11 @@ function formatToolResponse(text: string, _toolName: string): string {
     // Handle forms list (Google Forms)
     if (data.forms && Array.isArray(data.forms)) {
       if (data.forms.length === 0) {
-        return '📋 No forms found.';
+        return 'No forms found.';
       }
-      let output = `📋 Found **${data.forms.length}** form(s):\n\n`;
+      let output = `Found **${data.forms.length}** form(s):\n\n`;
       data.forms.forEach((form: any, index: number) => {
-        output += `${index + 1}. 📝 **${form.title || form.name || 'Untitled'}**\n`;
+        output += `${index + 1}. **${form.title || form.name || 'Untitled'}**\n`;
         if (form.formId) output += `   ID: \`${form.formId}\`\n`;
         if (form.responderUri) output += `   [Open Form](${form.responderUri})\n`;
         output += '\n';
@@ -205,10 +247,10 @@ function formatToolResponse(text: string, _toolName: string): string {
 
     // Handle form creation response
     if (data.formId && data.responderUri) {
-      return `✅ **Form created successfully!**\n\n` +
+      return `**Form created successfully!**\n\n` +
         `**Title:** ${data.title || 'Untitled'}\n` +
         `**Form ID:** \`${data.formId}\`\n\n` +
-        `[📝 Open Form](${data.responderUri})`;
+        `[Open Form](${data.responderUri})`;
     }
 
     // Default: return formatted JSON in a code block
@@ -217,6 +259,232 @@ function formatToolResponse(text: string, _toolName: string): string {
     // Not JSON - convert any URLs to markdown links
     return convertUrlsToMarkdownLinks(text);
   }
+}
+
+// ── Gmail formatting helpers ──
+
+function formatGmailMessages(messages: any[]): string {
+  if (messages.length === 0) {
+    return 'No emails found.';
+  }
+
+  let output = `**Inbox** - ${messages.length} message${messages.length !== 1 ? 's' : ''}\n\n`;
+
+  messages.slice(0, 25).forEach((msg, index) => {
+    const from = msg.from || 'Unknown sender';
+    const subject = msg.subject || '(No subject)';
+    const date = msg.date || '';
+    const isUnread = msg.labels?.includes('UNREAD');
+    const isStarred = msg.labels?.includes('STARRED');
+
+    // Use snippet for clean preview (Gmail API generates a clean text summary)
+    const preview = (msg.snippet || '').replace(/\s+/g, ' ').trim();
+
+    const badges: string[] = [];
+    if (isUnread) badges.push('new');
+    if (isStarred) badges.push('starred');
+    const badgeStr = badges.length > 0 ? `  \`${badges.join('  ')}\`` : '';
+
+    // Gmail web link
+    const gmailLink = msg.id ? `[Open in Gmail](https://mail.google.com/mail/u/0/#inbox/${msg.id})` : '';
+
+    output += `---\n\n`;
+    output += `**${index + 1}. ${subject}**${badgeStr}\n\n`;
+    output += `> **From:** ${formatEmailSender(from)}  \n`;
+    output += `> **Date:** ${date ? formatEmailDate(date) : 'Unknown'}\n\n`;
+    if (preview) {
+      output += `${preview}\n\n`;
+    }
+    if (gmailLink) {
+      output += `${gmailLink}\n\n`;
+    }
+  });
+
+  if (messages.length > 25) {
+    output += `---\n\n*...and ${messages.length - 25} more messages.*\n`;
+  }
+
+  return output;
+}
+
+function formatGmailSingleMessage(msg: any): string {
+  let output = `**${msg.subject || '(No subject)'}**\n\n`;
+  output += `**From:** ${formatEmailSender(msg.from || 'Unknown')}\n`;
+  output += `**To:** ${msg.to || 'Unknown'}\n`;
+  if (msg.cc) output += `**CC:** ${msg.cc}\n`;
+  if (msg.date) output += `**Date:** ${formatEmailDate(msg.date)}\n`;
+  if (msg.attachments && msg.attachments.length > 0) {
+    output += `**Attachments:** ${msg.attachments.map((a: any) => a.filename).join(', ')}\n`;
+  }
+  output += '\n---\n\n';
+
+  // Clean up HTML if needed
+  let body = msg.body || msg.snippet || '';
+  if (msg.isHtml) {
+    body = stripHtmlTags(body);
+  }
+  // Truncate very long bodies
+  if (body.length > 2000) {
+    body = body.slice(0, 2000) + '\n\n*... (message truncated)*';
+  }
+  output += body;
+
+  // Gmail link
+  if (msg.id) {
+    output += `\n\n---\n\n[Open in Gmail](https://mail.google.com/mail/u/0/#inbox/${msg.id})`;
+  }
+
+  return output;
+}
+
+function formatGmailActionResponse(data: any): string {
+  const actionMessages: Record<string, string> = {
+    'send_message': `**Email sent successfully!**\n\nMessage ID: \`${data.id}\`${data.threadId ? `\nThread ID: \`${data.threadId}\`` : ''}`,
+    'reply_to_message': `**Reply sent successfully!**\n\nMessage ID: \`${data.id}\`${data.threadId ? `\nThread ID: \`${data.threadId}\`` : ''}`,
+    'forward_message': `**Message forwarded successfully!**\n\nMessage ID: \`${data.id}\`${data.threadId ? `\nThread ID: \`${data.threadId}\`` : ''}`,
+    'trash_message': `**Message moved to trash.**\n\nMessage ID: \`${data.messageId}\``,
+    'untrash_message': `**Message restored from trash.**\n\nMessage ID: \`${data.messageId}\``,
+    'delete_message': `**Message permanently deleted.**\n\nMessage ID: \`${data.messageId}\``,
+    'mark_as_read': `**Message marked as read.**\n\nMessage ID: \`${data.messageId}\``,
+    'mark_as_unread': `**Message marked as unread.**\n\nMessage ID: \`${data.messageId}\``,
+    'star_message': `**Message starred.**\n\nMessage ID: \`${data.messageId}\``,
+    'unstar_message': `**Star removed from message.**\n\nMessage ID: \`${data.messageId}\``,
+    'archive_message': `**Message archived.**\n\nMessage ID: \`${data.messageId}\``,
+    'modify_labels': `**Labels updated.**\n\nMessage ID: \`${data.messageId}\``,
+    'trash_thread': `**Thread moved to trash.**\n\nThread ID: \`${data.threadId}\``,
+    'delete_thread': `**Thread permanently deleted.**\n\nThread ID: \`${data.threadId}\``,
+    'create_label': `**Label created!**\n\nName: ${data.name}\nID: \`${data.id}\``,
+    'update_label': `**Label updated!**\n\nName: ${data.name}\nID: \`${data.id}\``,
+    'delete_label': `**Label deleted.**\n\nLabel ID: \`${data.labelId}\``,
+    'create_draft': `**Draft created!**\n\nDraft ID: \`${data.draftId}\``,
+    'delete_draft': `**Draft deleted.**\n\nDraft ID: \`${data.draftId}\``,
+    'send_draft': `**Draft sent!**\n\nMessage ID: \`${data.id}\`${data.threadId ? `\nThread ID: \`${data.threadId}\`` : ''}`,
+    'get_attachment': `**Attachment retrieved.**\n\nSize: ${formatFileSize(data.size || 0)}`,
+  };
+
+  return actionMessages[data.action] || `**Operation completed successfully.**`;
+}
+
+function formatGmailLabels(labels: any[]): string {
+  if (!labels || labels.length === 0) {
+    return 'No labels found.';
+  }
+
+  const systemLabels = labels.filter((l: any) => l.type === 'system');
+  const userLabels = labels.filter((l: any) => l.type !== 'system');
+
+  let output = '**Gmail Labels**\n\n';
+
+  if (systemLabels.length > 0) {
+    output += '**System Labels:**\n';
+    systemLabels.forEach((l: any) => {
+      output += `- ${l.name} (\`${l.id}\`)\n`;
+    });
+  }
+
+  if (userLabels.length > 0) {
+    output += '\n**Custom Labels:**\n';
+    userLabels.forEach((l: any) => {
+      output += `- ${l.name} (\`${l.id}\`)\n`;
+    });
+  }
+
+  return output;
+}
+
+function formatGmailThreads(threads: any[]): string {
+  if (!threads || threads.length === 0) {
+    return 'No threads found.';
+  }
+
+  let output = `**${threads.length} thread(s)**\n\n`;
+  threads.slice(0, 20).forEach((thread: any, i: number) => {
+    output += `${i + 1}. **Thread** \`${thread.id}\`\n`;
+    if (thread.snippet) {
+      output += `   ${thread.snippet.slice(0, 100)}${thread.snippet.length > 100 ? '...' : ''}\n`;
+    }
+    output += '\n';
+  });
+
+  return output;
+}
+
+function formatGmailThreadDetail(data: any): string {
+  let output = `**Thread** \`${data.threadId}\` - ${data.messages.length} message(s)\n\n`;
+
+  data.messages.forEach((msg: any, i: number) => {
+    output += `---\n\n`;
+    output += `**Message ${i + 1}:** ${msg.subject || '(No subject)'}\n`;
+    output += `**From:** ${formatEmailSender(msg.from || '')}\n`;
+    if (msg.date) output += `**Date:** ${formatEmailDate(msg.date)}\n`;
+    output += '\n';
+    if (msg.snippet) {
+      output += `${msg.snippet.slice(0, 200)}${msg.snippet.length > 200 ? '...' : ''}\n`;
+    }
+    if (msg.id) output += `\nID: \`${msg.id}\`\n`;
+    output += '\n';
+  });
+
+  return output;
+}
+
+function formatGmailDrafts(drafts: any[]): string {
+  if (!drafts || drafts.length === 0) {
+    return 'No drafts found.';
+  }
+
+  let output = `**${drafts.length} draft(s)**\n\n`;
+  drafts.forEach((draft: any, i: number) => {
+    output += `${i + 1}. Draft ID: \`${draft.id}\`\n`;
+  });
+
+  return output;
+}
+
+function formatEmailSender(from: string): string {
+  // Extract just the name if it's "Name <email>" format
+  const match = from.match(/^"?([^"<]+)"?\s*<(.+)>$/);
+  if (match) {
+    return `**${match[1].trim()}** (${match[2]})`;
+  }
+  return from;
+}
+
+function formatEmailDate(dateStr: string): string {
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    if (isToday) {
+      return `Today at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    }
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (date.toDateString() === yesterday.toDateString()) {
+      return `Yesterday at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    }
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) +
+      ` at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  } catch {
+    return dateStr;
+  }
+}
+
+function stripHtmlTags(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 /**

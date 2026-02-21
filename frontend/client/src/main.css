@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,79 +6,84 @@
 
 @layer base {
   :root {
-    /* Neurix Visual Identity System (Default/Dark) */
-    --background: 220 16% 7%;
-    /* #0F1115 Obsidian */
-    --foreground: 0 0% 100%;
-    /* #FFFFFF Pure White */
+    /* NEBULA UI - Light Mode (Porcelain) */
+    --background: 0 0% 100%;
+    /* #FFFFFF */
+    --foreground: 240 10% 3.9%;
+    /* #09090b */
 
-    --card: 220 16% 9%;
-    /* Slightly lighter than bg */
-    --card-foreground: 0 0% 100%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
 
-    --popover: 220 16% 7%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
 
     --primary: 262 83% 58%;
-    /* #8B5CF6 Electric Purple */
-    --primary-foreground: 0 0% 100%;
+    /* Violet 600 */
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 220 16% 7%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 240 4.8% 95.9%;
+    /* Zinc 100 */
+    --secondary-foreground: 240 5.9% 10%;
 
-    --muted: 215 20% 15%;
-    --muted-foreground: 210 13% 59%;
-    /* #8899A6 Slate Grey */
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
 
-    --accent: 262 83% 58%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 215 14% 17%;
-    /* #1F2937 */
-    --input: 215 14% 17%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
     --ring: 262 83% 58%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    /* Sidebar - Midnight */
-    --sidebar-background: 0 0% 2%;
-    /* #050505 Midnight */
-    --sidebar-foreground: 210 13% 59%;
-    /* Slate Grey */
-    --sidebar-primary: 262 83% 58%;
-    /* Electric Purple */
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 14% 17%;
-    /* Hover State */
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 215 14% 17%;
-    --sidebar-ring: 262 83% 58%;
+    /* Semantic Colors */
+    --neurix-obsidian: 240 10% 3.9%;
+    --neurix-porcelain: 0 0% 100%;
+    --glass-opacity: 0.7;
+    --glass-border: 0 0% 100%;
   }
 
   .dark {
-    /* Same as root since it's a dark-only theme */
-    --background: 220 16% 7%;
-    --foreground: 0 0% 100%;
-    --card: 220 16% 9%;
-    --card-foreground: 0 0% 100%;
-    --popover: 220 16% 7%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 16% 7%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 215 20% 15%;
-    --muted-foreground: 210 13% 59%;
-    --accent: 262 83% 58%;
-    --accent-foreground: 0 0% 100%;
+    /* NEBULA UI - Dark Mode (Obsidian) */
+    --background: 240 10% 3.9%;
+    /* #09090b - Obsidian */
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 263 70% 50%;
+    /* Violet 500 */
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 240 3.7% 15.9%;
+    /* Zinc 800 */
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 215 14% 17%;
-    --input: 215 14% 17%;
-    --ring: 262 83% 58%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 263 70% 50%;
+
+    /* Semantic overrides */
+    --glass-opacity: 0.3;
+    --glass-border: 240 3.7% 15.9%;
   }
 }
 
@@ -251,16 +256,29 @@ h6 {
     @apply backdrop-blur-md bg-card/60 border border-white/5;
   }
 
-  /* Glass panel - elevated surfaces */
+  /* Glass panel - elevated surfaces (theme-aware) */
   .glass-panel {
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(245, 245, 247, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .dark .glass-panel {
     background: rgba(13, 18, 31, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
-  /* Glass panel - more prominent */
+  /* Glass panel - more prominent (theme-aware) */
   .glass-panel-elevated {
     backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    background: rgba(245, 245, 247, 0.92);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  }
+
+  .dark .glass-panel-elevated {
     background: rgba(13, 18, 31, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -673,23 +691,24 @@ h6 {
 
 
 
-/* Glassmorphism enhanced */
+/* Glassmorphism enhanced (theme-aware) */
 @layer components {
   .glass-enhanced {
-    background: rgba(13, 18, 31, 0.6);
+    background: rgba(245, 245, 247, 0.7);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  }
+
+  .dark .glass-enhanced {
+    background: rgba(13, 18, 31, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow:
       0 8px 32px rgba(0, 0, 0, 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  }
-
-  .glass-panel {
-    background: rgba(15, 17, 21, 0.8);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
   }
 }
 
