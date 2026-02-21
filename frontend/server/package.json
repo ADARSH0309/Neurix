@@ -1,0 +1,27 @@
+{
+  "name": "@neurix/mcp-chat-interface",
+  "version": "1.0.0",
+  "description": "Chat interface for MCP servers with OAuth integration",
+  "type": "module",
+  "main": "./dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/server.js",
+    "start:dev": "node --watch dist/server.js"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "openai": "^6.16.0"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
+    "@types/node": "^20.10.5",
+    "typescript": "^5.3.3"
+  }
+}

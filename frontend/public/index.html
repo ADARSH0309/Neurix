@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCP Chat Interface</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Base+Neue:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2 class="brand">Neurix</h2>
+    </div>
+    
+    <div class="server-list" id="serverList">
+      <!-- Google Drive Server -->
+      <div class="server-card" data-server="gdrive">
+        <div class="server-header">
+          <div class="server-icon gdrive">D</div>
+          <div class="server-info">
+            <h3>Google Drive</h3>
+            <p>Access & manage files</p>
+          </div>
+        </div>
+        <div class="status-badge disconnected">
+          <span class="status-dot"></span>
+          <span class="status-text">Disconnected</span>
+        </div>
+        <button class="connect-btn connect" onclick="connectServer('gdrive')">
+          Connect
+        </button>
+      </div>
+
+      <!-- Google Forms Server -->
+      <div class="server-card" data-server="gforms">
+        <div class="server-header">
+          <div class="server-icon gforms">F</div>
+          <div class="server-info">
+            <h3>Google Forms</h3>
+            <p>Create & manage forms</p>
+          </div>
+        </div>
+        <div class="status-badge disconnected">
+          <span class="status-dot"></span>
+          <span class="status-text">Disconnected</span>
+        </div>
+        <button class="connect-btn connect" onclick="connectServer('gforms')">
+          Connect
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="chat-header">
+      <h1>AI Assistant</h1>
+      <span class="connected-count" id="connectedCount">0 servers connected</span>
+    </header>
+
+    <div class="messages" id="messages">
+      <div class="welcome">
+        <h2>Welcome to Neurix</h2>
+        <p>Connect to an MCP server to start interacting with your Google services.<br>
+        AI will automatically use the right tools for your requests.</p>
+      </div>
+    </div>
+
+    <div class="chat-input-container">
+      <div class="server-selector">
+        <label>Interact with:</label>
+        <select id="targetServer">
+          <option value="">Select a connected server...</option>
+        </select>
+      </div>
+      <div class="input-wrapper">
+        <textarea
+          class="chat-input"
+          id="chatInput"
+          placeholder="Connect to a server to start chatting..."
+          rows="1"
+          disabled
+        ></textarea>
+        <button class="send-btn" id="sendBtn" disabled onclick="sendMessage()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- App Logic -->
+  <script src="js/app.js"></script>
+</body>
+</html>

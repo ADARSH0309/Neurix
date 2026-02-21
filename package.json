@@ -1,0 +1,31 @@
+{
+  "name": "neurix",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Neurix - Enterprise MCP Chat Interface Platform",
+  "scripts": {
+    "build": "pnpm -r build",
+    "build:sdk": "pnpm --filter @neurix/mcp-sdk build",
+    "build:gdrive": "pnpm --filter @neurix/gdrive-server build",
+    "build:gforms": "pnpm --filter @neurix/gforms-server build",
+    "build:gmail": "pnpm --filter @neurix/gmail-server build",
+    "build:frontend:client": "pnpm --filter client build",
+    "build:frontend:server": "pnpm --filter @neurix/mcp-chat-interface build",
+    "build:frontend": "pnpm build:frontend:client && pnpm build:frontend:server",
+    "build:backend": "pnpm build:sdk && pnpm build:gdrive && pnpm build:gforms && pnpm build:gmail",
+    "build:all": "pnpm build:backend && pnpm build:frontend",
+    "dev:gdrive": "pnpm --filter @neurix/gdrive-server start:http",
+    "dev:gforms": "pnpm --filter @neurix/gforms-server start:http",
+    "dev:gmail": "pnpm --filter @neurix/gmail-server start:http",
+    "start:frontend": "pnpm --filter @neurix/mcp-chat-interface start",
+    "clean": "pnpm -r clean"
+  },
+  "keywords": [
+    "mcp",
+    "google-drive",
+    "google-forms",
+    "chat-interface"
+  ],
+  "author": "",
+  "license": "MIT"
+}

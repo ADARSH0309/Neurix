@@ -1,0 +1,7 @@
+packages:
+  - 'frontend/client'
+  - 'frontend/server'
+  - 'backend/gdrive-server'
+  - 'backend/gforms-server'
+  - 'backend/gmail-server'
+  - 'backend/shared/mcp-sdk'

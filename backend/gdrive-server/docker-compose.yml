@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: gdrive-mcp-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - gdrive-mcp-network
+
+  gdrive-server:
+    build:
+      context: ../../
+      dockerfile: packages/gdrive-server/Dockerfile
+    container_name: gdrive-mcp-server
+    ports:
+      - "3000:3000"
+    environment:
+      # Server configuration
+      NODE_ENV: production
+      PORT: 3000
+
+      # Redis configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+      # OAuth configuration (must be provided via .env file or environment)
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:3000/oauth2callback}
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); })"]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - gdrive-mcp-network
+
+networks:
+  gdrive-mcp-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
