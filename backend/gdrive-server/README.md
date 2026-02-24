@@ -266,7 +266,7 @@ Follow the prompts to authenticate, then use MCP Inspector.
 gdrive-server/
 ├── src/
 │   ├── index.ts              # STDIO entry point with OAuth flow
-│   ├── server.ts             # GDriveServer (extends UbiqBaseServer)
+│   ├── server.ts             # GDriveServer (extends NeurixBaseServer)
 │   ├── gdrive-client.ts      # Google Drive API wrapper
 │   ├── types.ts              # TypeScript interfaces
 │   ├── oauth-setup.ts        # Manual OAuth setup script

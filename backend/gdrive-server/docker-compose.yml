@@ -21,7 +21,7 @@ services:
   gdrive-server:
     build:
       context: ../../
-      dockerfile: packages/gdrive-server/Dockerfile
+      dockerfile: Backend/gdrive-server/Dockerfile
     container_name: gdrive-mcp-server
     ports:
       - "3000:3000"

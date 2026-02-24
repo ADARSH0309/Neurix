@@ -24,7 +24,7 @@ This document provides comprehensive testing instructions for the Google Drive M
 
 3. **Build**: Ensure the server is built
    ```bash
-   pnpm --filter @ubiq/gdrive-server build
+   pnpm --filter @neurix/gdrive-server build
    ```
 
 ## Test Suites
@@ -109,7 +109,7 @@ Expected: Same 401 error
 **Test 3.1: Initiate OAuth**
 1. Open browser to: `http://localhost:3000/auth/login`
 2. Verify redirect to Google OAuth consent screen
-3. Check browser cookie: `ubiq_session` should be set
+3. Check browser cookie: `neurix_gdrive_session` should be set
 4. Note the session ID from the `state` parameter in the Google URL
 
 **Test 3.2: Complete OAuth**
@@ -120,7 +120,7 @@ Expected: Same 401 error
    - Your email address
    - Session ID
    - Session expiry time
-4. Verify `ubiq_session` cookie is present in browser
+4. Verify `neurix_gdrive_session` cookie is present in browser
 
 **Test 3.3: Verify Session in Redis**
 ```bash
@@ -134,7 +134,7 @@ Expected: JSON session object with tokens, email, authenticated=true
 **Test 3.4: Check Auth Status (Authenticated)**
 ```bash
 curl http://localhost:3000/auth/status \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID"
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID"
 ```
 Expected:
 ```json
@@ -161,7 +161,7 @@ Expected:
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{"jsonrpc":"2.0","id":1,"method":"initialize"}'
 ```
 Expected:
@@ -173,7 +173,7 @@ Expected:
     "protocolVersion": "2024-11-05",
     "capabilities": {...},
     "serverInfo": {
-      "name": "ubiq-gdrive-server",
+      "name": "neurix-gdrive-server",
       "version": "0.1.0"
     }
   }
@@ -184,7 +184,7 @@ Expected:
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
 ```
 Expected: Array of 24 tools (list_files, search_files, create_folder, upload_file, etc.)
@@ -193,7 +193,7 @@ Expected: Array of 24 tools (list_files, search_files, create_folder, upload_fil
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{"jsonrpc":"2.0","id":3,"method":"resources/list"}'
 ```
 Expected: Array of Google Drive folder resources
@@ -202,7 +202,7 @@ Expected: Array of Google Drive folder resources
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{"jsonrpc":"2.0","id":4,"method":"prompts/list"}'
 ```
 Expected: Array of prompts (organize_files, find_duplicates, storage_analysis)
@@ -211,7 +211,7 @@ Expected: Array of prompts (organize_files, find_duplicates, storage_analysis)
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{
     "jsonrpc":"2.0",
     "id":5,
@@ -228,7 +228,7 @@ Expected: List of files with metadata
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{
     "jsonrpc":"2.0",
     "id":6,
@@ -245,7 +245,7 @@ Expected: Search results with file metadata
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{
     "jsonrpc":"2.0",
     "id":7,
@@ -270,7 +270,7 @@ Expected: Google Drive account info with storage quota
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{
     "jsonrpc":"2.0",
     "id":1,
@@ -287,7 +287,7 @@ Expected: Folder ID and web link returned
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{
     "jsonrpc":"2.0",
     "id":2,
@@ -307,7 +307,7 @@ Expected: File ID, name, size, and web link
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{
     "jsonrpc":"2.0",
     "id":3,
@@ -327,7 +327,7 @@ Expected: Google Doc ID and web link
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{
     "jsonrpc":"2.0",
     "id":4,
@@ -347,7 +347,7 @@ Expected: Google Sheet ID and web link
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{
     "jsonrpc":"2.0",
     "id":5,
@@ -364,7 +364,7 @@ Expected: File content as text
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{
     "jsonrpc":"2.0",
     "id":6,
@@ -389,7 +389,7 @@ Expected: Success message "File moved to trash"
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{
     "jsonrpc":"2.0",
     "id":1,
@@ -411,7 +411,7 @@ Expected: Permission ID and details
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{
     "jsonrpc":"2.0",
     "id":2,
@@ -428,7 +428,7 @@ Expected: List of permissions with roles and emails
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{
     "jsonrpc":"2.0",
     "id":3,
@@ -478,7 +478,7 @@ Expected: Success message "Permission removed successfully"
    ```bash
    curl -X POST http://localhost:3000/ \
      -H "Content-Type: application/json" \
-     -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+     -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
      -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
    ```
 
@@ -507,14 +507,14 @@ Expected: Success message "Permission removed successfully"
 ```bash
 # After using the session, check lastAccessedAt
 curl http://localhost:3000/auth/status \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID"
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID"
 ```
 Expected: `lastAccessedAt` is updated after each request
 
 **Test 8.3: Logout**
 ```bash
 curl -X POST http://localhost:3000/auth/logout \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID"
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID"
 ```
 Expected: `{"success":true,"message":"Logged out successfully"}`
 
@@ -522,7 +522,7 @@ Expected: `{"success":true,"message":"Logged out successfully"}`
 ```bash
 # Try to use the session after logout
 curl http://localhost:3000/auth/status \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID"
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID"
 ```
 Expected: `{"authenticated":false,"message":"Session expired or invalid"}`
 
@@ -544,7 +544,7 @@ Expected: `(nil)` (key deleted)
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{"jsonrpc":"1.0","id":1,"method":"initialize"}'
 ```
 Expected: HTTP 400, JSON-RPC error code -32600
@@ -553,7 +553,7 @@ Expected: HTTP 400, JSON-RPC error code -32600
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{"jsonrpc":"2.0","id":1,"method":"unknown_method"}'
 ```
 Expected: HTTP 404, JSON-RPC error code -32601
@@ -562,7 +562,7 @@ Expected: HTTP 404, JSON-RPC error code -32601
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{
     "jsonrpc":"2.0",
     "id":1,
@@ -576,7 +576,7 @@ Expected: Zod validation error
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gdrive_session=YOUR_SESSION_ID" \
   -d '{
     "jsonrpc":"2.0",
     "id":1,

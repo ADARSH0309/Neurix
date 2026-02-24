@@ -7,8 +7,8 @@ FROM node:20-alpine
 RUN npm install -g pnpm@9.15.0
 
 # Create non-root user for security
-RUN addgroup -g 1001 -S ubiq && \
-    adduser -S ubiq -u 1001
+RUN addgroup -g 1001 -S neurix && \
+    adduser -S neurix -u 1001
 
 # Set working directory
 WORKDIR /app
@@ -19,31 +19,31 @@ COPY turbo.json ./
 COPY tsconfig.json ./
 
 # Copy package.json files
-COPY packages/sdk/package.json ./packages/sdk/
-COPY packages/gdrive-server/package.json ./packages/gdrive-server/
+COPY Backend/shared/mcp-sdk/package.json ./Backend/shared/mcp-sdk/
+COPY Backend/gdrive-server/package.json ./Backend/gdrive-server/
 
 # Install ONLY production dependencies
 # --ignore-scripts prevents husky (git hooks) from running
 RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
 # Copy built artifacts (built locally before Docker build)
-COPY packages/sdk/dist ./packages/sdk/dist
-COPY packages/sdk/package.json ./packages/sdk/
-COPY packages/gdrive-server/dist ./packages/gdrive-server/dist
-COPY packages/gdrive-server/src/http/public ./packages/gdrive-server/dist/http/public
-COPY packages/gdrive-server/package.json ./packages/gdrive-server/
+COPY Backend/shared/mcp-sdk/dist ./Backend/shared/mcp-sdk/dist
+COPY Backend/shared/mcp-sdk/package.json ./Backend/shared/mcp-sdk/
+COPY Backend/gdrive-server/dist ./Backend/gdrive-server/dist
+COPY Backend/gdrive-server/src/http/public ./Backend/gdrive-server/dist/http/public
+COPY Backend/gdrive-server/package.json ./Backend/gdrive-server/
 
 # Copy any necessary runtime files
-COPY packages/gdrive-server/docker-compose.yml ./packages/gdrive-server/
+COPY Backend/gdrive-server/docker-compose.yml ./Backend/gdrive-server/
 
-# Copy TLS certificates for Redis connection (Phase 5.1 - Week 1, Task 1.1)
-COPY packages/gdrive-server/certs ./packages/gdrive-server/certs
+# Copy TLS certificates for Redis connection
+COPY Backend/gdrive-server/certs ./Backend/gdrive-server/certs
 
 # Change ownership to non-root user
-RUN chown -R ubiq:ubiq /app
+RUN chown -R neurix:neurix /app
 
 # Switch to non-root user
-USER ubiq
+USER neurix
 
 # Expose port
 EXPOSE 3000
@@ -57,5 +57,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); })"
 
 # Start the HTTP server
-WORKDIR /app/packages/gdrive-server
+WORKDIR /app/Backend/gdrive-server
 CMD ["node", "dist/http/index.js"]

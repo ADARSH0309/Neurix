@@ -16,7 +16,7 @@ const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'none' as const,
-  maxAge: 24 * 60 * 60 * 1000,
+  maxAge: 4 * 60 * 60 * 1000, // 4 hours - matches server session absolute timeout
   domain: process.env.COOKIE_DOMAIN,
   path: '/',
 };

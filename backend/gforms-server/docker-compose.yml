@@ -21,7 +21,7 @@ services:
   gforms-server:
     build:
       context: ../../
-      dockerfile: packages/gforms-server/Dockerfile
+      dockerfile: Backend/gforms-server/Dockerfile
     container_name: gforms-mcp-server
     ports:
       - "3000:3000"

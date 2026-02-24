@@ -83,7 +83,7 @@ echo ""
 echo -e "${YELLOW}=== Suite 3: Error Handling ===${NC}"
 
 run_test "Invalid JSON-RPC version returns error" \
-  "curl -s -X POST $BASE_URL/ -H 'Content-Type: application/json' -H 'Cookie: ubiq_session=fake' -d '{\"jsonrpc\":\"1.0\",\"id\":1,\"method\":\"initialize\"}'" \
+  "curl -s -X POST $BASE_URL/ -H 'Content-Type: application/json' -H 'Cookie: neurix_gdrive_session=fake' -d '{\"jsonrpc\":\"1.0\",\"id\":1,\"method\":\"initialize\"}'" \
   "32600"
 
 run_test "Missing method returns error" \
@@ -91,7 +91,7 @@ run_test "Missing method returns error" \
   "error"
 
 run_test "Unknown method returns 404" \
-  "curl -s -X POST $BASE_URL/ -H 'Content-Type: application/json' -H 'Cookie: ubiq_session=fake-session-id' -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"unknown_method\"}'" \
+  "curl -s -X POST $BASE_URL/ -H 'Content-Type: application/json' -H 'Cookie: neurix_gdrive_session=fake-session-id' -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"unknown_method\"}'" \
   "32601"
 
 echo ""

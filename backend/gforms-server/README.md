@@ -119,7 +119,7 @@ Add to your `claude_desktop_config.json`:
     "gforms": {
       "command": "node",
       "args": [
-        "/absolute/path/to/ubiq-mcp-server-dev/packages/gforms-server/dist/index.js"
+        "/absolute/path/to/neurix/Backend/gforms-server/dist/index.js"
       ],
       "env": {
         "GOOGLE_CLIENT_ID": "your-client-id",

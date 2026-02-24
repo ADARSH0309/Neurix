@@ -24,7 +24,7 @@ This document provides comprehensive testing instructions for Phase 2 of the Goo
 
 3. **Build**: Ensure the server is built
    ```bash
-   pnpm --filter @ubiq/gforms-server build
+   pnpm --filter @neurix/gforms-server build
    ```
 
 ## Test Suites
@@ -109,7 +109,7 @@ Expected: Same 401 error
 **Test 3.1: Initiate OAuth**
 1. Open browser to: `http://localhost:3000/auth/login`
 2. Verify redirect to Google OAuth consent screen
-3. Check browser cookie: `ubiq_session` should be set
+3. Check browser cookie: `neurix_gforms_session` should be set
 4. Note the session ID from the `state` parameter in the Google URL
 
 **Test 3.2: Complete OAuth**
@@ -120,7 +120,7 @@ Expected: Same 401 error
    - Your email address
    - Session ID
    - Session expiry time
-4. Verify `ubiq_session` cookie is present in browser
+4. Verify `neurix_gforms_session` cookie is present in browser
 
 **Test 3.3: Verify Session in Redis**
 ```bash
@@ -134,7 +134,7 @@ Expected: JSON session object with tokens, email, authenticated=true
 **Test 3.4: Check Auth Status (Authenticated)**
 ```bash
 curl http://localhost:3000/auth/status \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID"
+  -H "Cookie: neurix_gforms_session=YOUR_SESSION_ID"
 ```
 Expected:
 ```json
@@ -161,7 +161,7 @@ Expected:
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gforms_session=YOUR_SESSION_ID" \
   -d '{"jsonrpc":"2.0","id":1,"method":"initialize"}'
 ```
 Expected:
@@ -184,7 +184,7 @@ Expected:
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gforms_session=YOUR_SESSION_ID" \
   -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
 ```
 Expected: Array of 9 tools (list_forms, get_form, get_form_questions, list_responses, get_response, create_form, add_question, delete_item, update_form_title)
@@ -193,7 +193,7 @@ Expected: Array of 9 tools (list_forms, get_form, get_form_questions, list_respo
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gforms_session=YOUR_SESSION_ID" \
   -d '{"jsonrpc":"2.0","id":3,"method":"resources/list"}'
 ```
 Expected: Array of Google Form resources
@@ -202,7 +202,7 @@ Expected: Array of Google Form resources
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gforms_session=YOUR_SESSION_ID" \
   -d '{"jsonrpc":"2.0","id":4,"method":"prompts/list"}'
 ```
 Expected: Array of prompts (create_survey, analyze_responses)
@@ -211,7 +211,7 @@ Expected: Array of prompts (create_survey, analyze_responses)
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gforms_session=YOUR_SESSION_ID" \
   -d '{
     "jsonrpc":"2.0",
     "id":5,
@@ -258,7 +258,7 @@ Expected: List of forms with metadata
    ```bash
    curl -X POST http://localhost:3000/ \
      -H "Content-Type: application/json" \
-     -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+     -H "Cookie: neurix_gforms_session=YOUR_SESSION_ID" \
      -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
    ```
 
@@ -287,14 +287,14 @@ Expected: List of forms with metadata
 ```bash
 # After using the session, check lastAccessedAt
 curl http://localhost:3000/auth/status \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID"
+  -H "Cookie: neurix_gforms_session=YOUR_SESSION_ID"
 ```
 Expected: `lastAccessedAt` is updated after each request
 
 **Test 6.3: Logout**
 ```bash
 curl -X POST http://localhost:3000/auth/logout \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID"
+  -H "Cookie: neurix_gforms_session=YOUR_SESSION_ID"
 ```
 Expected: `{"success":true,"message":"Logged out successfully"}`
 
@@ -302,7 +302,7 @@ Expected: `{"success":true,"message":"Logged out successfully"}`
 ```bash
 # Try to use the session after logout
 curl http://localhost:3000/auth/status \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID"
+  -H "Cookie: neurix_gforms_session=YOUR_SESSION_ID"
 ```
 Expected: `{"authenticated":false,"message":"Session expired or invalid"}`
 
@@ -324,7 +324,7 @@ Expected: `(nil)` (key deleted)
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gforms_session=YOUR_SESSION_ID" \
   -d '{"jsonrpc":"1.0","id":1,"method":"initialize"}'
 ```
 Expected: HTTP 400, JSON-RPC error code -32600
@@ -333,7 +333,7 @@ Expected: HTTP 400, JSON-RPC error code -32600
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gforms_session=YOUR_SESSION_ID" \
   -d '{"jsonrpc":"2.0","id":1,"method":"unknown_method"}'
 ```
 Expected: HTTP 404, JSON-RPC error code -32601
@@ -342,7 +342,7 @@ Expected: HTTP 404, JSON-RPC error code -32601
 ```bash
 curl -X POST http://localhost:3000/ \
   -H "Content-Type: application/json" \
-  -H "Cookie: ubiq_session=YOUR_SESSION_ID" \
+  -H "Cookie: neurix_gforms_session=YOUR_SESSION_ID" \
   -d '{
     "jsonrpc":"2.0",
     "id":1,

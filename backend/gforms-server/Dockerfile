@@ -7,8 +7,8 @@ FROM node:20-alpine
 RUN npm install -g pnpm@9.15.0
 
 # Create non-root user for security
-RUN addgroup -g 1001 -S ubiq && \
-    adduser -S ubiq -u 1001
+RUN addgroup -g 1001 -S neurix && \
+    adduser -S neurix -u 1001
 
 # Set working directory
 WORKDIR /app
@@ -19,31 +19,31 @@ COPY turbo.json ./
 COPY tsconfig.json ./
 
 # Copy package.json files
-COPY packages/sdk/package.json ./packages/sdk/
-COPY packages/gforms-server/package.json ./packages/gforms-server/
+COPY Backend/shared/mcp-sdk/package.json ./Backend/shared/mcp-sdk/
+COPY Backend/gforms-server/package.json ./Backend/gforms-server/
 
 # Install ONLY production dependencies
 # --ignore-scripts prevents husky (git hooks) from running
 RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
 # Copy built artifacts (built locally before Docker build)
-COPY packages/sdk/dist ./packages/sdk/dist
-COPY packages/sdk/package.json ./packages/sdk/
-COPY packages/gforms-server/dist ./packages/gforms-server/dist
-COPY packages/gforms-server/src/http/public ./packages/gforms-server/dist/http/public
-COPY packages/gforms-server/package.json ./packages/gforms-server/
+COPY Backend/shared/mcp-sdk/dist ./Backend/shared/mcp-sdk/dist
+COPY Backend/shared/mcp-sdk/package.json ./Backend/shared/mcp-sdk/
+COPY Backend/gforms-server/dist ./Backend/gforms-server/dist
+COPY Backend/gforms-server/src/http/public ./Backend/gforms-server/dist/http/public
+COPY Backend/gforms-server/package.json ./Backend/gforms-server/
 
 # Copy any necessary runtime files
-COPY packages/gforms-server/docker-compose.yml ./packages/gforms-server/
+COPY Backend/gforms-server/docker-compose.yml ./Backend/gforms-server/
 
-# Copy TLS certificates for Redis connection (Phase 5.1 - Week 1, Task 1.1)
-COPY packages/gforms-server/certs ./packages/gforms-server/certs
+# Copy TLS certificates for Redis connection
+COPY Backend/gforms-server/certs ./Backend/gforms-server/certs
 
 # Change ownership to non-root user
-RUN chown -R ubiq:ubiq /app
+RUN chown -R neurix:neurix /app
 
 # Switch to non-root user
-USER ubiq
+USER neurix
 
 # Expose port
 EXPOSE 3000
@@ -57,5 +57,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); })"
 
 # Start the HTTP server
-WORKDIR /app/packages/gforms-server
+WORKDIR /app/Backend/gforms-server
 CMD ["node", "dist/http/index.js"]

@@ -37,6 +37,39 @@ export interface Logger {
 export type { Tool, Resource, Prompt, CallToolResult, ReadResourceResult, GetPromptResult };
 
 /**
+ * Relaxed types for server implementations.
+ * These accept plain `string` where the MCP SDK expects string literals
+ * (e.g., "text", "object", "user"). The base class handlers cast them
+ * to the strict SDK types before returning to the protocol layer.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface LooseToolDefinition {
+  name: string;
+  description?: string;
+  inputSchema: {
+    type: string;
+    properties?: Record<string, any>;
+    required?: string[];
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export interface LooseCallToolResult {
+  content: Array<{ type: string; [key: string]: unknown }>;
+  isError?: boolean;
+  [key: string]: unknown;
+}
+
+export interface LooseGetPromptResult {
+  messages: Array<{
+    role: string;
+    content: { type: string; [key: string]: unknown } | string;
+  }>;
+  [key: string]: unknown;
+}
+
+/**
  * Base server class for Neurix MCP servers
  * Provides common functionality for building MCP-compliant servers
  */
@@ -109,17 +142,17 @@ export abstract class NeurixBaseServer {
   }
 
   private setupHandlers(): void {
-    // List tools handler
+    // List tools handler - cast loose tool definitions to strict SDK types
     this.server.setRequestHandler(ListToolsRequestSchema, async () => {
       const tools = await this.listTools();
-      return { tools };
+      return { tools: tools as Tool[] };
     });
 
-    // Call tool handler
+    // Call tool handler - cast loose result to strict SDK type
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const { name, arguments: args } = request.params;
       const result = await this.callTool(name, args || {});
-      return result;
+      return result as CallToolResult;
     });
 
     // List resources handler
@@ -141,11 +174,11 @@ export abstract class NeurixBaseServer {
       return { prompts };
     });
 
-    // Get prompt handler
+    // Get prompt handler - cast loose result to strict SDK type
     this.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
       const { name, arguments: args } = request.params;
       const result = await this.getPrompt(name, args || {});
-      return result;
+      return result as GetPromptResult;
     });
   }
 
@@ -168,23 +201,32 @@ export abstract class NeurixBaseServer {
   }
 
   /**
+   * Alias for run() - start the server with STDIO transport
+   */
+  async start(): Promise<void> {
+    return this.run();
+  }
+
+  /**
    * Get the underlying MCP server instance
    */
   getServer(): Server {
     return this.server;
   }
 
-  // Abstract methods to be implemented by subclasses
+  // Abstract methods to be implemented by subclasses.
+  // Use loose types so servers can return plain string literals (e.g., type: 'text')
+  // without needing `as const` assertions. The handlers cast to strict SDK types.
 
   /**
    * Return the list of tools this server provides
    */
-  protected abstract listTools(): Promise<Tool[]>;
+  protected abstract listTools(): Promise<LooseToolDefinition[]>;
 
   /**
    * Handle a tool call
    */
-  protected abstract callTool(name: string, args: Record<string, unknown>): Promise<CallToolResult>;
+  protected abstract callTool(name: string, args: Record<string, unknown>): Promise<LooseCallToolResult>;
 
   /**
    * Return the list of resources this server provides
@@ -204,7 +246,7 @@ export abstract class NeurixBaseServer {
   /**
    * Get a prompt by name with arguments
    */
-  protected abstract getPrompt(name: string, args: Record<string, unknown>): Promise<GetPromptResult>;
+  protected abstract getPrompt(name: string, args: Record<string, unknown>): Promise<LooseGetPromptResult>;
 }
 
 // Re-export useful types from MCP SDK

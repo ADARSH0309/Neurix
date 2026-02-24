@@ -31,7 +31,7 @@ const COOKIE_OPTIONS = {
   httpOnly: true, // Prevent JavaScript access
   secure: process.env.NODE_ENV === 'production', // HTTPS only in production
   sameSite: 'none' as const, // Allow cross-origin requests (required for MCP Inspector)
-  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  maxAge: 4 * 60 * 60 * 1000, // 4 hours - matches server session absolute timeout
   domain: process.env.COOKIE_DOMAIN, // Optional: set domain for production
   path: '/', // Cookie available on all paths
 };

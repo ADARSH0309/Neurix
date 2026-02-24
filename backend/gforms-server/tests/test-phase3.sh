@@ -30,7 +30,7 @@ if [ -z "$SESSION_COOKIE" ]; then
   echo "1. Open $BASE_URL/test in browser"
   echo "2. Complete OAuth login"
   echo "3. Open DevTools → Application → Cookies"
-  echo "4. Copy value of 'ubiq_session' cookie"
+  echo "4. Copy value of 'neurix_gforms_session' cookie"
   echo ""
   echo "Example:"
   echo "  $0 abc123-def456-ghi789"
@@ -96,7 +96,7 @@ run_test() {
 
 run_test "1" "Generate Bearer Token" 200 \
   -X POST "$BASE_URL/api/generate-token" \
-  -H "Cookie: ubiq_session=$SESSION_COOKIE" \
+  -H "Cookie: neurix_gforms_session=$SESSION_COOKIE" \
   -H "Content-Type: application/json"
 
 # Extract token for later tests
@@ -119,7 +119,7 @@ fi
 
 run_test "2" "List Tokens" 200 \
   "$BASE_URL/api/tokens" \
-  -H "Cookie: ubiq_session=$SESSION_COOKIE"
+  -H "Cookie: neurix_gforms_session=$SESSION_COOKIE"
 
 #=============================================
 # Test 3: Get Token Info
@@ -127,7 +127,7 @@ run_test "2" "List Tokens" 200 \
 
 run_test "3" "Get Token Info" 200 \
   "$BASE_URL/api/token/$TOKEN" \
-  -H "Cookie: ubiq_session=$SESSION_COOKIE"
+  -H "Cookie: neurix_gforms_session=$SESSION_COOKIE"
 
 #=============================================
 # Test 4: Bearer Token Auth - Initialize
@@ -224,7 +224,7 @@ run_test "8" "Invalid Token Rejected" 401 \
 
 run_test "9" "Cookie Auth Still Works" 200 \
   -X POST "$BASE_URL/" \
-  -H "Cookie: ubiq_session=$SESSION_COOKIE" \
+  -H "Cookie: neurix_gforms_session=$SESSION_COOKIE" \
   -H "Content-Type: application/json" \
   -d '{
     "jsonrpc": "2.0",
@@ -251,7 +251,7 @@ run_test "10" "No Auth Rejected" 401 \
 
 run_test "11" "Revoke Token" 200 \
   -X DELETE "$BASE_URL/api/token/$TOKEN" \
-  -H "Cookie: ubiq_session=$SESSION_COOKIE"
+  -H "Cookie: neurix_gforms_session=$SESSION_COOKIE"
 
 #=============================================
 # Test 12: Revoked Token Rejected
