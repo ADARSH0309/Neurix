@@ -26,14 +26,11 @@ const DEFAULT_ALLOWED_URIS = [
   'http://127.0.0.1:3000/test',
 ];
 
-const PRODUCTION_ALLOWED_URIS = [
-  'https://gdrive-mcp.daffyos.in/test',
-  'https://gdrive-agent-dev.daffyos.in',
-  'https://gdrive-agent-dev.daffyos.in/callback',
-  'https://gdrive-agent-dev.daffyos.in/oauth/callback',
-  'https://gdrive-agent-dev.daffyos.in/test',
-];
-
+/**
+ * Parse additional allowed redirect URIs from environment variable.
+ * Set ALLOWED_REDIRECT_URIS to a comma-separated list of production URIs.
+ * Example: ALLOWED_REDIRECT_URIS=https://gdrive-mcp.daffyos.in/test,https://gdrive-agent-dev.daffyos.in
+ */
 function getAdditionalAllowedUris(): string[] {
   const envUris = process.env.ALLOWED_REDIRECT_URIS;
 
@@ -49,13 +46,7 @@ function getAdditionalAllowedUris(): string[] {
 
 export function getAllowedRedirectUris(): string[] {
   const allowedUris = [...DEFAULT_ALLOWED_URIS];
-
-  if (process.env.NODE_ENV === 'production') {
-    allowedUris.push(...PRODUCTION_ALLOWED_URIS);
-  }
-
   allowedUris.push(...getAdditionalAllowedUris());
-
   return allowedUris;
 }
 

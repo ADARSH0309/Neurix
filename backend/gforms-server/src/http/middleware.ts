@@ -4,6 +4,30 @@ import cors from 'cors';
 import { requestIdMiddleware, getRequestId } from './middleware/request-id.js';
 
 /**
+ * Parse additional CORS origins from environment variable.
+ */
+function getAdditionalCorsOrigins(): string[] {
+  const origins = process.env.CORS_ALLOWED_ORIGINS;
+  if (!origins) return [];
+  return origins.split(',').map(o => o.trim()).filter(Boolean);
+}
+
+/**
+ * Check if an origin is allowed by CORS policy.
+ */
+export function isAllowedOrigin(origin: string): boolean {
+  if (origin === 'https://inspector.modelcontextprotocol.io') return true;
+  if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) return true;
+  const serverUrl = process.env.SERVER_URL;
+  if (serverUrl && origin === serverUrl) return true;
+  const additionalOrigins = getAdditionalCorsOrigins();
+  for (const allowed of additionalOrigins) {
+    if (origin === allowed || origin.startsWith(allowed)) return true;
+  }
+  return false;
+}
+
+/**
  * Configure CORS middleware
  * Allows MCP Inspector and browser-based clients
  *
@@ -24,37 +48,9 @@ export const corsMiddleware = cors({
       return callback(new Error('No Origin header - requests must come from a browser with Origin header'));
     }
 
-    // Allow official MCP Inspector
-    if (origin === 'https://inspector.modelcontextprotocol.io') {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
-
-    // Allow any localhost origin (for MCP Inspector running locally)
-    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
-      return callback(null, true);
-    }
-
-    // Allow the server's own origin (for /test page)
-    // Support both environment variable and dynamically constructed URL
-    const serverUrl = process.env.SERVER_URL;
-    if (serverUrl && origin === serverUrl) {
-      return callback(null, true);
-    }
-
-    // Allow same-origin requests (test page accessing MCP endpoint on same domain)
-    // Format: https://gforms-mcp.daffyos.in
-    if (origin.startsWith('https://gforms-mcp.daffyos.in') ||
-        origin.startsWith('http://gforms-mcp.daffyos.in')) {
-      return callback(null, true);
-    }
-
-    // Allow gforms-agent-dev domain
-    if (origin.startsWith('https://gforms-agent-dev.daffyos.in') ||
-        origin.startsWith('http://gforms-agent-dev.daffyos.in')) {
-      return callback(null, true);
-    }
-
-    // Reject other origins
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true, // Allow cookies
@@ -100,35 +96,9 @@ export const oauthRegisterCorsMiddleware = cors({
       return callback(null, true);
     }
 
-    // Allow official MCP Inspector
-    if (origin === 'https://inspector.modelcontextprotocol.io') {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
-
-    // Allow any localhost origin (for MCP Inspector running locally)
-    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
-      return callback(null, true);
-    }
-
-    // Allow the server's own origin (for /test page)
-    const serverUrl = process.env.SERVER_URL;
-    if (serverUrl && origin === serverUrl) {
-      return callback(null, true);
-    }
-
-    // Allow same-origin requests
-    if (origin.startsWith('https://gforms-mcp.daffyos.in') ||
-        origin.startsWith('http://gforms-mcp.daffyos.in')) {
-      return callback(null, true);
-    }
-
-    // Allow gforms-agent-dev domain
-    if (origin.startsWith('https://gforms-agent-dev.daffyos.in') ||
-        origin.startsWith('http://gforms-agent-dev.daffyos.in')) {
-      return callback(null, true);
-    }
-
-    // Reject other origins
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true, // Allow cookies for authenticated flows
@@ -158,35 +128,9 @@ export const oauthTokenCorsMiddleware = cors({
       return callback(null, true);
     }
 
-    // Allow official MCP Inspector
-    if (origin === 'https://inspector.modelcontextprotocol.io') {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
-
-    // Allow any localhost origin (for MCP Inspector running locally)
-    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
-      return callback(null, true);
-    }
-
-    // Allow the server's own origin (for /test page)
-    const serverUrl = process.env.SERVER_URL;
-    if (serverUrl && origin === serverUrl) {
-      return callback(null, true);
-    }
-
-    // Allow same-origin requests
-    if (origin.startsWith('https://gforms-mcp.daffyos.in') ||
-        origin.startsWith('http://gforms-mcp.daffyos.in')) {
-      return callback(null, true);
-    }
-
-    // Allow gforms-agent-dev domain
-    if (origin.startsWith('https://gforms-agent-dev.daffyos.in') ||
-        origin.startsWith('http://gforms-agent-dev.daffyos.in')) {
-      return callback(null, true);
-    }
-
-    // Reject other origins
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true, // Allow cookies for authenticated flows
@@ -225,6 +169,24 @@ export const authBodyParser: RequestHandler[] = [
 
 // Default for other POST routes: 100KB limit
 export const defaultJsonParser = express.json({ limit: '100kb' });
+
+/**
+ * CSRF Protection middleware
+ */
+export function csrfProtection(req: Request, res: Response, next: NextFunction): void {
+  if (req.headers.authorization?.startsWith('Bearer ')) return next();
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+  const origin = req.headers.origin;
+  if (!origin) {
+    res.status(403).json({ error: 'Forbidden', message: 'Missing Origin header' });
+    return;
+  }
+  if (!isAllowedOrigin(origin)) {
+    res.status(403).json({ error: 'Forbidden', message: 'Invalid origin' });
+    return;
+  }
+  next();
+}
 
 /**
  * Request logging middleware

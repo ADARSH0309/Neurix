@@ -69,4 +69,7 @@ export interface SessionManager {
 
   /** Refresh session expiry (extend TTL) */
   refreshSession(sessionId: string): Promise<Session | null>;
+
+  /** Regenerate session ID to prevent session fixation attacks */
+  regenerateSession(oldSessionId: string): Promise<Session>;
 }

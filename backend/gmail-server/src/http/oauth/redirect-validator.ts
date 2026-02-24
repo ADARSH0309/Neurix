@@ -26,14 +26,10 @@ const DEFAULT_ALLOWED_URIS = [
   'http://127.0.0.1:8082/test',
 ];
 
-const PRODUCTION_ALLOWED_URIS = [
-  'https://gmail-mcp.daffyos.in/test',
-  'https://gmail-agent-dev.daffyos.in',
-  'https://gmail-agent-dev.daffyos.in/callback',
-  'https://gmail-agent-dev.daffyos.in/oauth/callback',
-  'https://gmail-agent-dev.daffyos.in/test',
-];
-
+/**
+ * Parse additional allowed redirect URIs from environment variable.
+ * Set ALLOWED_REDIRECT_URIS to a comma-separated list of production URIs.
+ */
 function getAdditionalAllowedUris(): string[] {
   const envUris = process.env.ALLOWED_REDIRECT_URIS;
 
@@ -49,13 +45,7 @@ function getAdditionalAllowedUris(): string[] {
 
 export function getAllowedRedirectUris(): string[] {
   const allowedUris = [...DEFAULT_ALLOWED_URIS];
-
-  if (process.env.NODE_ENV === 'production') {
-    allowedUris.push(...PRODUCTION_ALLOWED_URIS);
-  }
-
   allowedUris.push(...getAdditionalAllowedUris());
-
   return allowedUris;
 }
 

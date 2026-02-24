@@ -4,6 +4,41 @@ import cors from 'cors';
 import { requestIdMiddleware, getRequestId } from './middleware/request-id.js';
 
 /**
+ * Parse additional CORS origins from environment variable.
+ * Expected format: comma-separated list of origins.
+ * Example: CORS_ALLOWED_ORIGINS=https://gdrive-mcp.daffyos.in,https://gdrive-agent-dev.daffyos.in
+ */
+function getAdditionalCorsOrigins(): string[] {
+  const origins = process.env.CORS_ALLOWED_ORIGINS;
+  if (!origins) return [];
+  return origins.split(',').map(o => o.trim()).filter(Boolean);
+}
+
+/**
+ * Check if an origin is allowed by CORS policy.
+ * Allows MCP Inspector, localhost, SERVER_URL, and any origins in CORS_ALLOWED_ORIGINS.
+ */
+export function isAllowedOrigin(origin: string): boolean {
+  // Allow official MCP Inspector
+  if (origin === 'https://inspector.modelcontextprotocol.io') return true;
+
+  // Allow any localhost origin (for MCP Inspector running locally)
+  if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) return true;
+
+  // Allow the server's own origin (for /test page)
+  const serverUrl = process.env.SERVER_URL;
+  if (serverUrl && origin === serverUrl) return true;
+
+  // Allow origins from CORS_ALLOWED_ORIGINS env var
+  const additionalOrigins = getAdditionalCorsOrigins();
+  for (const allowed of additionalOrigins) {
+    if (origin === allowed || origin.startsWith(allowed)) return true;
+  }
+
+  return false;
+}
+
+/**
  * Configure CORS middleware
  * Allows MCP Inspector and browser-based clients
  *
@@ -13,44 +48,11 @@ import { requestIdMiddleware, getRequestId } from './middleware/request-id.js';
  */
 export const corsMiddleware = cors({
   origin: (origin, callback) => {
-    // Phase 5.1 - Week 2, Task 2.3: CORS Hardening (Issue #8)
-    // Only allow no-origin requests for specific safe endpoints
     if (!origin) {
-      // IMPORTANT: We need access to req to check the path, but cors library
-      // doesn't provide it directly in the origin function. We'll use a different
-      // approach: use dynamic CORS based on path in the route configuration instead.
-      // For now, reject no-origin requests (except for SSE/curl which need them).
-      // This is more secure - legitimate browser requests always have Origin header.
       return callback(new Error('No Origin header - requests must come from a browser with Origin header'));
     }
 
-    // Allow official MCP Inspector
-    if (origin === 'https://inspector.modelcontextprotocol.io') {
-      return callback(null, true);
-    }
-
-    // Allow any localhost origin (for MCP Inspector running locally)
-    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
-      return callback(null, true);
-    }
-
-    // Allow the server's own origin (for /test page)
-    // Support both environment variable and dynamically constructed URL
-    const serverUrl = process.env.SERVER_URL;
-    if (serverUrl && origin === serverUrl) {
-      return callback(null, true);
-    }
-
-    // Allow same-origin requests (test page accessing MCP endpoint on same domain)
-    // Format: https://gdrive-mcp.daffyos.in
-    if (origin.startsWith('https://gdrive-mcp.daffyos.in') ||
-        origin.startsWith('http://gdrive-mcp.daffyos.in')) {
-      return callback(null, true);
-    }
-
-    // Allow gdrive-agent-dev domain
-    if (origin.startsWith('https://gdrive-agent-dev.daffyos.in') ||
-        origin.startsWith('http://gdrive-agent-dev.daffyos.in')) {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
 
@@ -100,31 +102,7 @@ export const oauthRegisterCorsMiddleware = cors({
       return callback(null, true);
     }
 
-    // Allow official MCP Inspector
-    if (origin === 'https://inspector.modelcontextprotocol.io') {
-      return callback(null, true);
-    }
-
-    // Allow any localhost origin (for MCP Inspector running locally)
-    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
-      return callback(null, true);
-    }
-
-    // Allow the server's own origin (for /test page)
-    const serverUrl = process.env.SERVER_URL;
-    if (serverUrl && origin === serverUrl) {
-      return callback(null, true);
-    }
-
-    // Allow same-origin requests
-    if (origin.startsWith('https://gdrive-mcp.daffyos.in') ||
-        origin.startsWith('http://gdrive-mcp.daffyos.in')) {
-      return callback(null, true);
-    }
-
-    // Allow gdrive-agent-dev domain
-    if (origin.startsWith('https://gdrive-agent-dev.daffyos.in') ||
-        origin.startsWith('http://gdrive-agent-dev.daffyos.in')) {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
 
@@ -144,12 +122,7 @@ export const oauthRegisterCorsMiddleware = cors({
  * 1. Server-to-server token exchange (no Origin header) - RFC 6749 standard behavior
  * 2. Browser-based clients like MCP Inspector (with Origin header + CORS preflight)
  *
- * This middleware allows the /api/generate-token endpoint to be used by both traditional
- * OAuth servers and modern browser-based MCP clients.
- *
  * SECURITY FIX: Phase 2 - Fix /api/generate-token 500 error for server-to-server requests
- * Production Issue: Users connecting from different systems get 500 error after OAuth callback
- * Error: "No Origin header - requests must come from a browser with Origin header"
  */
 export const oauthTokenCorsMiddleware = cors({
   origin: (origin, callback) => {
@@ -158,31 +131,7 @@ export const oauthTokenCorsMiddleware = cors({
       return callback(null, true);
     }
 
-    // Allow official MCP Inspector
-    if (origin === 'https://inspector.modelcontextprotocol.io') {
-      return callback(null, true);
-    }
-
-    // Allow any localhost origin (for MCP Inspector running locally)
-    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
-      return callback(null, true);
-    }
-
-    // Allow the server's own origin (for /test page)
-    const serverUrl = process.env.SERVER_URL;
-    if (serverUrl && origin === serverUrl) {
-      return callback(null, true);
-    }
-
-    // Allow same-origin requests
-    if (origin.startsWith('https://gdrive-mcp.daffyos.in') ||
-        origin.startsWith('http://gdrive-mcp.daffyos.in')) {
-      return callback(null, true);
-    }
-
-    // Allow gdrive-agent-dev domain
-    if (origin.startsWith('https://gdrive-agent-dev.daffyos.in') ||
-        origin.startsWith('http://gdrive-agent-dev.daffyos.in')) {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
 
@@ -225,6 +174,29 @@ export const authBodyParser: RequestHandler[] = [
 
 // Default for other POST routes: 100KB limit
 export const defaultJsonParser = express.json({ limit: '100kb' });
+
+/**
+ * CSRF Protection middleware
+ * Validates Origin header on state-changing requests to prevent cross-site request forgery.
+ * Skips Bearer token auth (not vulnerable to CSRF) and safe HTTP methods.
+ */
+export function csrfProtection(req: Request, res: Response, next: NextFunction): void {
+  // Skip for Bearer token auth (not vulnerable to CSRF)
+  if (req.headers.authorization?.startsWith('Bearer ')) return next();
+  // Skip safe methods
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+  // Validate Origin header
+  const origin = req.headers.origin;
+  if (!origin) {
+    res.status(403).json({ error: 'Forbidden', message: 'Missing Origin header' });
+    return;
+  }
+  if (!isAllowedOrigin(origin)) {
+    res.status(403).json({ error: 'Forbidden', message: 'Invalid origin' });
+    return;
+  }
+  next();
+}
 
 /**
  * Request logging middleware

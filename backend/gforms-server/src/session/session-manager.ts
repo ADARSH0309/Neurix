@@ -391,6 +391,40 @@ export class SessionManager implements ISessionManager {
   }
 
   /**
+   * Regenerate session ID to prevent session fixation attacks.
+   * Creates a new session with a new ID, copies data from the old session, and deletes the old one.
+   */
+  async regenerateSession(oldSessionId: string): Promise<Session> {
+    const oldSession = await this.getSession(oldSessionId);
+    if (!oldSession) {
+      throw new Error('Cannot regenerate: session not found or expired');
+    }
+
+    const newSession = await this.createSession({
+      ttl: oldSession.expiresAt - Date.now(),
+      metadata: oldSession.metadata,
+    });
+
+    if (oldSession.tokens) {
+      await this.storeTokens(newSession.id, oldSession.tokens, oldSession.userEmail);
+    }
+
+    await this.deleteSession(oldSessionId);
+
+    const regeneratedSession = await this.getSession(newSession.id);
+
+    console.log(JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'info',
+      message: 'Session regenerated (fixation prevention)',
+      oldSessionId,
+      newSessionId: newSession.id,
+    }));
+
+    return regeneratedSession || newSession;
+  }
+
+  /**
    * Delete a session
    */
   async deleteSession(sessionId: string): Promise<boolean> {

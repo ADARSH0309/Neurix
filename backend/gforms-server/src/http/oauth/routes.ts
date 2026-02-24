@@ -294,8 +294,9 @@ export async function handleOAuthCallback(req: Request, res: Response): Promise<
     // Store tokens in session
     await sessionManager.storeTokens(sessionId, tokens, userInfo.email);
 
-    // Set session cookie (refresh it)
-    res.cookie(COOKIE_NAME, sessionId, COOKIE_OPTIONS);
+    // Regenerate session to prevent session fixation attacks
+    const newSession = await sessionManager.regenerateSession(sessionId);
+    res.cookie(COOKIE_NAME, newSession.id, COOKIE_OPTIONS);
 
     // Check if this was a PKCE flow (MCP Inspector)
     const isPKCEFlow = session.metadata?.isPKCEFlow;

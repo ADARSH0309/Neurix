@@ -15,6 +15,7 @@ import {
   requestLogger,
   errorHandler,
   requestIdMiddleware,
+  csrfProtection,
 } from './middleware.js';
 import {
   authLimiter,
@@ -418,19 +419,15 @@ export async function createHttpServer(config: McpServerConfig): Promise<Express
   app.get('/oauth2callback', authLimiter, validateQuery(schemas.oauthCallback), handleOAuthCallback);
   app.get('/auth/status', handleAuthStatus);
   // Phase 5.1 - Task 1.3: Granular 100KB default limit for logout
-  app.post('/auth/logout', defaultJsonParser, handleLogout);
+  app.post('/auth/logout', csrfProtection, defaultJsonParser, handleLogout);
 
   // Token management endpoints (Phase 3 - Bearer Token Auth)
-  // Note: /api/generate-token was moved BEFORE global CORS middleware (see line ~330) to support server-to-server token exchange
-  // Note: GET /api/tokens moved before global CORS middleware (line 200) for browser accessibility
-  app.delete('/api/tokens', handleRevokeAllTokens);
+  app.delete('/api/tokens', csrfProtection, handleRevokeAllTokens);
   app.get('/api/token/:token', validateParams(schemas.tokenParam), handleGetTokenInfo);
-  app.delete('/api/token/:token', validateParams(schemas.tokenParam), handleRevokeToken);
+  app.delete('/api/token/:token', csrfProtection, validateParams(schemas.tokenParam), handleRevokeToken);
 
   // GDPR Compliance endpoints (Phase 5.2 - GDPR Article 17 & 20)
-  // DELETE: Right to Erasure (Article 17) - Deletes all user data and revokes OAuth tokens
-  // GET: Right to Portability (Article 20) - Exports user data in machine-readable JSON format
-  app.delete('/api/gdpr/user-data', requireAuth(), gdprDeletionLimiter, handleDeleteUserData);
+  app.delete('/api/gdpr/user-data', csrfProtection, requireAuth(), gdprDeletionLimiter, handleDeleteUserData);
   app.get('/api/gdpr/user-data', requireAuth(), gdprExportLimiter, handleExportUserData);
 
   // SSE endpoints for MCP Inspector (Phase 3 - MCP HTTP+SSE Transport)

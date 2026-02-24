@@ -26,14 +26,10 @@ const DEFAULT_ALLOWED_URIS = [
   'http://127.0.0.1:3000/test',
 ];
 
-const PRODUCTION_ALLOWED_URIS = [
-  'https://gcalendar-mcp.daffyos.in/test',
-  'https://gcalendar-agent-dev.daffyos.in',
-  'https://gcalendar-agent-dev.daffyos.in/callback',
-  'https://gcalendar-agent-dev.daffyos.in/oauth/callback',
-  'https://gcalendar-agent-dev.daffyos.in/test',
-];
-
+/**
+ * Parse additional allowed redirect URIs from environment variable.
+ * Set ALLOWED_REDIRECT_URIS to a comma-separated list of production URIs.
+ */
 function getAdditionalAllowedUris(): string[] {
   const envUris = process.env.ALLOWED_REDIRECT_URIS;
   if (!envUris || envUris.trim() === '') return [];
@@ -42,9 +38,6 @@ function getAdditionalAllowedUris(): string[] {
 
 export function getAllowedRedirectUris(): string[] {
   const allowedUris = [...DEFAULT_ALLOWED_URIS];
-  if (process.env.NODE_ENV === 'production') {
-    allowedUris.push(...PRODUCTION_ALLOWED_URIS);
-  }
   allowedUris.push(...getAdditionalAllowedUris());
   return allowedUris;
 }

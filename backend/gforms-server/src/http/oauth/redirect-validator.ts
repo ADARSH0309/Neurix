@@ -52,26 +52,9 @@ const DEFAULT_ALLOWED_URIS = [
 ];
 
 /**
- * Production allowed redirect URIs
- * These are added when in production mode
- */
-const PRODUCTION_ALLOWED_URIS = [
-  // Production test page
-  'https://gmail-mcp.daffyos.in/test',
-
-  // Gmail agent dev domain - all paths allowed
-  'https://gmail-agent-dev.daffyos.in',
-  'https://gmail-agent-dev.daffyos.in/callback',
-  'https://gmail-agent-dev.daffyos.in/oauth/callback',
-  'https://gmail-agent-dev.daffyos.in/oauth/initiate',
-  'https://gmail-agent-dev.daffyos.in/test',
-];
-
-/**
- * Parse additional allowed URIs from environment variable
- *
- * Expected format: comma-separated list of URIs
- * Example: ALLOWED_REDIRECT_URIS=https://example.com/callback,https://app.example.com/oauth
+ * Parse additional allowed URIs from environment variable.
+ * Set ALLOWED_REDIRECT_URIS to a comma-separated list of production URIs.
+ * Example: ALLOWED_REDIRECT_URIS=https://gforms-mcp.daffyos.in/test,https://gforms-agent-dev.daffyos.in
  */
 function getAdditionalAllowedUris(): string[] {
   const envUris = process.env.ALLOWED_REDIRECT_URIS;
@@ -91,15 +74,7 @@ function getAdditionalAllowedUris(): string[] {
  */
 export function getAllowedRedirectUris(): string[] {
   const allowedUris = [...DEFAULT_ALLOWED_URIS];
-
-  // Add production URIs if in production
-  if (process.env.NODE_ENV === 'production') {
-    allowedUris.push(...PRODUCTION_ALLOWED_URIS);
-  }
-
-  // Add environment-specified URIs
   allowedUris.push(...getAdditionalAllowedUris());
-
   return allowedUris;
 }
 

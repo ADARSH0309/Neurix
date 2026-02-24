@@ -233,10 +233,10 @@ async function handleLegacyTokenGeneration(
     expiresIn: '24 hours',
     usage: {
       mcp_inspector: {
-        url: process.env.PUBLIC_URL || 'https://gmail-mcp.daffyos.in',
+        url: process.env.PUBLIC_URL || 'http://localhost:3000',
         header: `Authorization: Bearer ${token}`,
       },
-      curl_example: `curl -H "Authorization: Bearer ${token}" ${process.env.PUBLIC_URL || 'https://gmail-mcp.daffyos.in'}/`,
+      curl_example: `curl -H "Authorization: Bearer ${token}" ${process.env.PUBLIC_URL || 'http://localhost:3000'}/`,
     },
   });
 }

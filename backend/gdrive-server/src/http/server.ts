@@ -15,6 +15,7 @@ import {
   requestLogger,
   errorHandler,
   requestIdMiddleware,
+  csrfProtection,
 } from './middleware.js';
 import {
   authLimiter,
@@ -377,15 +378,15 @@ export async function createHttpServer(config: McpServerConfig): Promise<Express
   app.get('/drive/callback', authLimiter, validateQuery(schemas.oauthCallback), handleOAuthCallback);
   app.get('/auth/callback', authLimiter, validateQuery(schemas.oauthCallback), handleOAuthCallback);
   app.get('/auth/status', handleAuthStatus);
-  app.post('/auth/logout', defaultJsonParser, handleLogout);
+  app.post('/auth/logout', csrfProtection, defaultJsonParser, handleLogout);
 
   // Token management endpoints
-  app.delete('/api/tokens', handleRevokeAllTokens);
+  app.delete('/api/tokens', csrfProtection, handleRevokeAllTokens);
   app.get('/api/token/:token', validateParams(schemas.tokenParam), handleGetTokenInfo);
-  app.delete('/api/token/:token', validateParams(schemas.tokenParam), handleRevokeToken);
+  app.delete('/api/token/:token', csrfProtection, validateParams(schemas.tokenParam), handleRevokeToken);
 
   // GDPR Compliance endpoints (Article 17 & 20)
-  app.delete('/api/gdpr/user-data', requireAuth(), gdprDeletionLimiter, handleDeleteUserData);
+  app.delete('/api/gdpr/user-data', csrfProtection, requireAuth(), gdprDeletionLimiter, handleDeleteUserData);
   app.get('/api/gdpr/user-data', requireAuth(), gdprExportLimiter, handleExportUserData);
 
   // SSE endpoints for MCP Inspector
