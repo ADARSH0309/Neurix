@@ -72,7 +72,7 @@ export function Header({
     const [searchFocused, setSearchFocused] = useState(false);
     const [notifOpen, setNotifOpen] = useState(false);
 
-    const neuralIntegrity = Math.round((connectedServers / 2) * 100);
+    const neuralIntegrity = Math.round((connectedServers / 4) * 100);
 
     return (
         <header className="h-16 border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-40">

@@ -459,14 +459,14 @@ export async function handleOAuthCallback(req: Request, res: Response): Promise<
 
       // Legacy flow: Generate bearer token for backward compatibility
       const { tokenManager } = await import('../auth/token-manager.js');
-      const bearerToken = await tokenManager.generateToken(sessionId);
+      const bearerToken = await tokenManager.generateToken(newSession.id);
 
       // Redirect back to the original source with bearer token
       console.log(JSON.stringify({
         timestamp: new Date().toISOString(),
         level: 'info',
         message: 'Redirecting to original source after OAuth success (legacy flow)',
-        sessionId,
+        sessionId: newSession.id,
         redirectUri,
         bearerTokenGenerated: true,
       }));

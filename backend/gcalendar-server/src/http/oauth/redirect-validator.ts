@@ -24,6 +24,10 @@ const DEFAULT_ALLOWED_URIS = [
   'http://127.0.0.1:3000',
   'http://127.0.0.1:3000/',
   'http://127.0.0.1:3000/test',
+  'http://localhost:9000',
+  'http://localhost:9000/',
+  'http://127.0.0.1:9000',
+  'http://127.0.0.1:9000/',
 ];
 
 /**

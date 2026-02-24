@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import { useChat } from '../../context/ChatContext';
 import { useServer } from '../../context/ServerContext';
 import { CommandInput } from './CommandInput';
@@ -8,18 +8,42 @@ import { SuggestionChips } from './SuggestionChips';
 import type { Message } from '../../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { getServerIcon } from '@/lib/server-utils';
+import { getServerIcon, getServerVisual } from '@/lib/server-utils';
 import ReactMarkdown from 'react-markdown';
 import {
     Copy, Check, RotateCcw, MoreHorizontal,
-    Bot, User, Sparkles, AlertTriangle, ArrowRight
+    Bot, User, Sparkles, AlertTriangle, ArrowRight,
+    Search, X, Zap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 
-// Typing Indicator
-function TypingIndicator() {
+// Server-specific starter prompts
+const SERVER_PROMPTS: Record<string, { label: string; prompts: string[] }> = {
+    gdrive: {
+        label: 'Google Drive',
+        prompts: ['List my recent files', 'Search for documents', 'Create a new folder'],
+    },
+    gforms: {
+        label: 'Google Forms',
+        prompts: ['List my forms', 'Show form responses', 'Search forms'],
+    },
+    gmail: {
+        label: 'Gmail',
+        prompts: ['Show unread emails', 'Search my inbox', 'List recent messages'],
+    },
+    gcalendar: {
+        label: 'Google Calendar',
+        prompts: ['Show today\'s events', 'List upcoming meetings', 'Check my schedule'],
+    },
+};
+
+// Typing Indicator with server context
+function TypingIndicator({ serverName, serverId }: { serverName?: string; serverId?: string }) {
+    const Icon = serverId ? getServerIcon(serverId) : Sparkles;
+    const visual = serverId ? getServerVisual(serverId) : null;
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -27,8 +51,11 @@ function TypingIndicator() {
             exit={{ opacity: 0, y: -5 }}
             className="flex items-center gap-3.5 px-4 py-3 max-w-3xl mx-auto"
         >
-            <div className="w-8 h-8 rounded-xl bg-neurix-orange/10 dark:bg-neurix-orange/15 flex items-center justify-center shrink-0 border border-neurix-orange/20">
-                <Sparkles className="w-4 h-4 text-neurix-orange" />
+            <div className={cn(
+                "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border",
+                visual ? `${visual.darkBg} border-current/20` : "bg-neurix-orange/10 dark:bg-neurix-orange/15 border-neurix-orange/20"
+            )}>
+                <Icon className={cn("w-4 h-4", visual ? "" : "text-neurix-orange")} />
             </div>
             <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-muted/50 dark:bg-white/[0.04] border border-border/50">
                 <div className="flex items-center gap-1">
@@ -45,14 +72,16 @@ function TypingIndicator() {
                         />
                     ))}
                 </div>
-                <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest ml-1">Thinking</span>
+                <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest ml-1">
+                    {serverName ? `${serverName} is thinking` : 'Thinking'}
+                </span>
             </div>
         </motion.div>
     );
 }
 
 // Message Component
-const ChatMessage = ({ msg }: { msg: Message }) => {
+const ChatMessage = ({ msg, searchQuery }: { msg: Message; searchQuery?: string }) => {
     const [copied, setCopied] = useState(false);
 
     const handleCopy = async (content: string) => {
@@ -60,6 +89,20 @@ const ChatMessage = ({ msg }: { msg: Message }) => {
         setCopied(true);
         toast.success('Copied to clipboard');
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    // Highlight search matches in text
+    const highlightText = (text: string) => {
+        if (!searchQuery?.trim()) return text;
+        const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        const parts = text.split(regex);
+        return parts.map((part, i) =>
+            regex.test(part) ? (
+                <mark key={i} className="bg-neurix-orange/30 text-foreground rounded px-0.5">{part}</mark>
+            ) : (
+                part
+            )
+        );
     };
 
     // Error message
@@ -77,7 +120,7 @@ const ChatMessage = ({ msg }: { msg: Message }) => {
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-[10px] font-mono font-bold text-red-500 dark:text-red-400 uppercase tracking-widest mb-1">Error</p>
-                        <p className="text-sm text-red-700 dark:text-red-300/80 leading-relaxed">{msg.content}</p>
+                        <p className="text-sm text-red-700 dark:text-red-300/80 leading-relaxed">{highlightText(msg.content)}</p>
                     </div>
                 </div>
             </motion.div>
@@ -126,7 +169,7 @@ const ChatMessage = ({ msg }: { msg: Message }) => {
                     )}
                 >
                     {msg.role === 'user' ? (
-                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                        <p className="whitespace-pre-wrap">{highlightText(msg.content)}</p>
                     ) : (
                         <div className="prose prose-sm prose-neutral dark:prose-invert max-w-none">
                             <ReactMarkdown
@@ -173,6 +216,50 @@ const ChatMessage = ({ msg }: { msg: Message }) => {
                                                 </div>
                                             </div>
                                         );
+                                    },
+                                    // Table rendering
+                                    table({ children }) {
+                                        return (
+                                            <div className="my-3 overflow-x-auto rounded-xl border border-border dark:border-white/[0.06]">
+                                                <table className="w-full text-sm border-collapse">
+                                                    {children}
+                                                </table>
+                                            </div>
+                                        );
+                                    },
+                                    thead({ children }) {
+                                        return (
+                                            <thead className="bg-muted/80 dark:bg-white/[0.04]">
+                                                {children}
+                                            </thead>
+                                        );
+                                    },
+                                    tbody({ children }) {
+                                        return <tbody className="divide-y divide-border dark:divide-white/[0.06]">{children}</tbody>;
+                                    },
+                                    tr({ children }) {
+                                        return (
+                                            <tr className="hover:bg-muted/30 dark:hover:bg-white/[0.02] transition-colors">
+                                                {children}
+                                            </tr>
+                                        );
+                                    },
+                                    th({ children }) {
+                                        return (
+                                            <th className="px-4 py-2.5 text-left text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest border-b border-border dark:border-white/[0.06]">
+                                                {children}
+                                            </th>
+                                        );
+                                    },
+                                    td({ children }) {
+                                        return (
+                                            <td className="px-4 py-2.5 text-sm text-foreground/80">
+                                                {children}
+                                            </td>
+                                        );
+                                    },
+                                    hr() {
+                                        return <hr className="my-4 border-border dark:border-white/[0.08]" />;
                                     },
                                     p({ children }) {
                                         return <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>;
@@ -257,8 +344,85 @@ function isDifferentDay(d1?: string, d2?: string): boolean {
     return a.toDateString() !== b.toDateString();
 }
 
-// Empty State - clean and minimal
-const EmptyState = ({
+// Connected Empty State - shows server-specific prompts
+const ConnectedEmptyState = ({
+    serverId,
+    serverName,
+    onSend,
+}: {
+    serverId: string;
+    serverName: string;
+    onSend: (text: string) => void;
+}) => {
+    const Icon = getServerIcon(serverId);
+    const visual = getServerVisual(serverId);
+    const prompts = SERVER_PROMPTS[serverId]?.prompts || ['Help', 'What can you do?', 'List available tools'];
+
+    return (
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="relative mb-6"
+            >
+                <div className={cn(
+                    "w-20 h-20 rounded-2xl flex items-center justify-center border",
+                    visual.darkBg, "border-current/20"
+                )}>
+                    <Icon className="w-10 h-10" />
+                </div>
+                <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-mint-green flex items-center justify-center border-2 border-background shadow-lg">
+                    <Zap className="w-3 h-3 text-white" />
+                </div>
+            </motion.div>
+
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.4 }}
+            >
+                <h2 className="text-2xl font-heading font-bold text-foreground mb-2 tracking-tight">
+                    Connected to <span className="text-neurix-orange">{serverName}</span>
+                </h2>
+                <p className="text-muted-foreground max-w-md mb-8 text-sm leading-relaxed mx-auto">
+                    Try one of these to get started, or type your own message below.
+                </p>
+            </motion.div>
+
+            <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.4 }}
+                className="w-full max-w-md"
+            >
+                <div className="space-y-2.5">
+                    {prompts.map((prompt, i) => (
+                        <motion.button
+                            key={prompt}
+                            initial={{ opacity: 0, x: -12 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.25 + i * 0.06 }}
+                            whileHover={{ x: 4 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => onSend(prompt)}
+                            className="w-full flex items-center gap-3 p-3.5 rounded-xl bg-card border border-border hover:border-neurix-orange/30 hover:bg-neurix-orange/[0.03] transition-all group text-left"
+                        >
+                            <div className="w-8 h-8 rounded-lg bg-muted dark:bg-white/[0.05] border border-border dark:border-white/[0.06] flex items-center justify-center group-hover:border-neurix-orange/25 group-hover:bg-neurix-orange/10 transition-all">
+                                <Sparkles className="w-4 h-4 text-muted-foreground group-hover:text-neurix-orange transition-colors" />
+                            </div>
+                            <span className="text-sm text-foreground/80 group-hover:text-foreground transition-colors">{prompt}</span>
+                            <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-neurix-orange/60 ml-auto transition-colors" />
+                        </motion.button>
+                    ))}
+                </div>
+            </motion.div>
+        </div>
+    );
+};
+
+// Disconnected Empty State - shows server grid
+const DisconnectedEmptyState = ({
     onSelect,
     servers,
 }: {
@@ -333,38 +497,157 @@ const EmptyState = ({
     );
 };
 
+// Search bar component
+function ChatSearchBar({
+    searchQuery,
+    onSearchChange,
+    onClose,
+    matchCount,
+}: {
+    searchQuery: string;
+    onSearchChange: (q: string) => void;
+    onClose: () => void;
+    matchCount: number;
+}) {
+    return (
+        <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden border-b border-border"
+        >
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/30 dark:bg-white/[0.02]">
+                <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+                <input
+                    type="text"
+                    autoFocus
+                    value={searchQuery}
+                    onChange={(e) => onSearchChange(e.target.value)}
+                    placeholder="Search messages..."
+                    className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 outline-none font-mono"
+                />
+                {searchQuery && (
+                    <span className="text-[10px] font-mono text-muted-foreground/60 px-2 py-0.5 bg-muted/50 rounded-md">
+                        {matchCount} {matchCount === 1 ? 'match' : 'matches'}
+                    </span>
+                )}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground shrink-0"
+                    onClick={onClose}
+                >
+                    <X className="w-3.5 h-3.5" />
+                </Button>
+            </div>
+        </motion.div>
+    );
+}
+
 export function ChatStage() {
     const { isLoading, sendMessage, currentSession } = useChat();
-    const { servers, activeServerId, setActiveServerId } = useServer();
+    const { servers, activeServerId, setActiveServerId, connectServer } = useServer();
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const scrollAreaRef = useRef<HTMLDivElement>(null);
 
+    const [showSearch, setShowSearch] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+
     const messages = currentSession?.messages || [];
     const lastAiMsg = [...messages].reverse().find((m) => m.role === 'assistant');
+
+    // Active server info
+    const activeServer = activeServerId ? servers[activeServerId] : null;
+
+    // Filter messages by search query
+    const filteredMessages = useMemo(() => {
+        if (!searchQuery.trim()) return messages;
+        const q = searchQuery.toLowerCase();
+        return messages.filter((m) => m.content.toLowerCase().includes(q));
+    }, [messages, searchQuery]);
+
+    const matchCount = searchQuery.trim() ? filteredMessages.length : 0;
+
+    // Keyboard shortcut for search
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f' && messages.length > 0) {
+                e.preventDefault();
+                setShowSearch(true);
+            }
+            if (e.key === 'Escape' && showSearch) {
+                setShowSearch(false);
+                setSearchQuery('');
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [showSearch, messages.length]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, isLoading]);
 
+    // Determine which empty state to show
+    const hasConnectedServer = activeServer?.connected;
+
+    const displayMessages = searchQuery.trim() ? filteredMessages : messages;
+
     return (
         <div className="flex-1 flex flex-col h-full relative">
+            {/* Search Bar */}
+            <AnimatePresence>
+                {showSearch && (
+                    <ChatSearchBar
+                        searchQuery={searchQuery}
+                        onSearchChange={setSearchQuery}
+                        onClose={() => { setShowSearch(false); setSearchQuery(''); }}
+                        matchCount={matchCount}
+                    />
+                )}
+            </AnimatePresence>
+
             <div className="flex-1 overflow-hidden relative" ref={scrollAreaRef}>
+                {/* Search toggle button */}
+                {messages.length > 0 && !showSearch && (
+                    <div className="absolute top-3 right-3 z-10">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 rounded-lg text-muted-foreground/50 hover:text-foreground bg-background/80 backdrop-blur-sm border border-border/50 shadow-sm"
+                            onClick={() => setShowSearch(true)}
+                            title="Search messages (Ctrl+F)"
+                        >
+                            <Search className="w-3.5 h-3.5" />
+                        </Button>
+                    </div>
+                )}
+
                 <ScrollArea className="h-full">
                     <div className="px-4 py-6 min-h-full flex flex-col">
                         {messages.length === 0 ? (
-                            <EmptyState
-                                onSelect={(id) => setActiveServerId(id)}
-                                servers={Object.values(servers).filter((s) => s.status === 'available')}
-                            />
+                            hasConnectedServer && activeServerId ? (
+                                <ConnectedEmptyState
+                                    serverId={activeServerId}
+                                    serverName={activeServer!.name}
+                                    onSend={sendMessage}
+                                />
+                            ) : (
+                                <DisconnectedEmptyState
+                                    onSelect={(id) => connectServer(id)}
+                                    servers={Object.values(servers).filter((s) => s.status === 'available')}
+                                />
+                            )
                         ) : (
                             <div className="space-y-6 pb-4">
-                                {messages.map((msg, idx) => {
-                                    const prevMsg = idx > 0 ? messages[idx - 1] : null;
+                                {displayMessages.map((msg, idx) => {
+                                    const prevMsg = idx > 0 ? displayMessages[idx - 1] : null;
                                     const showDateSep = idx === 0 || isDifferentDay(prevMsg?.createdAt, msg.createdAt);
                                     return (
                                         <div key={msg.id}>
                                             {showDateSep && msg.createdAt && <DateSeparator dateString={msg.createdAt} />}
-                                            <ChatMessage msg={msg} />
+                                            <ChatMessage msg={msg} searchQuery={searchQuery} />
                                         </div>
                                     );
                                 })}
@@ -373,7 +656,14 @@ export function ChatStage() {
                                         <SuggestionChips suggestions={lastAiMsg.suggestions} onSelect={(text) => sendMessage(text)} />
                                     )}
                                 </AnimatePresence>
-                                <AnimatePresence>{isLoading && <TypingIndicator />}</AnimatePresence>
+                                <AnimatePresence>
+                                    {isLoading && (
+                                        <TypingIndicator
+                                            serverName={activeServer?.name}
+                                            serverId={activeServerId || undefined}
+                                        />
+                                    )}
+                                </AnimatePresence>
                                 <div ref={messagesEndRef} />
                             </div>
                         )}

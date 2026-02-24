@@ -49,6 +49,12 @@ const DEFAULT_ALLOWED_URIS = [
   // Local development testing
   'http://localhost:3000/test',
   'http://127.0.0.1:3000/test',
+
+  // Chat Interface (port 9000)
+  'http://localhost:9000',
+  'http://localhost:9000/',
+  'http://127.0.0.1:9000',
+  'http://127.0.0.1:9000/',
 ];
 
 /**

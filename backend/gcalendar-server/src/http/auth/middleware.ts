@@ -1,5 +1,5 @@
 /**
- * Dual Authentication Middleware
+ * Dual Authentication Middleware (Bearer Token + Session Cookie)
  */
 
 import { Request, Response, NextFunction } from 'express';

@@ -35,25 +35,64 @@ function loadJson<T>(key: string, fallback: T): T {
     }
 }
 
-function generateSuggestions(serverName: string, responseContent: string): string[] {
+function generateSuggestions(serverName: string, responseContent: string, serverId?: string): string[] {
     const suggestions: string[] = [];
     const lower = responseContent.toLowerCase();
 
-    if (lower.includes('file') || lower.includes('document')) {
-        suggestions.push('List my files');
+    // Server-specific contextual suggestions
+    if (serverId === 'gdrive') {
+        if (lower.includes('file') || lower.includes('document') || lower.includes('folder')) {
+            suggestions.push('Search for documents');
+            if (lower.includes('list')) suggestions.push('Show shared files');
+            else suggestions.push('List my recent files');
+        }
+        if (lower.includes('created') || lower.includes('uploaded')) {
+            suggestions.push('List my recent files');
+        }
+        if (lower.includes('search')) suggestions.push('Create a new folder');
+    } else if (serverId === 'gmail') {
+        if (lower.includes('email') || lower.includes('message') || lower.includes('inbox')) {
+            suggestions.push('Show unread emails');
+            if (lower.includes('list')) suggestions.push('Search my inbox');
+            else suggestions.push('List recent messages');
+        }
+        if (lower.includes('sent') || lower.includes('draft')) {
+            suggestions.push('List recent messages');
+        }
+        if (lower.includes('search')) suggestions.push('Show unread emails');
+    } else if (serverId === 'gforms') {
+        if (lower.includes('form') || lower.includes('survey') || lower.includes('response')) {
+            suggestions.push('Show form responses');
+            if (lower.includes('list')) suggestions.push('Search forms');
+            else suggestions.push('List my forms');
+        }
+        if (lower.includes('created')) suggestions.push('List my forms');
+    } else if (serverId === 'gcalendar') {
+        if (lower.includes('event') || lower.includes('meeting') || lower.includes('schedule')) {
+            suggestions.push('List upcoming meetings');
+            if (lower.includes('today')) suggestions.push('Check my schedule');
+            else suggestions.push('Show today\'s events');
+        }
+        if (lower.includes('calendar')) suggestions.push('Show today\'s events');
     }
-    if (lower.includes('search') || lower.includes('find')) {
-        suggestions.push('Search for recent files');
+
+    // General content-based fallbacks
+    if (suggestions.length === 0) {
+        if (lower.includes('file') || lower.includes('document')) suggestions.push('List my files');
+        if (lower.includes('search') || lower.includes('find')) suggestions.push('Search for recent files');
+        if (lower.includes('form') || lower.includes('survey')) suggestions.push('List my forms');
+        if (lower.includes('email') || lower.includes('message')) suggestions.push('Show unread emails');
+        if (lower.includes('event') || lower.includes('meeting')) suggestions.push('Show today\'s events');
     }
-    if (lower.includes('form') || lower.includes('survey')) {
-        suggestions.push('List my forms');
-    }
+
+    // Final fallback
     if (suggestions.length === 0) {
         suggestions.push('Help');
         if (serverName) suggestions.push(`What can ${serverName} do?`);
     }
 
-    return suggestions.slice(0, 3);
+    // Deduplicate and limit
+    return [...new Set(suggestions)].slice(0, 3);
 }
 
 export function ChatProvider({ children }: { children: ReactNode }) {
@@ -224,7 +263,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
                 }
             }
 
-            const suggestions = generateSuggestions(server.name, responseContent);
+            const suggestions = generateSuggestions(server.name, responseContent, serverId);
 
             const aiMsg: Message = {
                 id: generateId(),

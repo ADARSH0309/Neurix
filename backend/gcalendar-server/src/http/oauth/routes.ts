@@ -137,7 +137,7 @@ export async function handleOAuthCallback(req: Request, res: Response): Promise<
       }
 
       const { tokenManager } = await import('../auth/token-manager.js');
-      const bearerToken = await tokenManager.generateToken(sessionId);
+      const bearerToken = await tokenManager.generateToken(newSession.id);
 
       oauth_requests_total.inc({ status: 'success', flow_type: 'legacy' });
       const redirectUrl = new URL(redirectUri);

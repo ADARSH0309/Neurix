@@ -42,6 +42,11 @@ const MCP_SERVERS: Record<string, McpServerConfig> = {
     name: 'Gmail',
     port: 8082,
     baseUrl: process.env.GMAIL_SERVER_URL || 'http://localhost:8082'
+  },
+  gcalendar: {
+    name: 'Google Calendar',
+    port: 8083,
+    baseUrl: process.env.GCALENDAR_SERVER_URL || 'http://localhost:8083'
   }
 };
 
@@ -364,9 +369,10 @@ app.listen(PORT, () => {
   Local:    http://localhost:${PORT}
 
   MCP Servers:
-  - Google Drive: ${MCP_SERVERS.gdrive.baseUrl}
-  - Google Forms: ${MCP_SERVERS.gforms.baseUrl}
-  - Gmail:        ${MCP_SERVERS.gmail.baseUrl}
+  - Google Drive:    ${MCP_SERVERS.gdrive.baseUrl}
+  - Google Forms:    ${MCP_SERVERS.gforms.baseUrl}
+  - Gmail:           ${MCP_SERVERS.gmail.baseUrl}
+  - Google Calendar: ${MCP_SERVERS.gcalendar.baseUrl}
 
   OpenAI: ${process.env.OPENAI_API_KEY ? 'Configured' : 'Not configured'}
   `);

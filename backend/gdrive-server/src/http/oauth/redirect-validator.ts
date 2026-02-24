@@ -20,10 +20,14 @@ const DEFAULT_ALLOWED_URIS = [
   'http://localhost:6274/oauth/callback',
   'http://localhost:3000',
   'http://localhost:3000/',
-  'http://localhost:3000/test',
   'http://127.0.0.1:3000',
   'http://127.0.0.1:3000/',
-  'http://127.0.0.1:3000/test',
+  'http://localhost:9000',
+  'http://localhost:9000/',
+  'http://127.0.0.1:9000',
+  'http://127.0.0.1:9000/',
+  'http://localhost:5174',
+  'http://localhost:5174/',
 ];
 
 /**
