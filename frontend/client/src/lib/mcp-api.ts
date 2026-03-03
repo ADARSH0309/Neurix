@@ -143,8 +143,30 @@ function formatToolResponse(text: string, _toolName: string): string {
       text.includes('Found') && text.includes('forms:') ||
       text.includes('Form Details:') ||
       text.includes('Form has') && text.includes('questions:')) {
-    // Convert URLs in the text to markdown links
     return convertUrlsToMarkdownLinks(text);
+  }
+
+  // ── Google Tasks: Plain text action responses ──
+  if (text.includes('Task created!') || text.includes('Task updated!') ||
+      text.includes('Task completed!') || text.includes('Task uncompleted!') ||
+      text.includes('Task moved!') || text.includes('Task list created!') ||
+      text.includes('Task list updated!')) {
+    const lines = text.split('\n').filter(Boolean);
+    const heading = lines[0];
+    const fields: Record<string, string> = {};
+    lines.slice(1).forEach(line => {
+      const match = line.match(/^(\w[\w\s]*):\s*(.+)$/);
+      if (match) fields[match[1].trim()] = match[2].trim();
+    });
+    let output = `**${heading}**\n\n`;
+    if (fields['Title']) output += `**Title:** ${fields['Title']}\n`;
+    if (fields['Status']) output += `**Status:** ${fields['Status']}\n`;
+    if (fields['Due']) output += `**Due:** ${fields['Due']}\n`;
+    output += `\n[Open Google Tasks](https://tasks.google.com)`;
+    return output;
+  }
+  if (text === 'Task deleted successfully' || text === 'Task list deleted successfully' || text === 'Completed tasks cleared successfully') {
+    return `**${text}**\n\n[Open Google Tasks](https://tasks.google.com)`;
   }
 
   // Try to parse as JSON
@@ -347,50 +369,64 @@ function formatToolResponse(text: string, _toolName: string): string {
       return output;
     }
 
+    // ── Google Tasks: Task lists ──
+    if (data.taskLists && Array.isArray(data.taskLists)) {
+      if (data.taskLists.length === 0) return 'No task lists found.';
+      let output = `**Your Task Lists** — ${data.taskLists.length} list${data.taskLists.length !== 1 ? 's' : ''}\n\n`;
+      data.taskLists.forEach((tl: any, i: number) => {
+        const title = tl.title || 'Untitled';
+        const updated = tl.updated ? new Date(tl.updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+        output += `${i + 1}. **${title}**${updated ? `  —  ${updated}` : ''}\n`;
+      });
+      output += `\n[Open Google Tasks](https://tasks.google.com)`;
+      return output;
+    }
+
     // ── Google Tasks: Tasks list ──
     if (data.tasks && Array.isArray(data.tasks)) {
-      if (data.tasks.length === 0) return 'No tasks found.';
-      let output = `**Tasks** (${data.tasks.length})\n\n`;
-      data.tasks.forEach((task: any, i: number) => {
-        const status = task.status === 'completed' ? '✅' : '⬜';
-        output += `${status} **${task.title || '(No Title)'}**\n`;
-        if (task.notes) output += `   ${task.notes}\n`;
-        if (task.due) output += `   📅 Due: ${new Date(task.due).toLocaleDateString()}\n`;
-        output += '\n';
+      if (data.tasks.length === 0) return 'No tasks found in this list.';
+      const completed = data.tasks.filter((t: any) => t.status === 'completed').length;
+      const pending = data.tasks.length - completed;
+      let output = `**Tasks** — ${pending} pending, ${completed} completed\n\n`;
+      data.tasks.forEach((task: any) => {
+        const icon = task.status === 'completed' ? '~~' : '';
+        const title = task.title || '(No Title)';
+        const due = task.due ? `  —  Due ${new Date(task.due).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : '';
+        const notes = task.notes ? `\n   *${task.notes.slice(0, 60)}${task.notes.length > 60 ? '...' : ''}*` : '';
+        if (task.status === 'completed') {
+          output += `- ~~${title}~~${due}\n`;
+        } else {
+          output += `- **${title}**${due}${notes}\n`;
+        }
       });
+      output += `\n[Open Google Tasks](https://tasks.google.com)`;
       return output;
     }
 
     // ── Google Tasks: Single task ──
     if (data.task && data.task.title !== undefined) {
       const task = data.task;
-      const status = task.status === 'completed' ? '✅ Completed' : '⬜ Needs Action';
+      const status = task.status === 'completed' ? 'Completed' : 'Pending';
       let output = `**${task.title || '(No Title)'}**\n\n`;
       output += `**Status:** ${status}\n`;
       if (task.notes) output += `**Notes:** ${task.notes}\n`;
-      if (task.due) output += `**Due:** ${new Date(task.due).toLocaleDateString()}\n`;
-      if (task.completed) output += `**Completed:** ${new Date(task.completed).toLocaleDateString()}\n`;
-      if (task.updated) output += `**Updated:** ${new Date(task.updated).toLocaleString()}\n`;
-      return output;
-    }
-
-    // ── Google Tasks: Task lists ──
-    if (data.taskLists && Array.isArray(data.taskLists)) {
-      if (data.taskLists.length === 0) return 'No task lists found.';
-      let output = `Found **${data.taskLists.length}** task list(s):\n\n`;
-      data.taskLists.forEach((tl: any, i: number) => {
-        output += `${i + 1}. **${tl.title || tl.id}**\n`;
-        if (tl.updated) output += `   Updated: ${new Date(tl.updated).toLocaleDateString()}\n`;
-        output += '\n';
-      });
+      if (task.due) output += `**Due:** ${new Date(task.due).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}\n`;
+      if (task.completed) output += `**Completed:** ${new Date(task.completed).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}\n`;
+      if (task.links && task.links.length > 0) {
+        task.links.forEach((l: any) => {
+          if (l.link) output += `**Link:** [${l.description || 'Open'}](${l.link})\n`;
+        });
+      }
+      output += `\n[Open Google Tasks](https://tasks.google.com)`;
       return output;
     }
 
     // ── Google Tasks: Single task list ──
     if (data.taskList && data.taskList.title !== undefined) {
       const tl = data.taskList;
-      let output = `**${tl.title || tl.id}**\n\n`;
-      if (tl.updated) output += `**Updated:** ${new Date(tl.updated).toLocaleString()}\n`;
+      let output = `**${tl.title || 'Untitled'}**\n\n`;
+      if (tl.updated) output += `**Last updated:** ${new Date(tl.updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}\n`;
+      output += `\n[Open Google Tasks](https://tasks.google.com)`;
       return output;
     }
 

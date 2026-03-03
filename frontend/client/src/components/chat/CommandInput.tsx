@@ -66,10 +66,10 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative group">
                 <div className={cn(
                     "relative rounded-2xl overflow-hidden transition-all duration-500 backdrop-blur-3xl",
-                    "bg-[#381932]/60 border shadow-[0_10px_40px_rgba(56,25,50,0.5)]",
+                    "bg-[#2a1226]/90 border shadow-[0_10px_40px_rgba(42,18,38,0.6)]",
                     isFocused
-                        ? "border-electric-purple/40 shadow-[0_0_40px_rgba(139,92,246,0.2)] bg-[#381932]/80 ring-1 ring-electric-purple/20"
-                        : "border-white/10 hover:border-white/20 hover:shadow-[0_0_20px_rgba(255,243,230,0.05)]"
+                        ? "border-electric-purple/50 shadow-[0_0_40px_rgba(139,92,246,0.25)] bg-[#2a1226]/95 ring-1 ring-electric-purple/25"
+                        : "border-white/15 hover:border-white/25 hover:shadow-[0_0_20px_rgba(255,243,230,0.08)]"
                 )}>
                     <div className="flex items-end p-2.5 gap-1.5">
                         {/* Left actions */}
@@ -95,7 +95,7 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
                                 onBlur={() => setIsFocused(false)}
                                 placeholder={placeholder || (activeServer ? `Message ${activeServer.name}...` : "Ask anything or type / for commands...")}
                                 disabled={isLoading}
-                                className="w-full bg-transparent border-0 outline-none ring-0 focus-visible:ring-0 px-2 py-1 min-h-[24px] max-h-[200px] resize-none text-[15px] leading-relaxed text-white placeholder:text-slate-grey/60 overflow-y-auto custom-scrollbar"
+                                className="w-full bg-transparent border-0 outline-none ring-0 focus-visible:ring-0 px-2 py-1 min-h-[24px] max-h-[200px] resize-none text-[15px] leading-relaxed text-white/90 placeholder:text-white/30 overflow-y-auto custom-scrollbar"
                                 rows={1}
                                 onInput={(e) => {
                                     const target = e.target as HTMLTextAreaElement;
@@ -176,19 +176,19 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
                                 transition={{ duration: 0.2 }}
                                 className="overflow-hidden"
                             >
-                                <div className="px-4 pb-2.5 flex items-center gap-3 text-[10px] text-muted-foreground/60 font-mono uppercase tracking-wider">
+                                <div className="px-4 pb-2.5 flex items-center gap-3 text-[10px] text-white/40 font-mono uppercase tracking-wider">
                                     {activeServer && (
-                                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 dark:bg-white/[0.03]">
+                                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/[0.06] border border-white/[0.06]">
                                             <Globe className="w-3 h-3 text-mint-green" />
-                                            <span>{activeServer.name}</span>
+                                            <span className="text-white/50">{activeServer.name}</span>
                                         </div>
                                     )}
-                                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 dark:bg-white/[0.03]">
-                                        <Command className="w-3 h-3 text-neurix-orange/60" />
-                                        <span>/ commands</span>
+                                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/[0.06] border border-white/[0.06]">
+                                        <Command className="w-3 h-3 text-neurix-orange/70" />
+                                        <span className="text-white/50">/ commands</span>
                                     </div>
-                                    <div className="ml-auto flex items-center gap-1.5 text-muted-foreground/40">
-                                        <kbd className="px-1 py-0.5 rounded bg-muted dark:bg-white/[0.04] border border-border text-[9px]">Enter</kbd>
+                                    <div className="ml-auto flex items-center gap-1.5 text-white/30">
+                                        <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/[0.08] text-[9px] text-white/40">Enter</kbd>
                                         <span>send</span>
                                     </div>
                                 </div>
