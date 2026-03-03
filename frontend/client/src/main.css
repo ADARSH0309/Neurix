@@ -6,84 +6,85 @@
 
 @layer base {
   :root {
-    /* NEBULA UI - Light Mode (Porcelain) */
-    --background: 0 0% 100%;
-    /* #FFFFFF */
-    --foreground: 240 10% 3.9%;
-    /* #09090b */
+    /* NEURIX UI - Light Mode (Warm Cream) */
+    --background: 31 100% 95%;
+    /* #fff3e6 */
+    --foreground: 312 38% 16%;
+    /* #381932 */
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card: 31 60% 97%;
+    --card-foreground: 312 38% 16%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover: 31 60% 97%;
+    --popover-foreground: 312 38% 16%;
 
-    --primary: 262 83% 58%;
-    /* Violet 600 */
-    --primary-foreground: 0 0% 98%;
+    --primary: 312 50% 35%;
+    /* Deep purple accent */
+    --primary-foreground: 31 100% 95%;
 
-    --secondary: 240 4.8% 95.9%;
-    /* Zinc 100 */
-    --secondary-foreground: 240 5.9% 10%;
+    --secondary: 31 30% 91%;
+    /* Muted cream */
+    --secondary-foreground: 312 30% 20%;
 
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --muted: 31 30% 91%;
+    --muted-foreground: 312 12% 46%;
 
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --accent: 31 30% 91%;
+    --accent-foreground: 312 30% 20%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 262 83% 58%;
+    --border: 31 25% 87%;
+    --input: 31 25% 87%;
+    --ring: 312 50% 35%;
 
     --radius: 0.75rem;
 
     /* Semantic Colors */
-    --neurix-obsidian: 240 10% 3.9%;
-    --neurix-porcelain: 0 0% 100%;
+    --neurix-obsidian: 312 38% 16%;
+    --neurix-porcelain: 31 100% 95%;
     --glass-opacity: 0.7;
-    --glass-border: 0 0% 100%;
+    --glass-border: 31 60% 97%;
   }
 
   .dark {
-    /* NEBULA UI - Dark Mode (Obsidian) */
-    --background: 240 10% 3.9%;
-    /* #09090b - Obsidian */
-    --foreground: 0 0% 98%;
+    /* NEURIX UI - Dark Mode (Deep Purple) */
+    --background: 312 38% 16%;
+    /* #381932 */
+    --foreground: 31 100% 95%;
+    /* #fff3e6 */
 
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
+    --card: 312 35% 13%;
+    --card-foreground: 31 100% 95%;
 
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 312 35% 13%;
+    --popover-foreground: 31 100% 95%;
 
-    --primary: 263 70% 50%;
-    /* Violet 500 */
-    --primary-foreground: 0 0% 98%;
+    --primary: 312 60% 55%;
+    /* Bright purple accent */
+    --primary-foreground: 31 100% 95%;
 
-    --secondary: 240 3.7% 15.9%;
-    /* Zinc 800 */
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 312 25% 22%;
+    /* Muted purple */
+    --secondary-foreground: 31 100% 95%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 312 25% 22%;
+    --muted-foreground: 31 30% 68%;
 
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 312 25% 22%;
+    --accent-foreground: 31 100% 95%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 31 100% 95%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 263 70% 50%;
+    --border: 312 22% 23%;
+    --input: 312 22% 23%;
+    --ring: 312 60% 55%;
 
     /* Semantic overrides */
     --glass-opacity: 0.3;
-    --glass-border: 240 3.7% 15.9%;
+    --glass-border: 312 22% 23%;
   }
 }
 
@@ -260,27 +261,27 @@ h6 {
   .glass-panel {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    background: rgba(245, 245, 247, 0.8);
-    border: 1px solid rgba(0, 0, 0, 0.06);
+    background: rgba(255, 243, 230, 0.8);
+    border: 1px solid rgba(56, 25, 50, 0.06);
   }
 
   .dark .glass-panel {
-    background: rgba(13, 18, 31, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(56, 25, 50, 0.8);
+    border: 1px solid rgba(255, 243, 230, 0.05);
   }
 
   /* Glass panel - more prominent (theme-aware) */
   .glass-panel-elevated {
     backdrop-filter: blur(30px);
     -webkit-backdrop-filter: blur(30px);
-    background: rgba(245, 245, 247, 0.92);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    background: rgba(255, 243, 230, 0.92);
+    border: 1px solid rgba(56, 25, 50, 0.08);
+    box-shadow: 0 8px 32px rgba(56, 25, 50, 0.08);
   }
 
   .dark .glass-panel-elevated {
-    background: rgba(13, 18, 31, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(56, 25, 50, 0.9);
+    border: 1px solid rgba(255, 243, 230, 0.08);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   }
 
@@ -694,21 +695,21 @@ h6 {
 /* Glassmorphism enhanced (theme-aware) */
 @layer components {
   .glass-enhanced {
-    background: rgba(245, 245, 247, 0.7);
+    background: rgba(255, 243, 230, 0.7);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(56, 25, 50, 0.06);
     box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.06),
+      0 8px 32px rgba(56, 25, 50, 0.06),
       inset 0 1px 0 rgba(255, 255, 255, 0.5);
   }
 
   .dark .glass-enhanced {
-    background: rgba(13, 18, 31, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(56, 25, 50, 0.6);
+    border: 1px solid rgba(255, 243, 230, 0.08);
     box-shadow:
       0 8px 32px rgba(0, 0, 0, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      inset 0 1px 0 rgba(255, 243, 230, 0.05);
   }
 }
 
@@ -719,12 +720,12 @@ h6 {
 }
 
 .glass-enhanced-light {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 243, 230, 0.7);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 243, 230, 0.3);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 8px 32px rgba(56, 25, 50, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
@@ -975,8 +976,8 @@ h6 {
   border-radius: 0.5rem;
   cursor: pointer;
   text-transform: uppercase;
-  background-color: rgb(14, 14, 26);
-  color: rgb(234, 234, 234);
+  background-color: #381932;
+  color: #fff3e6;
   font-weight: 700;
   letter-spacing: 0.05em;
   transition: all 0.4s ease;
@@ -1016,7 +1017,7 @@ h6 {
 
 /* Light mode glow button */
 :root .glow-btn {
-  background-color: rgb(30, 30, 46);
+  background-color: #381932;
   box-shadow: 0px 0px 50px rgba(249, 115, 22, 0.3);
 }
 
@@ -1052,7 +1053,7 @@ h6 {
 /* ===== GLOW CARD STYLES ===== */
 .glow-card {
   position: relative;
-  background: linear-gradient(135deg, #1e1e24 10%, #050505 60%);
+  background: linear-gradient(135deg, #4a2344 10%, #2a1226 60%);
   border-radius: 1rem;
   overflow: hidden;
   animation: glow-card-gradient 5s ease-in-out infinite;
@@ -1121,7 +1122,7 @@ h6 {
 
 /* Light mode glow card */
 :root .glow-card {
-  background: linear-gradient(135deg, #f8f8f8 10%, #e8e8e8 60%);
+  background: linear-gradient(135deg, #fff8f1 10%, #f5e6d6 60%);
 }
 
 :root .glow-card-border,
@@ -1165,12 +1166,12 @@ h6 {
 
 /* Editorial Tech Card - "Tangible" feel with depth */
 .editorial-card {
-  background: #FFFFFF;
+  background: #fff8f1;
   border-radius: 30px;
   box-shadow:
-    0 4px 6px rgba(0, 0, 0, 0.02),
-    0 12px 24px rgba(0, 0, 0, 0.06),
-    0 24px 48px rgba(0, 0, 0, 0.08);
+    0 4px 6px rgba(56, 25, 50, 0.02),
+    0 12px 24px rgba(56, 25, 50, 0.06),
+    0 24px 48px rgba(56, 25, 50, 0.08);
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
     box-shadow 0.3s ease;
 }
@@ -1178,13 +1179,13 @@ h6 {
 .editorial-card:hover {
   transform: translateY(-5px);
   box-shadow:
-    0 8px 12px rgba(0, 0, 0, 0.04),
-    0 20px 40px rgba(0, 0, 0, 0.1),
-    0 40px 80px rgba(0, 0, 0, 0.12);
+    0 8px 12px rgba(56, 25, 50, 0.04),
+    0 20px 40px rgba(56, 25, 50, 0.1),
+    0 40px 80px rgba(56, 25, 50, 0.12);
 }
 
 .dark .editorial-card {
-  background: #0F0F0F;
+  background: #301530;
   box-shadow:
     0 4px 6px rgba(0, 0, 0, 0.1),
     0 12px 24px rgba(0, 0, 0, 0.2),
@@ -1200,11 +1201,11 @@ h6 {
 
 /* White Context Card (for orange background) */
 .context-card-white {
-  background: #FFFFFF;
+  background: #fff3e6;
   border-radius: 30px;
   box-shadow:
-    0 10px 40px rgba(0, 0, 0, 0.15),
-    0 30px 60px rgba(0, 0, 0, 0.1);
+    0 10px 40px rgba(56, 25, 50, 0.15),
+    0 30px 60px rgba(56, 25, 50, 0.1);
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
     box-shadow 0.3s ease;
 }
@@ -1213,9 +1214,9 @@ h6 {
   transform: translateY(-5px);
 }
 
-/* Dark Obsidian Card */
+/* Dark Purple Card */
 .context-card-dark {
-  background: #0F0F0F;
+  background: #301530;
   border-radius: 30px;
   box-shadow:
     0 10px 40px rgba(0, 0, 0, 0.3),
@@ -1248,18 +1249,18 @@ h6 {
 }
 
 .editorial-btn-primary {
-  background: #1A1A1A;
-  color: #FFFFFF;
+  background: #381932;
+  color: #fff3e6;
 }
 
 .editorial-btn-primary:hover {
-  background: #333333;
+  background: #4a2344;
   transform: scale(1.02);
 }
 
 .dark .editorial-btn-primary {
   background: #FF5500;
-  color: #FFFFFF;
+  color: #fff3e6;
 }
 
 .dark .editorial-btn-primary:hover {
@@ -1268,23 +1269,23 @@ h6 {
 
 .editorial-btn-secondary {
   background: transparent;
-  color: #1A1A1A;
-  border: 2px solid #1A1A1A;
+  color: #381932;
+  border: 2px solid #381932;
 }
 
 .editorial-btn-secondary:hover {
-  background: #1A1A1A;
-  color: #FFFFFF;
+  background: #381932;
+  color: #fff3e6;
 }
 
 .dark .editorial-btn-secondary {
-  color: #FFFFFF;
-  border-color: #FFFFFF;
+  color: #fff3e6;
+  border-color: #fff3e6;
 }
 
 .dark .editorial-btn-secondary:hover {
-  background: #FFFFFF;
-  color: #1A1A1A;
+  background: #fff3e6;
+  color: #381932;
 }
 
 /* Progress Bar - Segmented Pills (v2.0) */
@@ -1296,7 +1297,7 @@ h6 {
 .progress-segment {
   height: 10px;
   border-radius: 5px;
-  background: #333333;
+  background: #4a2344;
   flex: 1;
   transition: background 0.3s ease, transform 0.2s ease;
 }
@@ -1311,9 +1312,9 @@ h6 {
 
 /* Pulse Command Bar */
 .pulse-command-bar {
-  background: #FFFFFF;
+  background: #fff3e6;
   border-radius: 9999px;
-  border: 2px solid #E5E5E5;
+  border: 2px solid #e8d5c0;
   transition: all 0.3s ease;
 }
 
@@ -1323,8 +1324,8 @@ h6 {
 }
 
 .dark .pulse-command-bar {
-  background: #1A1A1A;
-  border-color: #333333;
+  background: #4a2344;
+  border-color: #5a2d54;
 }
 
 .dark .pulse-command-bar:focus-within {
@@ -1360,12 +1361,12 @@ h6 {
 }
 
 .list-item-hover:hover {
-  background: #F5F5F5;
+  background: #f5e6d6;
   transform: translateX(4px);
 }
 
 .dark .list-item-hover:hover {
-  background: #1A1A1A;
+  background: #4a2344;
 }
 
 /* Icon Circle */
@@ -1373,7 +1374,7 @@ h6 {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #0F0F0F;
+  background: #381932;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1489,14 +1490,14 @@ h6 {
 
 /* Status Card */
 .status-card {
-  background: #FFFFFF;
+  background: #fff8f1;
   border-radius: 20px;
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 20px rgba(56, 25, 50, 0.06);
 }
 
 .dark .status-card {
-  background: #1A1A1A;
+  background: #4a2344;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
@@ -1506,30 +1507,30 @@ h6 {
   font-size: 4rem;
   font-weight: 700;
   line-height: 1;
-  color: #1A1A1A;
+  color: #381932;
 }
 
 .dark .stat-highlight {
-  color: #FFFFFF;
+  color: #fff3e6;
 }
 
 /* Editorial Section Divider */
 .editorial-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, #E5E5E5, transparent);
+  background: linear-gradient(90deg, transparent, #e8d5c0, transparent);
 }
 
 .dark .editorial-divider {
-  background: linear-gradient(90deg, transparent, #333333, transparent);
+  background: linear-gradient(90deg, transparent, #5a2d54, transparent);
 }
 
 /* Editorial Text Colors */
 .text-obsidian {
-  color: #1A1A1A;
+  color: #381932;
 }
 
 .text-paper {
-  color: #FFFFFF;
+  color: #fff3e6;
 }
 
 .text-neurix-orange {
@@ -1539,19 +1540,19 @@ h6 {
 /* Chat Bubble Styles */
 .chat-bubble-user {
   background: #FF5500;
-  color: #FFFFFF;
+  color: #fff3e6;
   border-radius: 20px 20px 4px 20px;
   padding: 1rem 1.25rem;
 }
 
 .chat-bubble-ai {
-  background: #F5F5F5;
-  color: #1A1A1A;
+  background: #f5e6d6;
+  color: #381932;
   border-radius: 20px 20px 20px 4px;
   padding: 1rem 1.25rem;
 }
 
 .dark .chat-bubble-ai {
-  background: #2A2A2A;
-  color: #FFFFFF;
+  background: #4a2344;
+  color: #fff3e6;
 }

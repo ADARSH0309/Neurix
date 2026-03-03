@@ -68,8 +68,8 @@ export function NavigationDock() {
                         className={cn(
                             "w-full flex items-center gap-3 p-2 rounded-lg transition-all text-sm",
                             isActive
-                                ? "bg-neurix-orange/10 text-foreground border border-neurix-orange/20"
-                                : "text-muted-foreground hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/5 border border-transparent"
+                                ? "bg-electric-purple/10 text-electric-purple dark:text-white border border-electric-purple/20 shadow-[0_0_10px_rgba(139,92,246,0.1)]"
+                                : "text-slate-grey hover:text-foreground hover:bg-black/5 dark:hover:bg-white/[0.04] border border-transparent"
                         )}
                     >
                         <MessageSquare size={18} className="shrink-0" />
@@ -115,11 +115,11 @@ export function NavigationDock() {
         <motion.div
             initial={{ width: 80 }} animate={{ width: isCollapsed ? 80 : 280 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="h-full relative z-20 flex flex-col bg-card/80 backdrop-blur-xl border-r border-border"
+            className="h-full relative z-20 flex flex-col bg-background/80 backdrop-blur-3xl border-r border-border shadow-2xl"
         >
             {/* Header */}
             <div className="h-16 flex items-center justify-center border-b border-border relative shrink-0">
-                <div className="w-10 h-10 rounded-xl bg-neurix-orange flex items-center justify-center shadow-lg shadow-neurix-orange/20">
+                <div className="w-10 h-10 rounded-xl bg-electric-purple flex items-center justify-center shadow-[0_0_15px_rgba(139,92,246,0.4)]">
                     <LayoutGrid className="text-white w-5 h-5" />
                 </div>
                 <AnimatePresence>
@@ -138,12 +138,12 @@ export function NavigationDock() {
 
             {/* Search */}
             {!isCollapsed && (
-                <div className="px-3 pt-3 pb-1 shrink-0">
-                    <div className="relative">
-                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                <div className="px-3 pt-4 pb-2 shrink-0">
+                    <div className="relative group">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-grey group-focus-within:text-electric-purple transition-colors" />
                         <input
                             type="text" placeholder="Search chats..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                            className="w-full h-8 pl-8 pr-3 rounded-lg bg-muted/50 dark:bg-white/[0.03] border border-border text-xs font-mono text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-neurix-orange/30 transition-all"
+                            className="w-full h-9 pl-9 pr-3 rounded-lg bg-black/5 dark:bg-white/[0.02] border border-black/10 dark:border-white/[0.06] text-xs font-mono text-foreground placeholder:text-muted-foreground outline-none focus:border-electric-purple/40 focus:bg-black/10 dark:focus:bg-white/[0.04] transition-all focus:shadow-[0_0_10px_rgba(139,92,246,0.1)]"
                         />
                     </div>
                 </div>
@@ -165,17 +165,17 @@ export function NavigationDock() {
                                     <button
                                         onClick={() => { if (server.connected) setActiveServerId(server.id); else connectServer(server.id); }}
                                         className={cn(
-                                            "w-full flex items-center gap-3 p-2 rounded-xl transition-all duration-200",
+                                            "w-full flex items-center gap-3 p-2 rounded-xl transition-all duration-300",
                                             isActive
-                                                ? "bg-neurix-orange/10 text-foreground border border-neurix-orange/20"
-                                                : "hover:bg-muted/50 dark:hover:bg-white/[0.04] text-muted-foreground hover:text-foreground border border-transparent"
+                                                ? "bg-electric-purple/10 text-electric-purple dark:text-white border border-electric-purple/20 shadow-[0_0_12px_rgba(139,92,246,0.15)]"
+                                                : "hover:bg-black/5 dark:hover:bg-white/[0.04] text-slate-grey hover:text-foreground border border-transparent"
                                         )}
                                     >
                                         <div className={cn(
                                             "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-all duration-300",
                                             server.connected
-                                                ? cn("border-border dark:border-white/10", visual.darkBg)
-                                                : "border-border dark:border-white/5 bg-muted/50 dark:bg-white/[0.03] text-muted-foreground"
+                                                ? cn("border-black/10 dark:border-white/10", visual.darkBg)
+                                                : "border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] text-slate-grey"
                                         )}>
                                             <ServerIcon size={18} />
                                         </div>
@@ -225,7 +225,7 @@ export function NavigationDock() {
                     <div className="space-y-1">
                         {unpinnedSessions.slice(0, 15).map(s => renderSessionItem(s))}
                         {isCollapsed && (
-                            <button onClick={createSession} className="w-full flex items-center justify-center p-2 mt-2 rounded-lg bg-muted/50 dark:bg-white/[0.03] hover:bg-neurix-orange/10 text-muted-foreground hover:text-neurix-orange border border-border hover:border-neurix-orange/20 transition-all">
+                            <button onClick={createSession} className="w-full flex items-center justify-center p-2 mt-2 rounded-lg dark:bg-white/[0.02] hover:bg-electric-purple/10 text-slate-grey hover:text-foreground border border-transparent dark:border-white/5 hover:border-electric-purple/30 transition-all focus:outline-none focus:ring-1 focus:ring-electric-purple/50">
                                 <Plus size={18} />
                             </button>
                         )}
@@ -234,7 +234,7 @@ export function NavigationDock() {
             </div>
 
             {/* Footer */}
-            <div className="p-3 mt-auto border-t border-border space-y-0.5 shrink-0">
+            <div className="p-3 mt-auto border-t border-border space-y-0.5 shrink-0 bg-background">
                 {[
                     { icon: User, label: 'Profile', onClick: () => setShowProfileDialog(true), active: false },
                     { icon: Terminal, label: 'Tools HUD', onClick: () => setIsToolsPanelOpen(!isToolsPanelOpen), active: isToolsPanelOpen },
@@ -244,10 +244,10 @@ export function NavigationDock() {
                         key={label}
                         onClick={onClick}
                         className={cn(
-                            "w-full flex items-center gap-3 p-2.5 rounded-xl transition-all duration-200",
+                            "w-full flex items-center gap-3 p-2.5 rounded-xl transition-all duration-300",
                             active
-                                ? "text-neurix-orange bg-neurix-orange/10 border border-neurix-orange/15"
-                                : "text-muted-foreground hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/[0.04] border border-transparent"
+                                ? "text-foreground bg-electric-purple/15 border border-electric-purple/30 shadow-[0_0_12px_rgba(139,92,246,0.2)]"
+                                : "text-slate-grey hover:text-foreground hover:bg-black/5 dark:hover:bg-white/[0.04] border border-transparent"
                         )}
                     >
                         <div className={cn(

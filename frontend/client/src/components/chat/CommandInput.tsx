@@ -65,11 +65,11 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative group">
                 <div className={cn(
-                    "relative rounded-2xl overflow-hidden transition-all duration-300 backdrop-blur-xl",
-                    "bg-card/90 border shadow-lg",
+                    "relative rounded-2xl overflow-hidden transition-all duration-500 backdrop-blur-3xl",
+                    "bg-[#381932]/60 border shadow-[0_10px_40px_rgba(56,25,50,0.5)]",
                     isFocused
-                        ? "border-neurix-orange/25 shadow-[0_0_24px_rgba(255,85,0,0.06)]"
-                        : "border-border"
+                        ? "border-electric-purple/40 shadow-[0_0_40px_rgba(139,92,246,0.2)] bg-[#381932]/80 ring-1 ring-electric-purple/20"
+                        : "border-white/10 hover:border-white/20 hover:shadow-[0_0_20px_rgba(255,243,230,0.05)]"
                 )}>
                     <div className="flex items-end p-2.5 gap-1.5">
                         {/* Left actions */}
@@ -77,9 +77,9 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-9 w-9 rounded-xl text-muted-foreground hover:text-neurix-orange hover:bg-neurix-orange/5 transition-all"
+                                className="h-9 w-9 rounded-xl text-slate-grey hover:text-white hover:bg-white/5 transition-all"
                             >
-                                <Paperclip className="h-4 w-4" />
+                                <Paperclip className="h-4 w-4 drop-shadow-md" />
                             </Button>
                         </div>
 
@@ -95,7 +95,7 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
                                 onBlur={() => setIsFocused(false)}
                                 placeholder={placeholder || (activeServer ? `Message ${activeServer.name}...` : "Ask anything or type / for commands...")}
                                 disabled={isLoading}
-                                className="w-full bg-transparent border-0 outline-none ring-0 focus-visible:ring-0 px-2 py-1 min-h-[24px] max-h-[200px] resize-none text-[15px] leading-relaxed text-foreground placeholder:text-muted-foreground/50 overflow-y-auto custom-scrollbar"
+                                className="w-full bg-transparent border-0 outline-none ring-0 focus-visible:ring-0 px-2 py-1 min-h-[24px] max-h-[200px] resize-none text-[15px] leading-relaxed text-white placeholder:text-slate-grey/60 overflow-y-auto custom-scrollbar"
                                 rows={1}
                                 onInput={(e) => {
                                     const target = e.target as HTMLTextAreaElement;
@@ -118,9 +118,9 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-9 w-9 rounded-xl text-muted-foreground hover:text-neurix-orange hover:bg-neurix-orange/5 transition-all"
+                                            className="h-9 w-9 rounded-xl text-slate-grey hover:text-white hover:bg-white/5 transition-all"
                                         >
-                                            <Mic className="h-4 w-4" />
+                                            <Mic className="h-4 w-4 drop-shadow-md" />
                                         </Button>
                                     </motion.div>
                                 )}
@@ -139,13 +139,13 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
                                         onClick={handleSubmit}
                                         disabled={isLoading}
                                         className={cn(
-                                            "h-9 w-9 rounded-xl flex items-center justify-center text-white transition-all",
-                                            "bg-neurix-orange hover:bg-neurix-orange-light",
-                                            "shadow-[0_2px_12px_rgba(255,85,0,0.3)]",
+                                            "h-9 w-9 rounded-xl flex items-center justify-center text-white transition-all duration-300",
+                                            "bg-electric-purple hover:bg-[#a600e6]",
+                                            "shadow-[0_0_15px_rgba(189,0,255,0.4)] hover:shadow-[0_0_20px_rgba(189,0,255,0.6)]",
                                             isLoading && "opacity-50 cursor-not-allowed"
                                         )}
                                     >
-                                        <ArrowUp className="h-4 w-4" strokeWidth={2.5} />
+                                        <ArrowUp className="h-4 w-4 drop-shadow-md" strokeWidth={2.5} />
                                     </motion.button>
                                 ) : (
                                     <motion.div
@@ -156,9 +156,9 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
                                         className="flex items-center justify-center h-9 w-9"
                                     >
                                         {activeServer ? (
-                                            <div className="w-2.5 h-2.5 rounded-full bg-mint-green animate-pulse shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
+                                            <div className="w-2.5 h-2.5 rounded-full bg-mint-green animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
                                         ) : (
-                                            <div className="w-2.5 h-2.5 rounded-full bg-muted-foreground/20" />
+                                            <div className="w-2.5 h-2.5 rounded-full bg-slate-grey/30" />
                                         )}
                                     </motion.div>
                                 )}

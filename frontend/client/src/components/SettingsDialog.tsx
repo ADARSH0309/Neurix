@@ -91,16 +91,16 @@ export function SettingsDialog({ open, onOpenChange, settings, onSave, onClearDa
                                     key={option.value}
                                     onClick={() => handleThemeChange(option.value)}
                                     className={cn(
-                                        "flex flex-col items-center gap-2 p-3 rounded-xl border transition-all",
+                                        "flex flex-col items-center gap-2 p-3 rounded-xl transition-all border",
                                         settings.theme === option.value
-                                            ? "border-neurix-orange/50 bg-neurix-orange/10 text-white"
-                                            : "border-white/5 bg-white/5 text-slate-grey hover:bg-white/10 hover:text-white"
+                                            ? "border-electric-purple/50 bg-electric-purple/10 text-white shadow-[0_0_15px_rgba(139,92,246,0.15)]"
+                                            : "border-white/5 bg-white/5 text-slate-grey hover:bg-white/10 hover:border-white/10 hover:text-white"
                                     )}
                                 >
                                     <option.icon
                                         className={cn(
-                                            "w-5 h-5",
-                                            settings.theme === option.value ? "text-neurix-orange" : "text-slate-grey"
+                                            "w-5 h-5 transition-colors",
+                                            settings.theme === option.value ? "text-electric-purple" : "text-slate-grey group-hover:text-white"
                                         )}
                                     />
                                     <span className="text-xs font-medium">{option.label}</span>
@@ -138,12 +138,11 @@ export function SettingsDialog({ open, onOpenChange, settings, onSave, onClearDa
                     {/* About */}
                     <div className="space-y-3">
                         <label className="text-xs font-bold text-slate-grey uppercase tracking-wider">About</label>
-                        <div className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
-                            <Info className="w-4 h-4 text-neurix-orange mt-0.5 shrink-0" />
+                        <div className="flex items-start gap-3 p-3 rounded-xl bg-[#381932]/50 border border-white/5 backdrop-blur-sm">
+                            <Info className="w-4 h-4 text-electric-purple mt-0.5 shrink-0" />
                             <div className="text-xs text-slate-grey space-y-1">
-                                <p><strong className="text-white">Neurix</strong> v1.0.0</p>
-                                <p>AI-powered MCP chat interface for connecting and managing your services through natural conversation.</p>
-                                <p className="opacity-70">Built with React, TypeScript, and the Model Context Protocol.</p>
+                                <p><strong className="text-white font-heading tracking-wide">Neurix Workstation</strong> v2.0.0</p>
+                                <p>AI-powered MCP interface for high-performance terminal operations.</p>
                             </div>
                         </div>
                     </div>

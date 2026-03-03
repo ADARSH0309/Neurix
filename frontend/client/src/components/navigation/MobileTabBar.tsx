@@ -20,7 +20,7 @@ export function MobileTabBar() {
                         key={tab.id} onClick={tab.onClick}
                         className={cn(
                             "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-colors",
-                            tab.active ? "text-neurix-orange" : "text-slate-grey hover:text-white"
+                            tab.active ? "text-electric-purple" : "text-slate-grey hover:text-white"
                         )}
                     >
                         <tab.icon className="w-5 h-5" />

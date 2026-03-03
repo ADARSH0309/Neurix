@@ -347,6 +347,53 @@ function formatToolResponse(text: string, _toolName: string): string {
       return output;
     }
 
+    // ── Google Tasks: Tasks list ──
+    if (data.tasks && Array.isArray(data.tasks)) {
+      if (data.tasks.length === 0) return 'No tasks found.';
+      let output = `**Tasks** (${data.tasks.length})\n\n`;
+      data.tasks.forEach((task: any, i: number) => {
+        const status = task.status === 'completed' ? '✅' : '⬜';
+        output += `${status} **${task.title || '(No Title)'}**\n`;
+        if (task.notes) output += `   ${task.notes}\n`;
+        if (task.due) output += `   📅 Due: ${new Date(task.due).toLocaleDateString()}\n`;
+        output += '\n';
+      });
+      return output;
+    }
+
+    // ── Google Tasks: Single task ──
+    if (data.task && data.task.title !== undefined) {
+      const task = data.task;
+      const status = task.status === 'completed' ? '✅ Completed' : '⬜ Needs Action';
+      let output = `**${task.title || '(No Title)'}**\n\n`;
+      output += `**Status:** ${status}\n`;
+      if (task.notes) output += `**Notes:** ${task.notes}\n`;
+      if (task.due) output += `**Due:** ${new Date(task.due).toLocaleDateString()}\n`;
+      if (task.completed) output += `**Completed:** ${new Date(task.completed).toLocaleDateString()}\n`;
+      if (task.updated) output += `**Updated:** ${new Date(task.updated).toLocaleString()}\n`;
+      return output;
+    }
+
+    // ── Google Tasks: Task lists ──
+    if (data.taskLists && Array.isArray(data.taskLists)) {
+      if (data.taskLists.length === 0) return 'No task lists found.';
+      let output = `Found **${data.taskLists.length}** task list(s):\n\n`;
+      data.taskLists.forEach((tl: any, i: number) => {
+        output += `${i + 1}. **${tl.title || tl.id}**\n`;
+        if (tl.updated) output += `   Updated: ${new Date(tl.updated).toLocaleDateString()}\n`;
+        output += '\n';
+      });
+      return output;
+    }
+
+    // ── Google Tasks: Single task list ──
+    if (data.taskList && data.taskList.title !== undefined) {
+      const tl = data.taskList;
+      let output = `**${tl.title || tl.id}**\n\n`;
+      if (tl.updated) output += `**Updated:** ${new Date(tl.updated).toLocaleString()}\n`;
+      return output;
+    }
+
     // Default: return formatted JSON in a code block
     return '```json\n' + JSON.stringify(data, null, 2) + '\n```';
   } catch {

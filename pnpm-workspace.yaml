@@ -5,4 +5,5 @@ packages:
   - 'backend/gforms-server'
   - 'backend/gmail-server'
   - 'backend/gcalendar-server'
+  - 'backend/gtask-server'
   - 'backend/shared/mcp-sdk'

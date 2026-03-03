@@ -68,40 +68,40 @@ export function ToolsHUD({ isOpen, onClose }: ToolsHUDProps) {
                     animate={{ x: 0, opacity: 1 }}
                     exit={{ x: '100%', opacity: 0 }}
                     transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                    className="fixed right-0 top-0 h-full w-80 lg:w-96 glass-panel-elevated border-l border-white/10 z-50 flex flex-col shadow-2xl shadow-black/50"
+                    className="fixed right-0 top-0 h-full w-80 lg:w-96 bg-background/80 backdrop-blur-3xl border-l border-border z-50 flex flex-col shadow-2xl"
                 >
                     {/* HUD Header */}
-                    <div className="h-16 px-5 flex items-center justify-between border-b border-white/5 bg-white/5 backdrop-blur-md">
+                    <div className="h-16 px-5 flex items-center justify-between border-b border-border bg-black/[0.02] dark:bg-white/[0.02]">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-neurix-orange/20 flex items-center justify-center border border-neurix-orange/30 shadow-[0_0_10px_rgba(255,85,0,0.3)]">
-                                <Terminal className="w-4 h-4 text-neurix-orange" />
+                            <div className="w-8 h-8 rounded-lg bg-electric-purple/10 flex items-center justify-center border border-electric-purple/20 shadow-[0_0_12px_rgba(139,92,246,0.3)]">
+                                <Terminal className="w-4 h-4 text-electric-purple" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-sm tracking-wide text-white">SYSTEM HUD</h3>
-                                <p className="text-[10px] text-slate-400 font-mono">v2.0.4 ACTIVE</p>
+                                <h3 className="font-bold text-sm tracking-wide text-foreground">SYSTEM HUD</h3>
+                                <p className="text-[10px] text-slate-grey font-mono">v2.0.4 ACTIVE</p>
                             </div>
                         </div>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-white/10 text-slate-400 hover:text-white" onClick={onClose}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-slate-500 hover:text-foreground" onClick={onClose}>
                             <X className="h-4 w-4" />
                         </Button>
                     </div>
 
                     {/* Tabs */}
-                    <div className="p-4 border-b border-white/5">
-                        <div className="flex p-1 bg-black/40 rounded-xl border border-white/5 relative">
+                    <div className="p-4 border-b border-border">
+                        <div className="flex p-1 bg-black/5 dark:bg-black/40 rounded-xl border border-black/5 dark:border-white/5 relative">
                             {tabs.map((tab) => (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={cn(
-                                        "relative flex-1 py-2 rounded-lg text-xs font-medium transition-all z-10",
-                                        activeTab === tab.id ? "text-white" : "text-slate-400 hover:text-white"
+                                        "relative flex-1 py-1.5 rounded-lg text-xs font-medium transition-all z-10",
+                                        activeTab === tab.id ? "text-foreground" : "text-slate-grey hover:text-foreground"
                                     )}
                                 >
                                     {activeTab === tab.id && (
                                         <motion.div
                                             layoutId="hudTab"
-                                            className="absolute inset-0 bg-white/10 rounded-lg shadow-sm border border-white/5"
+                                            className="absolute inset-0 bg-white dark:bg-white/10 rounded-lg shadow-sm border border-black/5 dark:border-white/5"
                                             transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                                         />
                                     )}
@@ -134,39 +134,39 @@ export function ToolsHUD({ isOpen, onClose }: ToolsHUDProps) {
                                                         initial={{ opacity: 0, y: 10 }}
                                                         animate={{ opacity: 1, y: 0 }}
                                                         className={cn(
-                                                            "p-3 rounded-xl border transition-all group relative overflow-hidden",
+                                                            "p-3 rounded-xl border transition-all duration-300 group relative overflow-hidden",
                                                             server.connected
-                                                                ? "bg-neurix-orange/5 border-neurix-orange/30 hover:bg-neurix-orange/10"
-                                                                : "bg-white/5 border-white/5 hover:border-white/10"
+                                                                ? "bg-electric-purple/5 border-electric-purple/20 shadow-[0_0_15px_rgba(139,92,246,0.05)]"
+                                                                : "bg-black/[0.02] dark:bg-white/[0.02] border-black/5 dark:border-white/5 hover:border-black/10 dark:hover:border-white/10 hover:bg-black/[0.04] dark:hover:bg-white/[0.04]"
                                                         )}
                                                     >
-                                                        {server.connected && <div className="absolute inset-0 bg-gradient-to-r from-neurix-orange/10 to-transparent opacity-50" />}
+                                                        {server.connected && <div className="absolute inset-0 bg-gradient-to-br from-electric-purple/10 to-transparent opacity-30" />}
 
                                                         <div className="relative flex items-center gap-3 z-10">
                                                             <div className={cn(
-                                                                "w-10 h-10 rounded-lg flex items-center justify-center border transition-all shadow-lg",
+                                                                "w-10 h-10 rounded-lg flex items-center justify-center border transition-all duration-300 shadow-lg",
                                                                 server.connected
-                                                                    ? "bg-neurix-orange/20 border-neurix-orange/30 text-neurix-orange shadow-neurix-orange/20"
-                                                                    : "bg-white/5 border-white/10 text-slate-400"
+                                                                    ? "bg-electric-purple/10 border-electric-purple/30 text-electric-purple shadow-[0_0_10px_rgba(139,92,246,0.2)]"
+                                                                    : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-slate-grey group-hover:text-foreground group-hover:border-black/20 dark:group-hover:border-white/20"
                                                             )}>
                                                                 <Icon className="w-5 h-5" />
                                                             </div>
                                                             <div className="flex-1 min-w-0">
                                                                 <div className="flex items-center justify-between mb-0.5">
-                                                                    <span className={cn("text-sm font-medium", server.connected ? "text-white" : "text-slate-300")}>{server.name}</span>
-                                                                    {server.connected && <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />}
+                                                                    <span className={cn("text-sm font-medium transition-colors", server.connected ? "text-foreground" : "text-slate-500 dark:text-slate-400 group-hover:text-foreground")}>{server.name}</span>
+                                                                    {server.connected && <div className="w-1.5 h-1.5 rounded-full bg-mint-green animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />}
                                                                 </div>
                                                                 <p className="text-[10px] text-slate-500 truncate">{server.description}</p>
                                                             </div>
                                                         </div>
 
-                                                        <div className="relative mt-3 pt-3 border-t border-white/5 flex gap-2 z-10">
+                                                        <div className="relative mt-3 pt-3 border-t border-border flex gap-2 z-10">
                                                             <Button
                                                                 size="sm"
-                                                                variant={server.connected ? "destructive" : "default"}
+                                                                variant={server.connected ? "ghost" : "default"}
                                                                 className={cn(
-                                                                    "w-full h-7 text-[10px] uppercase tracking-wide font-semibold",
-                                                                    !server.connected && "bg-neurix-orange hover:bg-neurix-orange-light text-white border-none"
+                                                                    "w-full h-7 text-[10px] uppercase tracking-wider font-semibold transition-all duration-300",
+                                                                    server.connected ? "border border-border hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground text-slate-500 dark:text-slate-400" : "bg-black/5 dark:bg-white/5 text-foreground border border-black/10 dark:border-white/10 hover:bg-black/10 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20"
                                                                 )}
                                                                 onClick={(e) => server.connected ? handleDisconnect(e, server.id) : handleConnect(e, server.id)}
                                                             >
@@ -188,10 +188,10 @@ export function ToolsHUD({ isOpen, onClose }: ToolsHUDProps) {
                                                     const Icon = getServerIcon(server.id);
                                                     return (
                                                         <div key={server.id} className="flex items-center gap-3 p-2 rounded-lg border border-white/5 opacity-40 bg-black/20 pointer-events-none grayscale">
-                                                            <div className="w-8 h-8 rounded flex items-center justify-center bg-white/5">
-                                                                <Icon className="w-4 h-4 text-slate-400" />
+                                                            <div className="w-8 h-8 rounded flex items-center justify-center bg-white/5 border border-white/5">
+                                                                <Icon className="w-4 h-4 text-slate-grey" />
                                                             </div>
-                                                            <span className="text-xs font-medium text-slate-400">{server.name}</span>
+                                                            <span className="text-xs font-medium text-slate-grey">{server.name}</span>
                                                             <span className="ml-auto text-[9px] border border-white/10 px-1.5 py-0.5 rounded text-slate-500">OFFLINE</span>
                                                         </div>
                                                     );
@@ -241,11 +241,11 @@ export function ToolsHUD({ isOpen, onClose }: ToolsHUDProps) {
                                                     <button
                                                         key={tool.name}
                                                         onClick={() => sendMessage(tool.name.replace(/_/g, ' '))}
-                                                        className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 border border-transparent hover:border-white/5 transition-all text-left group"
+                                                        className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 border border-transparent hover:border-border transition-all text-left group"
                                                     >
                                                         <Command className="w-3.5 h-3.5 text-slate-500 group-hover:text-neurix-orange transition-colors" />
                                                         <div className="min-w-0">
-                                                            <div className="text-xs font-mono text-slate-300 group-hover:text-white transition-colors truncate">{tool.name}</div>
+                                                            <div className="text-xs font-mono text-slate-500 dark:text-slate-300 group-hover:text-foreground transition-colors truncate">{tool.name}</div>
                                                             <div className="text-[10px] text-slate-500 truncate">{tool.description}</div>
                                                         </div>
                                                     </button>
@@ -282,14 +282,14 @@ export function ToolsHUD({ isOpen, onClose }: ToolsHUDProps) {
                                                         transition={{ delay: i * 0.05 }}
                                                         className="relative pl-7 py-1 group"
                                                     >
-                                                        <div className="absolute left-[7px] top-2.5 w-1.5 h-1.5 rounded-full bg-slate-800 border border-slate-600 group-hover:border-neurix-orange group-hover:bg-neurix-orange transition-colors z-10" />
-                                                        <div className="p-2.5 rounded-lg border border-white/5 bg-black/20 hover:bg-white/5 transition-colors">
+                                                        <div className="absolute left-[7px] top-2.5 w-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 group-hover:border-neurix-orange group-hover:bg-neurix-orange transition-colors z-10" />
+                                                        <div className="p-2.5 rounded-lg border border-border bg-black/[0.02] dark:bg-black/20 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                                                             <div className="flex items-center gap-2 mb-1">
                                                                 <Icon className="w-3 h-3 text-neurix-orange" />
                                                                 <span className="text-[10px] font-bold text-slate-400 uppercase">{activity.serverName}</span>
-                                                                <span className="ml-auto text-[9px] font-mono text-slate-600">{activity.time}</span>
+                                                                <span className="ml-auto text-[9px] font-mono text-slate-500 dark:text-slate-600">{activity.time}</span>
                                                             </div>
-                                                            <p className="text-xs text-slate-300 leading-tight">{activity.action}</p>
+                                                            <p className="text-xs text-slate-600 dark:text-slate-300 leading-tight">{activity.action}</p>
                                                         </div>
                                                     </motion.div>
                                                 );

@@ -162,7 +162,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
             isToolsPanelOpen, setIsToolsPanelOpen,
             showProfileDialog, setShowProfileDialog,
             showSettingsDialog, setShowSettingsDialog,
-            settings, updateSettings, resolvedTheme,
+            settings, updateSettings, resolvedTheme: resolvedTheme || 'dark',
             profile, updateProfile,
             activities, addActivity, markAllNotificationsRead,
             clearAllData,
@@ -171,7 +171,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
             {children}
             <Toaster
                 position="top-right"
-                theme={resolvedTheme}
+                theme={resolvedTheme || 'dark'}
                 toastOptions={{
                     style: {
                         background: 'hsl(var(--card))',

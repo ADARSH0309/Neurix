@@ -48,35 +48,35 @@ export function CommandPalette({ query, onSelect, onClose }: CommandPaletteProps
             exit={{ opacity: 0, y: 8 }}
             transition={{ duration: 0.15 }}
             ref={listRef}
-            className="absolute bottom-full left-0 right-0 mb-2 mx-4 max-w-3xl mx-auto rounded-xl glass-panel-elevated shadow-2xl overflow-hidden z-50"
+            className="absolute bottom-full left-0 right-0 mb-2 mx-4 max-w-3xl mx-auto rounded-xl bg-midnight/80 backdrop-blur-3xl border border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.5)] overflow-hidden z-50"
         >
-            <div className="px-3 py-2 border-b border-white/5 flex items-center gap-2">
-                <Command className="w-3 h-3 text-neurix-orange" />
+            <div className="px-3 py-2 border-b border-white/5 flex items-center gap-2 bg-black/40">
+                <Command className="w-3 h-3 text-electric-purple drop-shadow-[0_0_8px_rgba(189,0,255,0.6)]" />
                 <span className="text-[10px] font-mono text-slate-grey uppercase tracking-widest">Commands</span>
             </div>
-            <div className="py-1 max-h-64 overflow-y-auto">
+            <div className="py-1 max-h-64 overflow-y-auto custom-scrollbar">
                 {filtered.map((cmd, idx) => (
                     <button
                         key={cmd.id}
                         onMouseEnter={() => setSelectedIndex(idx)}
                         onClick={() => onSelect(cmd.label, cmd.action)}
                         className={cn(
-                            "w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors",
-                            idx === selectedIndex ? "bg-neurix-orange/[0.08] text-white" : "text-slate-grey hover:bg-white/[0.03]"
+                            "w-full flex items-center gap-3 px-3 py-2.5 text-left transition-all duration-300",
+                            idx === selectedIndex ? "bg-electric-purple/10 text-white" : "text-slate-grey hover:bg-white/[0.03]"
                         )}
                     >
                         <div className={cn(
-                            "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border",
-                            idx === selectedIndex ? "border-neurix-orange/30 bg-neurix-orange/10 text-neurix-orange" : "border-white/5 bg-white/[0.03]"
+                            "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-all duration-300",
+                            idx === selectedIndex ? "border-electric-purple/40 bg-electric-purple/20 text-electric-purple shadow-[0_0_15px_rgba(189,0,255,0.2)]" : "border-white/5 bg-white/[0.03]"
                         )}>
-                            <cmd.icon className="w-3.5 h-3.5" />
+                            <cmd.icon className={cn("w-3.5 h-3.5", idx === selectedIndex && "drop-shadow-[0_0_8px_rgba(189,0,255,0.6)]")} />
                         </div>
                         <div className="flex-1 min-w-0">
                             <span className="text-sm font-mono font-medium">{cmd.label}</span>
                             <span className="text-xs text-slate-grey ml-2">{cmd.description}</span>
                         </div>
                         {idx === selectedIndex && (
-                            <span className="text-[10px] font-mono text-slate-grey px-1.5 py-0.5 rounded bg-white/[0.03] border border-white/5">Enter</span>
+                            <span className="text-[10px] font-mono text-electric-purple/80 px-1.5 py-0.5 rounded bg-electric-purple/10 border border-electric-purple/20">Enter</span>
                         )}
                     </button>
                 ))}

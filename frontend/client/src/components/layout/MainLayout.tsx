@@ -39,7 +39,7 @@ export function MainLayout({ children }: MainLayoutProps) {
     const unreadCount = activities.filter(a => !a.read).length;
 
     return (
-        <div className="relative w-full h-screen overflow-hidden bg-background text-foreground font-sans selection:bg-primary/30 selection:text-white">
+        <div className="relative w-full h-screen overflow-hidden bg-background text-foreground font-sans selection:bg-primary/30 selection:text-primary-foreground">
             {/* Ambient Background */}
             <BackgroundLayer />
 
@@ -49,6 +49,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <Header
                     profile={profile}
                     theme={resolvedTheme}
+                    onToggleTheme={() => updateSettings({ ...settings, theme: resolvedTheme === 'dark' ? 'light' : 'dark' })}
                     onToggleSidebar={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                     isSidebarOpen={isMobileMenuOpen}
                     connectedServers={connectedServers}
@@ -81,7 +82,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                     )}
 
                     {/* Stage (Center) */}
-                    <main className="flex-1 relative flex flex-col h-full overflow-hidden transition-all duration-500 ease-out p-2 md:p-4 lg:p-6">
+                    <main className="flex-1 relative flex flex-col h-full overflow-hidden transition-all duration-500 ease-out p-3 md:p-6 lg:p-8">
                         <div className="flex-1 w-full max-w-5xl mx-auto h-full flex flex-col relative">
                             {children}
                         </div>

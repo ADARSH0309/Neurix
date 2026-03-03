@@ -37,6 +37,10 @@ const SERVER_PROMPTS: Record<string, { label: string; prompts: string[] }> = {
         label: 'Google Calendar',
         prompts: ['Show today\'s events', 'List upcoming meetings', 'Check my schedule'],
     },
+    gtask: {
+        label: 'Google Tasks',
+        prompts: ['Show my tasks', 'List task lists', 'Create a new task'],
+    },
 };
 
 // Typing Indicator with server context
@@ -188,7 +192,7 @@ const ChatMessage = ({ msg, searchQuery }: { msg: Message; searchQuery?: string 
                                             );
                                         }
                                         return (
-                                            <div className="my-3 rounded-xl border border-border dark:border-white/[0.06] bg-muted dark:bg-[#0a0a0f] overflow-hidden">
+                                            <div className="my-3 rounded-xl border border-border dark:border-white/[0.06] bg-muted dark:bg-[#381932] overflow-hidden">
                                                 <div className="flex items-center justify-between px-4 py-2 bg-muted/80 dark:bg-white/[0.03] border-b border-border dark:border-white/[0.06]">
                                                     <div className="flex items-center gap-2">
                                                         <div className="flex gap-1.5">
@@ -367,12 +371,12 @@ const ConnectedEmptyState = ({
                 className="relative mb-6"
             >
                 <div className={cn(
-                    "w-20 h-20 rounded-2xl flex items-center justify-center border",
-                    visual.darkBg, "border-current/20"
+                    "w-20 h-20 rounded-2xl flex items-center justify-center border shadow-[0_0_30px_rgba(var(--electric-purple-rgb),0.15)]",
+                    visual.darkBg, "border-electric-purple/30 bg-electric-purple/5"
                 )}>
-                    <Icon className="w-10 h-10" />
+                    <Icon className="w-10 h-10 text-electric-purple drop-shadow-[0_0_8px_rgba(var(--electric-purple-rgb),0.5)]" />
                 </div>
-                <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-mint-green flex items-center justify-center border-2 border-background shadow-lg">
+                <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-electric-purple flex items-center justify-center border-2 border-background shadow-[0_0_15px_rgba(var(--electric-purple-rgb),0.5)]">
                     <Zap className="w-3 h-3 text-white" />
                 </div>
             </motion.div>
@@ -406,13 +410,13 @@ const ConnectedEmptyState = ({
                             whileHover={{ x: 4 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => onSend(prompt)}
-                            className="w-full flex items-center gap-3 p-3.5 rounded-xl bg-card border border-border hover:border-neurix-orange/30 hover:bg-neurix-orange/[0.03] transition-all group text-left"
+                            className="w-full flex items-center gap-3 p-3.5 rounded-xl bg-background/60 border border-border hover:border-electric-purple/50 hover:bg-electric-purple/10 hover:shadow-[0_0_20px_rgba(189,0,255,0.1)] transition-all duration-300 group text-left backdrop-blur-md"
                         >
-                            <div className="w-8 h-8 rounded-lg bg-muted dark:bg-white/[0.05] border border-border dark:border-white/[0.06] flex items-center justify-center group-hover:border-neurix-orange/25 group-hover:bg-neurix-orange/10 transition-all">
-                                <Sparkles className="w-4 h-4 text-muted-foreground group-hover:text-neurix-orange transition-colors" />
+                            <div className="w-8 h-8 rounded-lg bg-black/5 dark:bg-black/40 border border-border flex items-center justify-center group-hover:border-electric-purple/30 group-hover:bg-electric-purple/20 transition-all duration-300">
+                                <Sparkles className="w-4 h-4 text-slate-grey group-hover:text-electric-purple transition-colors drop-shadow-[0_0_8px_rgba(189,0,255,0)] group-hover:drop-shadow-[0_0_8px_rgba(189,0,255,0.6)]" />
                             </div>
-                            <span className="text-sm text-foreground/80 group-hover:text-foreground transition-colors">{prompt}</span>
-                            <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-neurix-orange/60 ml-auto transition-colors" />
+                            <span className="text-sm font-medium text-slate-grey group-hover:text-foreground transition-colors">{prompt}</span>
+                            <ArrowRight className="w-4 h-4 text-slate-grey/40 group-hover:text-electric-purple ml-auto transition-colors" />
                         </motion.button>
                     ))}
                 </div>
@@ -430,16 +434,17 @@ const DisconnectedEmptyState = ({
     servers: any[];
 }) => {
     return (
-        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+        <div className="flex-1 flex flex-col items-center p-6 pb-4 text-center my-auto">
             {/* Hero */}
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="relative mb-8"
+                className="relative mb-8 mt-auto"
             >
-                <div className="w-20 h-20 rounded-2xl bg-neurix-orange/10 flex items-center justify-center border border-neurix-orange/20">
-                    <Bot className="w-10 h-10 text-neurix-orange" />
+                <div className="w-20 h-20 rounded-2xl bg-electric-purple/10 flex items-center justify-center border border-electric-purple/30 shadow-[0_0_30px_rgba(189,0,255,0.15)] relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-electric-purple/0 via-electric-purple/5 to-electric-purple/20" />
+                    <Bot className="w-10 h-10 text-electric-purple drop-shadow-[0_0_12px_rgba(189,0,255,0.6)] relative z-10" />
                 </div>
             </motion.div>
 
@@ -462,10 +467,10 @@ const DisconnectedEmptyState = ({
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2, duration: 0.4 }}
-                    className="w-full max-w-lg"
+                    className="w-full max-w-lg mb-auto"
                 >
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {servers.slice(0, 4).map((server, i) => {
+                        {servers.slice(0, 6).map((server, i) => {
                             const Icon = getServerIcon(server.id);
                             return (
                                 <motion.button
@@ -476,14 +481,14 @@ const DisconnectedEmptyState = ({
                                     whileHover={{ y: -2 }}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => onSelect(server.id)}
-                                    className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:border-neurix-orange/30 hover:bg-neurix-orange/[0.03] transition-all group text-left"
+                                    className="flex items-center gap-3 p-4 rounded-xl bg-black/[0.02] dark:bg-midnight/50 border border-border hover:border-electric-purple/40 hover:bg-electric-purple/10 hover:shadow-[0_0_20px_rgba(189,0,255,0.15)] backdrop-blur-md transition-all duration-300 group text-left"
                                 >
-                                    <div className="w-10 h-10 rounded-xl bg-muted dark:bg-white/[0.05] border border-border dark:border-white/[0.06] flex items-center justify-center group-hover:border-neurix-orange/25 group-hover:bg-neurix-orange/10 transition-all text-muted-foreground group-hover:text-neurix-orange">
+                                    <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-black/40 border border-border flex items-center justify-center group-hover:border-electric-purple/30 group-hover:bg-electric-purple/20 transition-all duration-300 text-slate-grey group-hover:text-electric-purple drop-shadow-none group-hover:drop-shadow-[0_0_8px_rgba(189,0,255,0.5)]">
                                         <Icon className="w-5 h-5" />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <span className="block text-sm font-medium text-foreground">{server.name}</span>
-                                        <span className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground/60 group-hover:text-neurix-orange/60 transition-colors">
+                                        <span className="block text-sm font-medium text-foreground/90 group-hover:text-foreground transition-colors">{server.name}</span>
+                                        <span className="flex items-center gap-1 text-[10px] font-mono text-slate-grey group-hover:text-electric-purple transition-colors mt-0.5">
                                             Connect <ArrowRight className="w-2.5 h-2.5" />
                                         </span>
                                     </div>
@@ -625,7 +630,7 @@ export function ChatStage() {
                 )}
 
                 <ScrollArea className="h-full">
-                    <div className="px-4 py-6 min-h-full flex flex-col">
+                    <div className="px-4 pt-6 pb-2 min-h-full flex flex-col">
                         {messages.length === 0 ? (
                             hasConnectedServer && activeServerId ? (
                                 <ConnectedEmptyState

@@ -74,6 +74,16 @@ function generateSuggestions(serverName: string, responseContent: string, server
             else suggestions.push('Show today\'s events');
         }
         if (lower.includes('calendar')) suggestions.push('Show today\'s events');
+    } else if (serverId === 'gtask') {
+        if (lower.includes('task') || lower.includes('todo') || lower.includes('list')) {
+            suggestions.push('Show my tasks');
+            if (lower.includes('completed')) suggestions.push('Clear completed tasks');
+            else suggestions.push('List task lists');
+        }
+        if (lower.includes('created') || lower.includes('added')) {
+            suggestions.push('Show my tasks');
+        }
+        if (lower.includes('complete')) suggestions.push('List task lists');
     }
 
     // General content-based fallbacks
@@ -83,6 +93,7 @@ function generateSuggestions(serverName: string, responseContent: string, server
         if (lower.includes('form') || lower.includes('survey')) suggestions.push('List my forms');
         if (lower.includes('email') || lower.includes('message')) suggestions.push('Show unread emails');
         if (lower.includes('event') || lower.includes('meeting')) suggestions.push('Show today\'s events');
+        if (lower.includes('task') || lower.includes('todo')) suggestions.push('Show my tasks');
     }
 
     // Final fallback

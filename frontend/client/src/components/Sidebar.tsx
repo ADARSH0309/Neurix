@@ -101,22 +101,25 @@ export function Sidebar({
 
             <aside
                 className={cn(
-                    "fixed inset-y-0 left-0 z-50 flex flex-col w-[280px] bg-midnight border-r border-[#1F2937]",
-                    "md:static md:z-auto",
+                    "fixed inset-y-0 left-0 z-50 flex flex-col w-[280px]",
+                    "bg-[#381932]/80 backdrop-blur-3xl border-r border-white-[0.05]",
+                    "shadow-[0_0_40px_rgba(0,0,0,0.5)]",
+                    "md:relative md:z-auto",
                     isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
-                    "transition-transform duration-200"
+                    "transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
                 )}
             >
                 {/* Header / New Chat */}
-                <div className="p-4 border-b border-[#1F2937]/50">
+                <div className="p-4 border-b border-white/[0.05] relative w-full group/header">
+                    <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-electric-purple/20 to-transparent opacity-0 group-hover/header:opacity-100 transition-opacity" />
                     <button
                         onClick={onNewChat}
-                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#1F2937] transition-all group items-center justify-start text-sm font-medium text-slate-grey hover:text-white"
+                        className="w-full flex items-center gap-3 px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:border-electric-purple/30 hover:bg-white/[0.04] hover:shadow-[0_0_15px_rgba(139,92,246,0.1)] transition-all group items-center justify-start text-sm font-medium text-slate-grey hover:text-white backdrop-blur-md"
                     >
-                        <div className="w-6 h-6 rounded flex items-center justify-center border border-[#1F2937] group-hover:border-electric-purple/50">
+                        <div className="w-6 h-6 rounded flex items-center justify-center bg-[#381932] border border-white/10 group-hover:border-electric-purple/50 group-hover:text-electric-purple transition-colors shadow-inner">
                             <Plus className="w-4 h-4" />
                         </div>
-                        <span>New Conversation</span>
+                        <span className="tracking-wide">New Session</span>
                     </button>
                 </div>
 
@@ -166,20 +169,20 @@ export function Sidebar({
                                         onMouseEnter={() => setHoveredSession(session.id)}
                                         onMouseLeave={() => setHoveredSession(null)}
                                         className={cn(
-                                            "w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm transition-colors relative group",
+                                            "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-300 relative group overflow-hidden border",
                                             activeSessionId === session.id
-                                                ? "bg-[#1F2937] text-white"
-                                                : "text-slate-grey hover:text-white hover:bg-[#1F2937]"
+                                                ? "bg-electric-purple/10 border-electric-purple/20 text-white shadow-[0_0_15px_rgba(139,92,246,0.1)_inset]"
+                                                : "bg-transparent border-transparent text-slate-grey hover:text-white hover:bg-white/[0.03] hover:border-white/5"
                                         )}
                                     >
                                         {activeSessionId === session.id && (
                                             <motion.div
                                                 layoutId="active-cursor"
-                                                className="absolute left-0 w-0.5 h-4 bg-electric-purple rounded-full"
+                                                className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-electric-purple shadow-[0_0_10px_rgba(139,92,246,0.8)]"
                                             />
                                         )}
-                                        <MessageSquare className="w-4 h-4 opacity-70" />
-                                        <span className="truncate flex-1 text-left">{session.title}</span>
+                                        <MessageSquare className={cn("w-4 h-4 transition-colors", activeSessionId === session.id ? "text-electric-purple" : "opacity-50 group-hover:opacity-100 group-hover:text-electric-purple/70")} />
+                                        <span className="truncate flex-1 text-left font-medium">{session.title}</span>
                                         {hoveredSession === session.id && (
                                             <div
                                                 onClick={(e) => { e.stopPropagation(); onDeleteSession(session.id); }}

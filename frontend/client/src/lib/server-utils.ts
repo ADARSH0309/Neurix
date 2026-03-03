@@ -6,6 +6,7 @@ import {
     FileText,
     Mail,
     Calendar,
+    CheckSquare,
     Sparkles,
 } from 'lucide-react';
 
@@ -66,6 +67,13 @@ const serverVisuals: Record<string, ServerVisual> = {
         accent: 'teal',
         lightBg: 'bg-teal-50',
         darkBg: 'bg-teal-500/10',
+    },
+    gtask: {
+        icon: CheckSquare,
+        gradient: 'from-amber-500 to-orange-600',
+        accent: 'amber',
+        lightBg: 'bg-amber-50',
+        darkBg: 'bg-amber-500/10',
     },
 };
 

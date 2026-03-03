@@ -47,6 +47,11 @@ const MCP_SERVERS: Record<string, McpServerConfig> = {
     name: 'Google Calendar',
     port: 8083,
     baseUrl: process.env.GCALENDAR_SERVER_URL || 'http://localhost:8083'
+  },
+  gtask: {
+    name: 'Google Tasks',
+    port: 8084,
+    baseUrl: process.env.GTASK_SERVER_URL || 'http://localhost:8084'
   }
 };
 
@@ -373,6 +378,7 @@ app.listen(PORT, () => {
   - Google Forms:    ${MCP_SERVERS.gforms.baseUrl}
   - Gmail:           ${MCP_SERVERS.gmail.baseUrl}
   - Google Calendar: ${MCP_SERVERS.gcalendar.baseUrl}
+  - Google Tasks:    ${MCP_SERVERS.gtask.baseUrl}
 
   OpenAI: ${process.env.OPENAI_API_KEY ? 'Configured' : 'Not configured'}
   `);

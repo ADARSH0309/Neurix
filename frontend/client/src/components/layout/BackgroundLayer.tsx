@@ -2,21 +2,31 @@ import { memo } from 'react';
 
 export const BackgroundLayer = memo(function BackgroundLayer() {
     return (
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-            {/* Base */}
-            <div className="absolute inset-0 bg-background" />
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-background transition-colors duration-500">
+            {/* Light Mode Top Gradient (Warm Cream) */}
+            <div className="absolute inset-x-0 top-0 h-[600px] bg-gradient-to-b from-[#fff3e6] via-[#fff8f1]/50 to-transparent dark:hidden" />
 
-            {/* Subtle Grid */}
-            <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.03] dark:opacity-[0.03] bg-center [mask-image:linear-gradient(to_bottom,transparent,black,transparent)]" />
+            {/* Dark Mode Ambient Elements */}
+            <div className="hidden dark:block">
+                {/* Base Neural Gradient Map */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(168,85,247,0.08),transparent_50%),radial-gradient(circle_at_0%_0%,rgba(52,211,153,0.05),transparent_40%)]" />
 
-            {/* Ambient Orbs - subtle in light, more visible in dark */}
-            <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-orange-100/30 dark:bg-purple-900/10 blur-[120px] animate-pulse-slow" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[30vw] h-[30vw] rounded-full bg-blue-100/20 dark:bg-blue-900/10 blur-[100px] animate-pulse-slow delay-1000" />
+                {/* Premium HUD Grid from main.css */}
+                <div className="absolute inset-0 hud-grid opacity-30 [mask-image:radial-gradient(ellipse_100%_100%_at_50%_50%,black_10%,transparent_100%)]" />
 
-            {/* Noise Texture */}
-            <div className="absolute inset-0 opacity-[0.015] dark:opacity-[0.02] mix-blend-overlay"
-                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E")` }}
-            />
+                {/* Large Ambient Floating Orbs */}
+                <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-electric-purple/5 blur-[150px] animate-float-slow mix-blend-screen" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-mint-green/5 blur-[120px] animate-float delay-1000 mix-blend-screen" />
+                <div className="absolute top-[40%] left-[80%] w-[30vw] h-[30vw] rounded-full bg-electric-purple/5 blur-[100px] animate-float-reverse delay-500 mix-blend-screen" />
+
+                {/* Scanlines Overlay for Terminal Vibe */}
+                <div className="absolute inset-0 scanlines-subtle opacity-40 mix-blend-overlay" />
+
+                {/* Premium Noise Texture */}
+                <div className="absolute inset-0 opacity-[0.025] mix-blend-overlay"
+                    style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E")` }}
+                />
+            </div>
         </div>
     );
 });
