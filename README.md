@@ -2,9 +2,14 @@
 
 # Neurix
 
-**AI Chat Platform with MCP Servers**
+**AI-Powered MCP Workstation**
 
-A universal chat interface that connects AI with Google Drive, Forms & Gmail using Model Context Protocol (MCP). Manage files, create documents, send emails, and build surveys — all through natural language.
+A universal chat interface that connects to Google Drive, Forms, Gmail, Calendar & Tasks using Model Context Protocol (MCP). Manage files, send emails, create events, track tasks, and build surveys — all through natural language.
+
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![MCP](https://img.shields.io/badge/MCP-Protocol-FF5500)](https://modelcontextprotocol.io)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 </div>
 
@@ -13,11 +18,13 @@ A universal chat interface that connects AI with Google Drive, Forms & Gmail usi
 ### Features
 
 - **Google Drive** — Search, create, share, and organize files and folders
-- **Google Calendar** — Create events, manage calendars, check availability
 - **Google Forms** — Create surveys, manage questions, analyze responses
 - **Gmail** — Send, reply, search emails, manage labels and drafts
-- **Chat Interface** — Multi-server chat with persistent sessions and smart tool matching
-- **OAuth 2.0** — Secure Google authentication with token management
+- **Google Calendar** — Create events, manage calendars, check availability
+- **Google Tasks** — Create task lists, add/complete/delete tasks by name
+- **Smart Routing** — Auto-routes commands to the correct server across all connected services
+- **Chat Interface** — Multi-server chat with persistent sessions, command palette, and suggestions
+- **OAuth 2.0** — Secure Google authentication with automatic token refresh
 
 ---
 
@@ -25,10 +32,10 @@ A universal chat interface that connects AI with Google Drive, Forms & Gmail usi
 
 | Layer | Technology |
 |-------|------------|
-| **Frontend** | React, TypeScript, Vite, Tailwind CSS, Shadcn UI, Framer Motion |
-| **Backend** | Node.js, Express, TypeScript, MCP SDK |
-| **AI** | OpenAI API |
-| **Auth** | Google OAuth 2.0 with PKCE |
+| **Frontend** | React 19, TypeScript, Vite, Tailwind CSS, Shadcn UI, Framer Motion |
+| **Backend** | Node.js, Express, TypeScript, JSON-RPC 2.0 |
+| **Protocol** | Model Context Protocol (MCP) |
+| **Auth** | Google OAuth 2.0 |
 | **Architecture** | pnpm monorepo |
 
 ---
@@ -38,14 +45,14 @@ A universal chat interface that connects AI with Google Drive, Forms & Gmail usi
 ```
 Neurix/
 ├── backend/
-│   ├── gcalendar-server/   # Google Calendar MCP server
-│   ├── gdrive-server/      # Google Drive MCP server
-│   ├── gforms-server/      # Google Forms MCP server
-│   ├── gmail-server/       # Gmail MCP server
+│   ├── gcalendar-server/   # Google Calendar MCP server  (port 8083)
+│   ├── gdrive-server/      # Google Drive MCP server     (port 8080)
+│   ├── gforms-server/      # Google Forms MCP server     (port 8081)
+│   ├── gmail-server/       # Gmail MCP server            (port 8082)
+│   ├── gtask-server/       # Google Tasks MCP server     (port 8084)
 │   └── shared/mcp-sdk/     # Shared MCP utilities
 ├── frontend/
-│   ├── client/             # React chat interface
-│   └── server/             # Express + OpenAI proxy
+│   └── client/             # React chat interface         (port 9000)
 └── pnpm-workspace.yaml
 ```
 
@@ -62,24 +69,38 @@ pnpm install
 # Configure environment variables
 # Copy .env.example files in each backend server and fill in your credentials
 
-# Start servers (each in a separate terminal)
-pnpm dev:gdrive       # Google Drive server (port 8080)
-pnpm dev:gforms       # Google Forms server (port 8081)
-pnpm dev:gmail        # Gmail server (port 8082)
-pnpm start:frontend   # Frontend server
+# Start all servers (each in a separate terminal)
+pnpm dev:gdrive       # Google Drive    → localhost:8080
+pnpm dev:gforms       # Google Forms    → localhost:8081
+pnpm dev:gmail        # Gmail           → localhost:8082
+pnpm dev:gcalendar    # Google Calendar → localhost:8083
+pnpm dev:gtask        # Google Tasks    → localhost:8084
 
-# Start frontend dev server
-cd frontend/client && pnpm dev
+# Start frontend
+cd frontend/client && pnpm dev   # → localhost:9000
 ```
 
 ---
 
 ### How It Works
 
-1. Connect to one or more MCP servers (Drive, Forms, Gmail)
+1. Connect to one or more MCP servers (Drive, Forms, Gmail, Calendar, Tasks)
 2. Authenticate with Google OAuth
 3. Use natural language to interact with your Google services
-4. The platform routes commands to the right MCP server and returns results in chat
+4. Smart routing automatically sends commands to the correct server
+5. Results are formatted and displayed in the chat interface
+
+---
+
+### Example Commands
+
+| Service | Command |
+|---------|---------|
+| **Drive** | `list my recent files`, `search for reports` |
+| **Gmail** | `show unread emails`, `send email to user@example.com` |
+| **Forms** | `list my forms`, `create form Project Feedback` |
+| **Calendar** | `show today's events`, `create event Team Meeting` |
+| **Tasks** | `list task lists`, `create task Buy groceries in Shopping` |
 
 ---
 
