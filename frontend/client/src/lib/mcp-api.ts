@@ -173,6 +173,15 @@ function formatToolResponse(text: string, _toolName: string): string {
   try {
     const data = JSON.parse(text);
 
+    // ── Google Tasks: Delete/clear action responses ──
+    if (data.success && (data.action === 'deleted' || data.action === 'cleared_completed')) {
+      if (data.action === 'deleted') {
+        const name = data.title || 'Task';
+        return `**${name}** has been deleted.\n\n[Open Google Tasks](https://tasks.google.com)`;
+      }
+      return `**Completed tasks cleared.**\n\n[Open Google Tasks](https://tasks.google.com)`;
+    }
+
     // ── Gmail: Success action responses ──
     if (data.success && data.action) {
       return formatGmailActionResponse(data);
@@ -408,6 +417,7 @@ function formatToolResponse(text: string, _toolName: string): string {
       const task = data.task;
       const status = task.status === 'completed' ? 'Completed' : 'Pending';
       let output = `**${task.title || '(No Title)'}**\n\n`;
+      if (data.taskListName) output += `**List:** ${data.taskListName}\n`;
       output += `**Status:** ${status}\n`;
       if (task.notes) output += `**Notes:** ${task.notes}\n`;
       if (task.due) output += `**Due:** ${new Date(task.due).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}\n`;
@@ -776,20 +786,31 @@ export function matchUserInputToTool(
         const required = tool.inputSchema.required || [];
         const propNames = Object.keys(tool.inputSchema.properties);
 
+        // Check for "in [list name]" pattern for task list targeting
+        // e.g. "create task Buy groceries in Shopping"
+        let mainInput = restOfInput;
+        if (tool.inputSchema.properties['taskListName']) {
+          const inMatch = restOfInput.match(/^(.+?)\s+in\s+(.+)$/i);
+          if (inMatch) {
+            mainInput = inMatch[1].trim();
+            args['taskListName'] = inMatch[2].trim();
+          }
+        }
+
         // Find the first required string property
         const firstRequiredString = propNames.find(
           p => required.includes(p) && (tool.inputSchema.properties?.[p] as any)?.type === 'string'
         );
 
         if (firstRequiredString) {
-          args[firstRequiredString] = restOfInput;
+          args[firstRequiredString] = mainInput;
         } else {
           // Otherwise use first string property
           const firstStringProp = propNames.find(
             p => (tool.inputSchema.properties?.[p] as any)?.type === 'string'
           );
           if (firstStringProp) {
-            args[firstStringProp] = restOfInput;
+            args[firstStringProp] = mainInput;
           }
         }
       }

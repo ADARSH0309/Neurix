@@ -247,8 +247,27 @@ export function ChatProvider({ children }: { children: ReactNode }) {
                             responseContent = await executeTool(serverId, tool.name, args);
                         }
                     } else {
-                        // No tool matched
-                        responseContent = `I couldn't find a matching command for: "${text}"\n\n${generateToolsHelpMessage(server.tools, server.name)}`;
+                        // No tool matched on active server — check other connected servers
+                        let crossMatch: { matchedServerId: string; matchedTool: any; matchedArgs: any; missingReq: string[] } | null = null;
+
+                        for (const [sid, srv] of Object.entries(servers)) {
+                            if (sid === serverId || !srv.connected || !srv.tools || srv.tools.length === 0) continue;
+                            const result = matchUserInputToTool(text, srv.tools);
+                            if (result.tool && result.missingRequired.length === 0) {
+                                crossMatch = { matchedServerId: sid, matchedTool: result.tool, matchedArgs: result.args, missingReq: result.missingRequired };
+                                break;
+                            }
+                        }
+
+                        if (crossMatch) {
+                            const matchedServer = servers[crossMatch.matchedServerId];
+                            setServerActiveId(crossMatch.matchedServerId);
+                            addActivity('info', `Auto-switched to ${matchedServer.name}`, crossMatch.matchedServerId, matchedServer.name);
+                            toast.info(`Switched to ${matchedServer.name}`);
+                            responseContent = await executeTool(crossMatch.matchedServerId, crossMatch.matchedTool.name, crossMatch.matchedArgs);
+                        } else {
+                            responseContent = `I couldn't find a matching command for: "${text}"\n\n${generateToolsHelpMessage(server.tools, server.name)}`;
+                        }
                     }
                 } else {
                     // No tools yet - fetch them and retry
@@ -266,7 +285,24 @@ export function ChatProvider({ children }: { children: ReactNode }) {
                                 responseContent = await executeTool(serverId, matched.tool.name, matched.args);
                             }
                         } else {
-                            responseContent = generateToolsHelpMessage(fetchedTools, server.name);
+                            // Check other connected servers
+                            let crossMatch2: { matchedServerId: string; matchedTool: any; matchedArgs: any } | null = null;
+                            for (const [sid, srv] of Object.entries(servers)) {
+                                if (sid === serverId || !srv.connected || !srv.tools || srv.tools.length === 0) continue;
+                                const result = matchUserInputToTool(text, srv.tools);
+                                if (result.tool && result.missingRequired.length === 0) {
+                                    crossMatch2 = { matchedServerId: sid, matchedTool: result.tool, matchedArgs: result.args };
+                                    break;
+                                }
+                            }
+                            if (crossMatch2) {
+                                const ms = servers[crossMatch2.matchedServerId];
+                                setServerActiveId(crossMatch2.matchedServerId);
+                                toast.info(`Switched to ${ms.name}`);
+                                responseContent = await executeTool(crossMatch2.matchedServerId, crossMatch2.matchedTool.name, crossMatch2.matchedArgs);
+                            } else {
+                                responseContent = generateToolsHelpMessage(fetchedTools, server.name);
+                            }
                         }
                     } else {
                         responseContent = `Connecting to ${server.name}... Tools are still loading. Please try again in a moment.`;

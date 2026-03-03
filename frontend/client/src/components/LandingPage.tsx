@@ -8,7 +8,6 @@ import {
     Zap,
     Lock,
     Globe,
-    Github,
     CheckCircle2,
     Layers,
     Database,
@@ -699,7 +698,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
 
                                 {/* Subtitle */}
                                 <p className="text-lg sm:text-xl max-w-lg mx-auto lg:mx-0 mb-10 leading-relaxed font-sans-body text-white/90">
-                                    One chat interface to manage Google Drive, Forms, GitHub, and more through natural conversation.
+                                    One chat interface to manage Google Drive, Gmail, Calendar, Tasks, and more through natural conversation.
                                 </p>
 
                                 {/* CTA Buttons - Pill Style */}
@@ -751,7 +750,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                             {[
                                                 { name: "Project files uploaded", time: "2m ago", icon: FolderOpen },
                                                 { name: "Form responses synced", time: "5m ago", icon: FormInput },
-                                                { name: "GitHub issues updated", time: "12m ago", icon: CheckCircle2 },
+                                                { name: "Calendar events synced", time: "12m ago", icon: CheckCircle2 },
                                             ].map((item, i) => (
                                                 <div key={i} className="list-item-hover flex items-center gap-3 p-3 -mx-3">
                                                     <div className="icon-circle shrink-0">
@@ -863,7 +862,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                         "text-base font-sans-body mb-6 leading-relaxed",
                                         isDark ? "text-white/60" : "text-[#381932]/60"
                                     )}>
-                                        One conversation to control all your services. Switch between Drive, Forms, and GitHub naturally.
+                                        One conversation to control all your services. Switch between Drive, Gmail, Calendar, and Tasks naturally.
                                     </p>
 
                                     {/* Chat preview */}
@@ -881,7 +880,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                         </div>
                                         <div className="flex gap-3 items-start justify-end">
                                             <div className="chat-bubble-user font-sans-body">
-                                                Check my GitHub issues
+                                                Show today's calendar events
                                             </div>
                                         </div>
                                         <div className="flex gap-3 items-start">
@@ -926,7 +925,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                         "text-base font-sans-body mb-6 leading-relaxed",
                                         isDark ? "text-white/60" : "text-[#381932]/60"
                                     )}>
-                                        Full-featured integrations across Google Drive, Forms, Gmail, GitHub, Slack, and more.
+                                        Full-featured integrations across Google Drive, Forms, Gmail, Calendar, and Tasks.
                                     </p>
 
                                     {/* Tool grid */}
@@ -1617,7 +1616,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                             <span className={cn("text-sm font-serif-display font-bold", isDark ? "text-white" : "text-[#381932]")}>Neurix</span>
                                         </div>
                                         <div className="space-y-2 text-sm font-sans-body">
-                                            {['Google Drive', 'Google Forms', 'GitHub', 'Slack'].map((item, i) => (
+                                            {['Google Drive', 'Google Forms', 'Gmail', 'Google Tasks'].map((item, i) => (
                                                 <div
                                                     key={item}
                                                     className={cn(
@@ -1625,7 +1624,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                                         i === 0
                                                             ? "bg-[#FF5500] text-white"
                                                             : (isDark ? "text-white/50 hover:text-white hover:bg-white/5" : "text-[#381932]/50 hover:text-[#381932] hover:bg-black/5"),
-                                                        i === 3 && "opacity-50"
+                                                        ""
                                                     )}
                                                 >
                                                     {item}
@@ -1775,8 +1774,8 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                 {[
                                     { name: "Michael Brown", username: "@mikeb", body: "Google Drive integration is flawless. I can search and manage files with natural language.", img: "https://avatar.vercel.sh/mikeb" },
                                     { name: "Lisa Wang", username: "@lisaw", body: "The real-time streaming responses make conversations feel so natural and responsive.", img: "https://avatar.vercel.sh/lisaw" },
-                                    { name: "David Kim", username: "@davidk", body: "GitHub integration is a game-changer. Managing repos through chat is incredibly efficient.", img: "https://avatar.vercel.sh/davidk" },
-                                    { name: "Rachel Green", username: "@rachelg", body: "Slack + Neurix = productivity heaven. Never going back to the old way of working.", img: "https://avatar.vercel.sh/rachelg" },
+                                    { name: "David Kim", username: "@davidk", body: "Google Calendar integration is a game-changer. Managing events through chat is incredibly efficient.", img: "https://avatar.vercel.sh/davidk" },
+                                    { name: "Rachel Green", username: "@rachelg", body: "Google Tasks + Neurix = productivity heaven. Never going back to the old way of working.", img: "https://avatar.vercel.sh/rachelg" },
                                 ].map((review) => (
                                     <figure
                                         key={review.username}
@@ -1834,15 +1833,6 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                     <span>Launch Neurix</span>
                                     <ArrowRight className="h-5 w-5" aria-hidden="true" />
                                 </motion.button>
-                                <motion.button
-                                    onClick={() => window.open('https://github.com', '_blank')}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-semibold font-sans-body transition-all bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm"
-                                >
-                                    <Github className="h-5 w-5" aria-hidden="true" />
-                                    <span>View Source</span>
-                                </motion.button>
                             </div>
                         </motion.div>
                     </div>
@@ -1896,7 +1886,6 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                     { label: 'MCP Protocol', href: '#' },
                                     { label: 'Integrations', href: '#' },
                                     { label: 'Documentation', href: '#' },
-                                    { label: 'GitHub', href: '#' },
                                 ].map((link) => (
                                     <li key={link.label}>
                                         <a

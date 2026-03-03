@@ -144,10 +144,10 @@ const ChatMessage = ({ msg, searchQuery }: { msg: Message; searchQuery?: string 
             {/* Avatar */}
             <div
                 className={cn(
-                    'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-1 border transition-colors',
+                    'shrink-0 mt-1 shadow-md transition-all',
                     msg.role === 'user'
-                        ? 'bg-muted dark:bg-white/[0.06] border-border dark:border-white/10 text-muted-foreground'
-                        : 'bg-neurix-orange/10 border-neurix-orange/20 text-neurix-orange'
+                        ? 'icon-circle-orange text-white w-9 h-9'
+                        : 'icon-circle text-white w-9 h-9'
                 )}
             >
                 {msg.role === 'user' ? <User size={14} /> : <Bot size={14} />}
@@ -166,10 +166,10 @@ const ChatMessage = ({ msg, searchQuery }: { msg: Message; searchQuery?: string 
                 {/* Bubble */}
                 <div
                     className={cn(
-                        'relative px-4 py-3 text-sm leading-relaxed transition-colors',
+                        'relative text-[15px] font-sans-body leading-relaxed transition-all duration-300',
                         msg.role === 'user'
-                            ? 'bg-neurix-orange/10 dark:bg-neurix-orange/[0.08] border border-neurix-orange/15 rounded-2xl rounded-tr-md max-w-[85%] text-foreground'
-                            : 'bg-muted/50 dark:bg-white/[0.03] border border-border/50 dark:border-white/[0.06] rounded-2xl rounded-tl-md w-full text-foreground'
+                            ? 'chat-bubble-user max-w-[85%] shadow-md'
+                            : 'chat-bubble-ai w-full shadow-md'
                     )}
                 >
                     {msg.role === 'user' ? (
@@ -370,14 +370,8 @@ const ConnectedEmptyState = ({
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 className="relative mb-6"
             >
-                <div className={cn(
-                    "w-20 h-20 rounded-2xl flex items-center justify-center border shadow-[0_0_30px_rgba(var(--electric-purple-rgb),0.15)]",
-                    visual.darkBg, "border-electric-purple/30 bg-electric-purple/5"
-                )}>
-                    <Icon className="w-10 h-10 text-electric-purple drop-shadow-[0_0_8px_rgba(var(--electric-purple-rgb),0.5)]" />
-                </div>
-                <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-electric-purple flex items-center justify-center border-2 border-background shadow-[0_0_15px_rgba(var(--electric-purple-rgb),0.5)]">
-                    <Zap className="w-3 h-3 text-white" />
+                <div className="w-20 h-20 rounded-2xl bg-white/10 dark:bg-white/[0.08] border border-white/20 dark:border-white/10 flex items-center justify-center shadow-lg backdrop-blur-sm">
+                    <Icon size={44} />
                 </div>
             </motion.div>
 
@@ -386,10 +380,10 @@ const ConnectedEmptyState = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, duration: 0.4 }}
             >
-                <h2 className="text-2xl font-heading font-bold text-foreground mb-2 tracking-tight">
+                <h2 className="text-3xl font-serif-display font-medium text-obsidian dark:text-paper mb-2 tracking-tight">
                     Connected to <span className="text-neurix-orange">{serverName}</span>
                 </h2>
-                <p className="text-muted-foreground max-w-md mb-8 text-sm leading-relaxed mx-auto">
+                <p className="text-obsidian/60 dark:text-paper/60 max-w-md mb-8 text-[15px] leading-relaxed mx-auto font-sans-body">
                     Try one of these to get started, or type your own message below.
                 </p>
             </motion.div>
@@ -407,16 +401,15 @@ const ConnectedEmptyState = ({
                             initial={{ opacity: 0, x: -12 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.25 + i * 0.06 }}
-                            whileHover={{ x: 4 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => onSend(prompt)}
-                            className="w-full flex items-center gap-3 p-3.5 rounded-xl bg-background/60 border border-border hover:border-electric-purple/50 hover:bg-electric-purple/10 hover:shadow-[0_0_20px_rgba(189,0,255,0.1)] transition-all duration-300 group text-left backdrop-blur-md"
+                            className="list-item-hover w-full flex items-center gap-3 p-4 bg-transparent border border-border/10 text-left group"
                         >
-                            <div className="w-8 h-8 rounded-lg bg-black/5 dark:bg-black/40 border border-border flex items-center justify-center group-hover:border-electric-purple/30 group-hover:bg-electric-purple/20 transition-all duration-300">
-                                <Sparkles className="w-4 h-4 text-slate-grey group-hover:text-electric-purple transition-colors drop-shadow-[0_0_8px_rgba(189,0,255,0)] group-hover:drop-shadow-[0_0_8px_rgba(189,0,255,0.6)]" />
+                            <div className="icon-circle w-8 h-8 group-hover:bg-neurix-orange transition-colors">
+                                <Sparkles className="w-4 h-4 text-white" />
                             </div>
-                            <span className="text-sm font-medium text-slate-grey group-hover:text-foreground transition-colors">{prompt}</span>
-                            <ArrowRight className="w-4 h-4 text-slate-grey/40 group-hover:text-electric-purple ml-auto transition-colors" />
+                            <span className="text-[15px] font-sans-body font-medium text-obsidian dark:text-paper transition-colors">{prompt}</span>
+                            <ArrowRight className="w-4 h-4 text-obsidian/40 dark:text-paper/40 group-hover:text-neurix-orange ml-auto transition-colors" />
                         </motion.button>
                     ))}
                 </div>
@@ -440,11 +433,11 @@ const DisconnectedEmptyState = ({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="relative mb-8 mt-auto"
+                className="relative mb-6 mt-auto"
             >
-                <div className="w-20 h-20 rounded-2xl bg-electric-purple/10 flex items-center justify-center border border-electric-purple/30 shadow-[0_0_30px_rgba(189,0,255,0.15)] relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-tr from-electric-purple/0 via-electric-purple/5 to-electric-purple/20" />
-                    <Bot className="w-10 h-10 text-electric-purple drop-shadow-[0_0_12px_rgba(189,0,255,0.6)] relative z-10" />
+                <div className="icon-circle w-20 h-20 shadow-[0_8px_30px_rgba(56,25,50,0.15)] relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-neurix-gradient opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                    <Bot className="w-10 h-10 text-white relative z-10" />
                 </div>
             </motion.div>
 
@@ -453,10 +446,10 @@ const DisconnectedEmptyState = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, duration: 0.4 }}
             >
-                <h2 className="text-3xl font-heading font-bold text-foreground mb-2 tracking-tight">
-                    Neurix <span className="text-neurix-orange">Workstation</span>
+                <h2 className="text-3xl font-serif-display font-medium text-obsidian dark:text-paper mb-2 tracking-tight">
+                    Neurix <span className="font-semibold text-neurix-orange">Workstation</span>
                 </h2>
-                <p className="text-muted-foreground max-w-md mb-10 text-sm leading-relaxed mx-auto">
+                <p className="text-obsidian/60 dark:text-paper/60 max-w-md mb-10 text-[15px] font-sans-body leading-relaxed mx-auto">
                     Connect a service below to get started, or type a message to begin a conversation.
                 </p>
             </motion.div>
@@ -478,18 +471,17 @@ const DisconnectedEmptyState = ({
                                     initial={{ opacity: 0, y: 8 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.25 + i * 0.05 }}
-                                    whileHover={{ y: -2 }}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => onSelect(server.id)}
-                                    className="flex items-center gap-3 p-4 rounded-xl bg-black/[0.02] dark:bg-midnight/50 border border-border hover:border-electric-purple/40 hover:bg-electric-purple/10 hover:shadow-[0_0_20px_rgba(189,0,255,0.15)] backdrop-blur-md transition-all duration-300 group text-left"
+                                    className="editorial-card dark:context-card-dark p-4 flex items-center gap-4 text-left group hover:scale-[1.02] transition-all"
                                 >
-                                    <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-black/40 border border-border flex items-center justify-center group-hover:border-electric-purple/30 group-hover:bg-electric-purple/20 transition-all duration-300 text-slate-grey group-hover:text-electric-purple drop-shadow-none group-hover:drop-shadow-[0_0_8px_rgba(189,0,255,0.5)]">
-                                        <Icon className="w-5 h-5" />
+                                    <div className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/[0.1] flex items-center justify-center group-hover:bg-white/[0.1] transition-colors duration-300">
+                                        <Icon size={22} />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <span className="block text-sm font-medium text-foreground/90 group-hover:text-foreground transition-colors">{server.name}</span>
-                                        <span className="flex items-center gap-1 text-[10px] font-mono text-slate-grey group-hover:text-electric-purple transition-colors mt-0.5">
-                                            Connect <ArrowRight className="w-2.5 h-2.5" />
+                                        <span className="block text-[15px] font-sans-body font-semibold text-obsidian dark:text-paper group-hover:text-neurix-orange transition-colors">{server.name}</span>
+                                        <span className="flex items-center gap-1 text-[11px] font-mono font-bold text-obsidian/40 dark:text-paper/40 group-hover:text-neurix-orange/80 uppercase tracking-widest transition-colors mt-1">
+                                            Connect <ArrowRight className="w-3 h-3" />
                                         </span>
                                     </div>
                                 </motion.button>

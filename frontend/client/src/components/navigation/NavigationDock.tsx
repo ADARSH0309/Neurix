@@ -68,8 +68,8 @@ export function NavigationDock() {
                         className={cn(
                             "w-full flex items-center gap-3 p-2 rounded-lg transition-all text-sm",
                             isActive
-                                ? "bg-electric-purple/10 text-electric-purple dark:text-white border border-electric-purple/20 shadow-[0_0_10px_rgba(139,92,246,0.1)]"
-                                : "text-slate-grey hover:text-foreground hover:bg-black/5 dark:hover:bg-white/[0.04] border border-transparent"
+                                ? "bg-electric-purple/15 text-white border border-electric-purple/25 shadow-[0_0_10px_rgba(139,92,246,0.1)]"
+                                : "text-white/50 hover:text-white hover:bg-white/[0.05] border border-transparent"
                         )}
                     >
                         <MessageSquare size={18} className="shrink-0" />
@@ -115,10 +115,10 @@ export function NavigationDock() {
         <motion.div
             initial={{ width: 80 }} animate={{ width: isCollapsed ? 80 : 280 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="h-full relative z-20 flex flex-col bg-background/80 backdrop-blur-3xl border-r border-border shadow-2xl"
+            className="dark h-full relative z-20 flex flex-col bg-[#2a1226]/95 text-foreground backdrop-blur-3xl border-r border-white/[0.08] shadow-[8px_0_30px_rgba(56,25,50,0.3)]"
         >
             {/* Header */}
-            <div className="h-16 flex items-center justify-center border-b border-border relative shrink-0">
+            <div className="h-16 flex items-center justify-center border-b border-white/[0.08] relative shrink-0">
                 <div className="w-10 h-10 rounded-xl bg-electric-purple flex items-center justify-center shadow-[0_0_15px_rgba(139,92,246,0.4)]">
                     <LayoutGrid className="text-white w-5 h-5" />
                 </div>
@@ -131,7 +131,7 @@ export function NavigationDock() {
                         </motion.span>
                     )}
                 </AnimatePresence>
-                <button onClick={toggleDock} className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors shadow-sm">
+                <button onClick={toggleDock} className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#4a2344] border border-white/[0.12] flex items-center justify-center text-white/60 hover:text-white transition-colors shadow-md">
                     {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
                 </button>
             </div>
@@ -143,7 +143,7 @@ export function NavigationDock() {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-grey group-focus-within:text-electric-purple transition-colors" />
                         <input
                             type="text" placeholder="Search chats..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                            className="w-full h-9 pl-9 pr-3 rounded-lg bg-black/5 dark:bg-white/[0.02] border border-black/10 dark:border-white/[0.06] text-xs font-mono text-foreground placeholder:text-muted-foreground outline-none focus:border-electric-purple/40 focus:bg-black/10 dark:focus:bg-white/[0.04] transition-all focus:shadow-[0_0_10px_rgba(139,92,246,0.1)]"
+                            className="w-full h-9 pl-9 pr-3 rounded-lg bg-white/[0.04] border border-white/[0.08] text-xs font-mono text-white placeholder:text-white/30 outline-none focus:border-electric-purple/40 focus:bg-white/[0.06] transition-all focus:shadow-[0_0_10px_rgba(139,92,246,0.1)]"
                         />
                     </div>
                 </div>
@@ -153,7 +153,7 @@ export function NavigationDock() {
             <div className="flex-1 overflow-y-auto no-scrollbar py-4 space-y-6">
                 {/* Servers */}
                 <div className="px-3">
-                    {!isCollapsed && <h3 className="text-[10px] font-mono font-bold text-muted-foreground mb-3 px-2 uppercase tracking-widest">Systems</h3>}
+                    {!isCollapsed && <h3 className="text-[10px] font-mono font-bold text-white/40 mb-3 px-2 uppercase tracking-widest">Systems</h3>}
                     <div className="space-y-1.5">
                         {Object.values(servers).map(server => {
                             const ServerIcon = getServerIcon(server.id);
@@ -167,24 +167,24 @@ export function NavigationDock() {
                                         className={cn(
                                             "w-full flex items-center gap-3 p-2 rounded-xl transition-all duration-300",
                                             isActive
-                                                ? "bg-electric-purple/10 text-electric-purple dark:text-white border border-electric-purple/20 shadow-[0_0_12px_rgba(139,92,246,0.15)]"
-                                                : "hover:bg-black/5 dark:hover:bg-white/[0.04] text-slate-grey hover:text-foreground border border-transparent"
+                                                ? "bg-white/[0.08] text-white border border-white/[0.12] shadow-[0_0_15px_rgba(139,92,246,0.2)]"
+                                                : "hover:bg-white/[0.05] text-slate-grey hover:text-white border border-transparent"
                                         )}
                                     >
                                         <div className={cn(
-                                            "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-all duration-300",
+                                            "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-all duration-300 overflow-hidden",
                                             server.connected
-                                                ? cn("border-black/10 dark:border-white/10", visual.darkBg)
-                                                : "border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] text-slate-grey"
+                                                ? "border-white/[0.12] bg-white/[0.08]"
+                                                : "border-white/[0.06] bg-white/[0.03] opacity-50"
                                         )}>
-                                            <ServerIcon size={18} />
+                                            <ServerIcon size={20} />
                                         </div>
                                         {!isCollapsed && (
                                             <div className="flex-1 text-left min-w-0">
                                                 <div className="text-sm font-medium leading-none mb-1 truncate">{server.name}</div>
                                                 <div className={cn(
                                                     "text-[10px] font-mono transition-colors",
-                                                    server.connected ? "text-mint-green/70" : "text-muted-foreground/50"
+                                                    server.connected ? "text-mint-green" : "text-white/30"
                                                 )}>
                                                     {server.connected ? 'Online' : 'Offline'}
                                                 </div>
@@ -206,7 +206,7 @@ export function NavigationDock() {
                 {pinnedSessions.length > 0 && (
                     <div className="px-3">
                         {!isCollapsed && (
-                            <h3 className="text-[10px] font-mono font-bold text-muted-foreground mb-3 px-2 uppercase tracking-widest flex items-center gap-1.5">
+                            <h3 className="text-[10px] font-mono font-bold text-white/40 mb-3 px-2 uppercase tracking-widest flex items-center gap-1.5">
                                 <Pin size={10} className="text-neurix-orange" /> Pinned
                             </h3>
                         )}
@@ -218,14 +218,14 @@ export function NavigationDock() {
                 <div className="px-3">
                     {!isCollapsed && (
                         <div className="flex items-center justify-between mb-3 px-2">
-                            <h3 className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest">Chats</h3>
+                            <h3 className="text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest">Chats</h3>
                             <button onClick={createSession} className="text-muted-foreground hover:text-neurix-orange transition-colors"><Plus size={16} /></button>
                         </div>
                     )}
                     <div className="space-y-1">
                         {unpinnedSessions.slice(0, 15).map(s => renderSessionItem(s))}
                         {isCollapsed && (
-                            <button onClick={createSession} className="w-full flex items-center justify-center p-2 mt-2 rounded-lg dark:bg-white/[0.02] hover:bg-electric-purple/10 text-slate-grey hover:text-foreground border border-transparent dark:border-white/5 hover:border-electric-purple/30 transition-all focus:outline-none focus:ring-1 focus:ring-electric-purple/50">
+                            <button onClick={createSession} className="w-full flex items-center justify-center p-2 mt-2 rounded-lg bg-white/[0.04] hover:bg-electric-purple/15 text-white/40 hover:text-white border border-white/[0.06] hover:border-electric-purple/30 transition-all focus:outline-none focus:ring-1 focus:ring-electric-purple/50">
                                 <Plus size={18} />
                             </button>
                         )}
@@ -234,7 +234,7 @@ export function NavigationDock() {
             </div>
 
             {/* Footer */}
-            <div className="p-3 mt-auto border-t border-border space-y-0.5 shrink-0 bg-background">
+            <div className="p-3 mt-auto border-t border-white/[0.08] space-y-0.5 shrink-0">
                 {[
                     { icon: User, label: 'Profile', onClick: () => setShowProfileDialog(true), active: false },
                     { icon: Terminal, label: 'Tools HUD', onClick: () => setIsToolsPanelOpen(!isToolsPanelOpen), active: isToolsPanelOpen },
@@ -246,13 +246,13 @@ export function NavigationDock() {
                         className={cn(
                             "w-full flex items-center gap-3 p-2.5 rounded-xl transition-all duration-300",
                             active
-                                ? "text-foreground bg-electric-purple/15 border border-electric-purple/30 shadow-[0_0_12px_rgba(139,92,246,0.2)]"
-                                : "text-slate-grey hover:text-foreground hover:bg-black/5 dark:hover:bg-white/[0.04] border border-transparent"
+                                ? "text-white bg-electric-purple/15 border border-electric-purple/30 shadow-[0_0_12px_rgba(139,92,246,0.2)]"
+                                : "text-white/50 hover:text-white hover:bg-white/[0.05] border border-transparent"
                         )}
                     >
                         <div className={cn(
                             "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
-                            active ? "bg-neurix-orange/15" : "bg-muted/50 dark:bg-white/[0.03]"
+                            active ? "bg-electric-purple/20" : "bg-white/[0.06]"
                         )}>
                             <Icon size={16} />
                         </div>

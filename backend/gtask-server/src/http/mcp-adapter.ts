@@ -46,7 +46,8 @@ const GetTaskSchema = z.object({
 });
 
 const CreateTaskSchema = z.object({
-  taskListId: z.string().optional().default('@default'),
+  taskListId: z.string().optional(),
+  taskListName: z.string().optional(),
   title: z.string(),
   notes: z.string().optional(),
   due: z.string().optional(),
@@ -57,7 +58,8 @@ const CreateTaskSchema = z.object({
 
 const UpdateTaskSchema = z.object({
   taskListId: z.string().optional().default('@default'),
-  taskId: z.string(),
+  taskId: z.string().optional(),
+  taskTitle: z.string().optional(),
   title: z.string().optional(),
   notes: z.string().optional(),
   due: z.string().optional(),
@@ -66,12 +68,14 @@ const UpdateTaskSchema = z.object({
 
 const DeleteTaskSchema = z.object({
   taskListId: z.string().optional().default('@default'),
-  taskId: z.string(),
+  taskId: z.string().optional(),
+  taskTitle: z.string().optional(),
 });
 
 const CompleteTaskSchema = z.object({
   taskListId: z.string().optional().default('@default'),
-  taskId: z.string(),
+  taskId: z.string().optional(),
+  taskTitle: z.string().optional(),
 });
 
 const MoveTaskSchema = z.object({
@@ -117,19 +121,47 @@ export class McpHttpAdapter {
         },
         { name: 'get_task', description: 'Get full details of a specific task', inputSchema: { type: 'object', properties: { taskListId: { type: 'string' }, taskId: { type: 'string' } }, required: ['taskId'] } },
         {
-          name: 'create_task', description: 'Create a new task',
-          inputSchema: { type: 'object', properties: { taskListId: { type: 'string' }, title: { type: 'string', description: 'Task title' }, notes: { type: 'string', description: 'Task notes/description' }, due: { type: 'string', description: 'Due date (RFC 3339)' }, status: { type: 'string', enum: ['needsAction', 'completed'] }, parent: { type: 'string', description: 'Parent task ID for subtasks' }, previous: { type: 'string', description: 'Previous sibling task ID for ordering' } }, required: ['title'] },
+          name: 'create_task', description: 'Create a new task in a task list',
+          inputSchema: { type: 'object', properties: { taskListId: { type: 'string', description: 'Task list ID' }, taskListName: { type: 'string', description: 'Task list name (alternative to taskListId)' }, title: { type: 'string', description: 'Task title' }, notes: { type: 'string', description: 'Task notes/description' }, due: { type: 'string', description: 'Due date (RFC 3339)' }, status: { type: 'string', enum: ['needsAction', 'completed'] }, parent: { type: 'string', description: 'Parent task ID for subtasks' }, previous: { type: 'string', description: 'Previous sibling task ID for ordering' } }, required: ['title'] },
         },
         {
           name: 'update_task', description: 'Update an existing task',
-          inputSchema: { type: 'object', properties: { taskListId: { type: 'string' }, taskId: { type: 'string' }, title: { type: 'string' }, notes: { type: 'string' }, due: { type: 'string' }, status: { type: 'string', enum: ['needsAction', 'completed'] } }, required: ['taskId'] },
+          inputSchema: { type: 'object', properties: { taskListId: { type: 'string' }, taskId: { type: 'string' }, taskTitle: { type: 'string', description: 'Task name (alternative to taskId)' }, title: { type: 'string' }, notes: { type: 'string' }, due: { type: 'string' }, status: { type: 'string', enum: ['needsAction', 'completed'] } } },
         },
-        { name: 'delete_task', description: 'Delete a task', inputSchema: { type: 'object', properties: { taskListId: { type: 'string' }, taskId: { type: 'string' } }, required: ['taskId'] } },
-        { name: 'complete_task', description: 'Mark a task as completed', inputSchema: { type: 'object', properties: { taskListId: { type: 'string' }, taskId: { type: 'string' } }, required: ['taskId'] } },
-        { name: 'uncomplete_task', description: 'Mark a completed task as not completed', inputSchema: { type: 'object', properties: { taskListId: { type: 'string' }, taskId: { type: 'string' } }, required: ['taskId'] } },
+        { name: 'delete_task', description: 'Delete a task by name', inputSchema: { type: 'object', properties: { taskListId: { type: 'string' }, taskId: { type: 'string' }, taskTitle: { type: 'string', description: 'Task name (alternative to taskId)' } }, required: ['taskTitle'] } },
+        { name: 'complete_task', description: 'Mark a task as completed by name', inputSchema: { type: 'object', properties: { taskListId: { type: 'string' }, taskId: { type: 'string' }, taskTitle: { type: 'string', description: 'Task name (alternative to taskId)' } }, required: ['taskTitle'] } },
+        { name: 'uncomplete_task', description: 'Mark a completed task as not completed', inputSchema: { type: 'object', properties: { taskListId: { type: 'string' }, taskId: { type: 'string' }, taskTitle: { type: 'string', description: 'Task name (alternative to taskId)' } }, required: ['taskTitle'] } },
         { name: 'move_task', description: 'Move a task to a different position or parent', inputSchema: { type: 'object', properties: { taskListId: { type: 'string' }, taskId: { type: 'string' }, parent: { type: 'string', description: 'New parent task ID' }, previous: { type: 'string', description: 'Previous sibling task ID' } }, required: ['taskId'] } },
         { name: 'clear_completed_tasks', description: 'Clear all completed tasks from a task list', inputSchema: { type: 'object', properties: { taskListId: { type: 'string' } } } },
       ],
+    };
+  }
+
+  /**
+   * Resolve a task title to its ID by searching the task list.
+   * Returns the task ID or an error response object.
+   */
+  private async resolveTaskByTitle(
+    taskListId: string,
+    taskTitle: string
+  ): Promise<{ taskId: string } | { error: any }> {
+    const result = await this.taskClient.listTasks({ taskListId, maxResults: 100 });
+    const match = result.tasks.find(
+      t => t.title?.toLowerCase() === taskTitle.toLowerCase()
+    );
+    if (match) {
+      return { taskId: match.id };
+    }
+    const available = result.tasks
+      .filter(t => t.title)
+      .map(t => t.title)
+      .slice(0, 10)
+      .join(', ');
+    return {
+      error: {
+        content: [{ type: 'text', text: `Task "${taskTitle}" not found. Available tasks: ${available || 'none'}` }],
+        isError: true,
+      },
     };
   }
 
@@ -176,26 +208,73 @@ export class McpHttpAdapter {
         }
         case 'create_task': {
           const params = CreateTaskSchema.parse(args);
+          // Resolve taskListName to taskListId if provided
+          if (params.taskListName && !params.taskListId) {
+            const lists = await this.taskClient.listTaskLists();
+            const match = lists.taskLists.find(
+              tl => tl.title?.toLowerCase() === params.taskListName!.toLowerCase()
+            );
+            if (match) {
+              params.taskListId = match.id;
+            } else {
+              const available = lists.taskLists.map(tl => tl.title).filter(Boolean).join(', ');
+              return { content: [{ type: 'text', text: `Task list "${params.taskListName}" not found. Available lists: ${available}` }], isError: true };
+            }
+          }
+          if (!params.taskListId) params.taskListId = '@default';
           const task = await this.taskClient.createTask(params);
-          return { content: [{ type: 'text', text: JSON.stringify({ task }) }] };
+          // Include the list name in response for better UX
+          let listName = 'My Tasks';
+          if (params.taskListId !== '@default') {
+            try {
+              const tl = await this.taskClient.getTaskList(params.taskListId);
+              listName = tl.title || listName;
+            } catch { /* ignore */ }
+          }
+          return { content: [{ type: 'text', text: JSON.stringify({ task, taskListName: listName }) }] };
         }
         case 'update_task': {
           const params = UpdateTaskSchema.parse(args);
-          const task = await this.taskClient.updateTask(params);
+          if (!params.taskId && params.taskTitle) {
+            const resolved = await this.resolveTaskByTitle(params.taskListId, params.taskTitle);
+            if ('error' in resolved) return resolved.error;
+            params.taskId = resolved.taskId;
+          }
+          if (!params.taskId) return { content: [{ type: 'text', text: 'Please provide a task name or taskId.' }], isError: true };
+          const task = await this.taskClient.updateTask({ ...params, taskId: params.taskId });
           return { content: [{ type: 'text', text: JSON.stringify({ task }) }] };
         }
         case 'delete_task': {
           const params = DeleteTaskSchema.parse(args);
+          if (!params.taskId && params.taskTitle) {
+            const resolved = await this.resolveTaskByTitle(params.taskListId, params.taskTitle);
+            if ('error' in resolved) return resolved.error;
+            params.taskId = resolved.taskId;
+          }
+          if (!params.taskId) return { content: [{ type: 'text', text: 'Please provide a task name or taskId.' }], isError: true };
+          const taskTitle = params.taskTitle || params.taskId;
           await this.taskClient.deleteTask(params.taskListId, params.taskId);
-          return { content: [{ type: 'text', text: JSON.stringify({ success: true, action: 'deleted' }) }] };
+          return { content: [{ type: 'text', text: JSON.stringify({ success: true, action: 'deleted', title: taskTitle }) }] };
         }
         case 'complete_task': {
           const params = CompleteTaskSchema.parse(args);
+          if (!params.taskId && params.taskTitle) {
+            const resolved = await this.resolveTaskByTitle(params.taskListId, params.taskTitle);
+            if ('error' in resolved) return resolved.error;
+            params.taskId = resolved.taskId;
+          }
+          if (!params.taskId) return { content: [{ type: 'text', text: 'Please provide a task name or taskId.' }], isError: true };
           const task = await this.taskClient.completeTask(params.taskListId, params.taskId);
           return { content: [{ type: 'text', text: JSON.stringify({ task, action: 'completed' }) }] };
         }
         case 'uncomplete_task': {
           const params = CompleteTaskSchema.parse(args);
+          if (!params.taskId && params.taskTitle) {
+            const resolved = await this.resolveTaskByTitle(params.taskListId, params.taskTitle);
+            if ('error' in resolved) return resolved.error;
+            params.taskId = resolved.taskId;
+          }
+          if (!params.taskId) return { content: [{ type: 'text', text: 'Please provide a task name or taskId.' }], isError: true };
           const task = await this.taskClient.uncompleteTask(params.taskListId, params.taskId);
           return { content: [{ type: 'text', text: JSON.stringify({ task, action: 'uncompleted' }) }] };
         }

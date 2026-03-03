@@ -68,7 +68,7 @@ export function ToolsHUD({ isOpen, onClose }: ToolsHUDProps) {
                     animate={{ x: 0, opacity: 1 }}
                     exit={{ x: '100%', opacity: 0 }}
                     transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                    className="fixed right-0 top-0 h-full w-80 lg:w-96 bg-background/80 backdrop-blur-3xl border-l border-border z-50 flex flex-col shadow-2xl"
+                    className="dark fixed right-0 top-0 h-full w-80 lg:w-96 bg-background/95 text-foreground backdrop-blur-3xl border-l border-border z-50 flex flex-col shadow-[-8px_0_30px_rgba(56,25,50,0.15)]"
                 >
                     {/* HUD Header */}
                     <div className="h-16 px-5 flex items-center justify-between border-b border-border bg-black/[0.02] dark:bg-white/[0.02]">

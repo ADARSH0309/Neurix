@@ -29,9 +29,6 @@ function buildDefaultServers(): Record<string, McpServer> {
         gmail: { id: 'gmail', name: 'Gmail', description: 'Read and send emails', baseUrl: 'http://localhost:8082', connected: false, status: 'available' },
         gcalendar: { id: 'gcalendar', name: 'Google Calendar', description: 'Manage calendars, events & scheduling', baseUrl: 'http://localhost:8083', connected: false, status: 'available' },
         gtask: { id: 'gtask', name: 'Google Tasks', description: 'Manage task lists & to-dos', baseUrl: 'http://localhost:8084', connected: false, status: 'available' },
-        github: { id: 'github', name: 'GitHub', description: 'Manage repositories and issues', baseUrl: '', connected: false, status: 'coming_soon' },
-        slack: { id: 'slack', name: 'Slack', description: 'Team messaging and channels', baseUrl: '', connected: false, status: 'coming_soon' },
-        notion: { id: 'notion', name: 'Notion', description: 'Documents, wikis and databases', baseUrl: '', connected: false, status: 'coming_soon' },
     };
 }
 

@@ -64,27 +64,21 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
             </AnimatePresence>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative group">
-                <div className={cn(
-                    "relative rounded-2xl overflow-hidden transition-all duration-500 backdrop-blur-3xl",
-                    "bg-[#2a1226]/90 border shadow-[0_10px_40px_rgba(42,18,38,0.6)]",
-                    isFocused
-                        ? "border-electric-purple/50 shadow-[0_0_40px_rgba(139,92,246,0.25)] bg-[#2a1226]/95 ring-1 ring-electric-purple/25"
-                        : "border-white/15 hover:border-white/25 hover:shadow-[0_0_20px_rgba(255,243,230,0.08)]"
-                )}>
-                    <div className="flex items-end p-2.5 gap-1.5">
+                <div className={cn("pulse-command-bar px-2")}>
+                    <div className="flex items-end p-1 gap-1.5">
                         {/* Left actions */}
-                        <div className="pb-1 pl-1">
+                        <div className="p-1">
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-9 w-9 rounded-xl text-slate-grey hover:text-white hover:bg-white/5 transition-all"
+                                className="h-10 w-10 rounded-full text-obsidian/60 hover:text-neurix-orange hover:bg-black/5 dark:text-paper/60 dark:hover:text-paper dark:hover:bg-white/10 transition-all"
                             >
-                                <Paperclip className="h-4 w-4 drop-shadow-md" />
+                                <Paperclip className="h-5 w-5" strokeWidth={1.5} />
                             </Button>
                         </div>
 
                         {/* Input */}
-                        <div className="flex-1 py-1 min-h-[44px]">
+                        <div className="flex-1 py-1 min-h-[44px] flex items-center">
                             <Textarea
                                 ref={inputRef}
                                 data-command-input
@@ -93,9 +87,9 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
                                 onKeyDown={handleKeyDown}
                                 onFocus={() => setIsFocused(true)}
                                 onBlur={() => setIsFocused(false)}
-                                placeholder={placeholder || (activeServer ? `Message ${activeServer.name}...` : "Ask anything or type / for commands...")}
+                                placeholder={placeholder || (activeServer ? `Message ${activeServer.name}...` : "Query the central memory...")}
                                 disabled={isLoading}
-                                className="w-full bg-transparent border-0 outline-none ring-0 focus-visible:ring-0 px-2 py-1 min-h-[24px] max-h-[200px] resize-none text-[15px] leading-relaxed text-white/90 placeholder:text-white/30 overflow-y-auto custom-scrollbar"
+                                className="w-full bg-transparent border-0 outline-none ring-0 focus-visible:ring-0 px-2 py-0 min-h-[24px] max-h-[200px] resize-none text-[16px] font-medium leading-relaxed text-obsidian dark:text-paper placeholder:text-obsidian/40 dark:placeholder:text-paper/40 overflow-y-auto custom-scrollbar"
                                 rows={1}
                                 onInput={(e) => {
                                     const target = e.target as HTMLTextAreaElement;
@@ -106,7 +100,7 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
                         </div>
 
                         {/* Right actions */}
-                        <div className="pb-1 pr-1 flex items-center gap-1.5">
+                        <div className="p-1 flex items-center gap-1.5">
                             <AnimatePresence mode="wait">
                                 {!hasInput && (
                                     <motion.div
@@ -118,9 +112,9 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-9 w-9 rounded-xl text-slate-grey hover:text-white hover:bg-white/5 transition-all"
+                                            className="h-10 w-10 rounded-full text-obsidian/60 hover:text-neurix-orange hover:bg-black/5 dark:text-paper/60 dark:hover:text-paper dark:hover:bg-white/10 transition-all"
                                         >
-                                            <Mic className="h-4 w-4 drop-shadow-md" />
+                                            <Mic className="h-5 w-5" strokeWidth={1.5} />
                                         </Button>
                                     </motion.div>
                                 )}
@@ -134,18 +128,16 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
                                         animate={{ scale: 1, opacity: 1 }}
                                         exit={{ scale: 0.6, opacity: 0 }}
                                         transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                                        whileHover={{ scale: 1.08 }}
-                                        whileTap={{ scale: 0.92 }}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
                                         onClick={handleSubmit}
                                         disabled={isLoading}
                                         className={cn(
-                                            "h-9 w-9 rounded-xl flex items-center justify-center text-white transition-all duration-300",
-                                            "bg-electric-purple hover:bg-[#a600e6]",
-                                            "shadow-[0_0_15px_rgba(189,0,255,0.4)] hover:shadow-[0_0_20px_rgba(189,0,255,0.6)]",
+                                            "send-button w-10 h-10",
                                             isLoading && "opacity-50 cursor-not-allowed"
                                         )}
                                     >
-                                        <ArrowUp className="h-4 w-4 drop-shadow-md" strokeWidth={2.5} />
+                                        <ArrowUp className="h-5 w-5 text-white" strokeWidth={2.5} />
                                     </motion.button>
                                 ) : (
                                     <motion.div
@@ -165,30 +157,32 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
                             </AnimatePresence>
                         </div>
                     </div>
+                </div>
 
-                    {/* Status bar */}
-                    <AnimatePresence>
+                {/* Status bar */}
+                <div className="mt-4 px-2">
+                    <AnimatePresence mode="wait">
                         {(activeServer || isFocused) && (
                             <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
+                                initial={{ opacity: 0, y: -4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -4 }}
                                 transition={{ duration: 0.2 }}
                                 className="overflow-hidden"
                             >
-                                <div className="px-4 pb-2.5 flex items-center gap-3 text-[10px] text-white/40 font-mono uppercase tracking-wider">
+                                <div className="flex items-center gap-3 text-[11px] font-mono uppercase tracking-wider text-obsidian/40 dark:text-paper/40 font-bold">
                                     {activeServer && (
-                                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/[0.06] border border-white/[0.06]">
-                                            <Globe className="w-3 h-3 text-mint-green" />
-                                            <span className="text-white/50">{activeServer.name}</span>
+                                        <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-black/[0.03] dark:bg-white/[0.06] border border-black/[0.04] dark:border-white/[0.06]">
+                                            <Globe className="w-3.5 h-3.5 text-mint-green" />
+                                            <span className="text-obsidian/70 dark:text-paper/70">{activeServer.name}</span>
                                         </div>
                                     )}
-                                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/[0.06] border border-white/[0.06]">
-                                        <Command className="w-3 h-3 text-neurix-orange/70" />
-                                        <span className="text-white/50">/ commands</span>
+                                    <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-black/[0.03] dark:bg-white/[0.06] border border-black/[0.04] dark:border-white/[0.06]">
+                                        <Command className="w-3.5 h-3.5 text-neurix-orange/80" />
+                                        <span className="text-obsidian/70 dark:text-paper/70">/ commands</span>
                                     </div>
-                                    <div className="ml-auto flex items-center gap-1.5 text-white/30">
-                                        <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/[0.08] text-[9px] text-white/40">Enter</kbd>
+                                    <div className="ml-auto flex items-center gap-1.5 text-obsidian/50 dark:text-paper/40">
+                                        <kbd className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/[0.06] border border-black/10 dark:border-white/[0.08] text-[9px] text-obsidian/60 dark:text-paper/50">Enter</kbd>
                                         <span>send</span>
                                     </div>
                                 </div>
