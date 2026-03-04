@@ -1185,14 +1185,16 @@ h6 {
 }
 
 .dark .editorial-card {
-  background: #301530;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow:
     0 4px 6px rgba(0, 0, 0, 0.1),
-    0 12px 24px rgba(0, 0, 0, 0.2),
-    0 24px 48px rgba(0, 0, 0, 0.3);
+    0 12px 24px rgba(0, 0, 0, 0.2);
 }
 
 .dark .editorial-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 85, 0, 0.3);
   box-shadow:
     0 8px 12px rgba(255, 85, 0, 0.05),
     0 20px 40px rgba(255, 85, 0, 0.1),
@@ -1216,7 +1218,8 @@ h6 {
 
 /* Dark Purple Card */
 .context-card-dark {
-  background: #301530;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 30px;
   box-shadow:
     0 10px 40px rgba(0, 0, 0, 0.3),

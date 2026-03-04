@@ -3,14 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Search,
     Bell,
-    Settings,
-    ChevronDown,
-    User,
-    LogOut,
     Menu,
     X,
     Command,
-    Home,
     CheckCheck,
     FolderOpen,
     Zap,
@@ -21,21 +16,16 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { ActivityItem, UserProfile } from '@/types';
+import type { ActivityItem } from '@/types';
 import { Logo } from '@/components/Logo';
 
 interface HeaderProps {
-    profile: UserProfile;
     theme: 'light' | 'dark';
     onToggleSidebar: () => void;
     isSidebarOpen: boolean;
@@ -43,8 +33,6 @@ interface HeaderProps {
     activities: ActivityItem[];
     unreadCount: number;
     onMarkAllRead: () => void;
-    onOpenProfile: () => void;
-    onOpenSettings: () => void;
     onToggleTheme: () => void;
     onBackToLanding?: () => void;
 }
@@ -60,7 +48,6 @@ const getActivityIcon = (type: string): React.ElementType => {
 };
 
 export function Header({
-    profile,
     theme: _theme,
     onToggleSidebar,
     isSidebarOpen,
@@ -68,8 +55,6 @@ export function Header({
     activities,
     unreadCount,
     onMarkAllRead,
-    onOpenProfile,
-    onOpenSettings,
     onToggleTheme,
     onBackToLanding,
 }: HeaderProps): React.ReactElement {
@@ -244,65 +229,6 @@ export function Header({
                             <Moon className="h-5 w-5 group-hover:-rotate-45 transition-transform duration-300" />
                         )}
                     </Button>
-
-                    {/* Settings */}
-                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-slate-grey hover:text-foreground hover:bg-black/5 dark:hover:text-white dark:hover:bg-white/5 border border-transparent hover:border-black/10 dark:hover:border-white/10 group transition-all" onClick={onOpenSettings}>
-                        <Settings className="h-5 w-5 group-hover:rotate-45 transition-transform duration-300" />
-                    </Button>
-
-                    {/* User Menu */}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="gap-3 pl-2 pr-3 h-10 ml-2 rounded-xl border border-transparent hover:border-border hover:bg-black/5 dark:hover:bg-white/[0.02] transition-all">
-                                <div className="h-7 w-7 rounded-lg overflow-hidden ring-1 ring-border">
-                                    <Avatar className="h-full w-full">
-                                        <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.name}`} />
-                                        <AvatarFallback className="bg-gradient-to-br from-electric-purple to-purple-800 text-white text-xs font-bold">
-                                            {profile.name.charAt(0).toUpperCase()}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                </div>
-                                <div className="flex flex-col items-start gap-0.5 text-left hidden sm:flex">
-                                    <span className="text-xs font-medium leading-none text-foreground">{profile.name}</span>
-                                    <span className="text-[9px] font-mono tracking-widest text-slate-grey uppercase leading-none mt-0.5">Operator</span>
-                                </div>
-                                <ChevronDown className="h-3 w-3 text-slate-grey" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56 p-2 bg-background/95 backdrop-blur-3xl border-border shadow-2xl">
-                            <DropdownMenuLabel className="px-2 py-1.5">
-                                <div className="flex flex-col space-y-1">
-                                    <span className="text-sm font-medium leading-none text-foreground">{profile.name}</span>
-                                    <span className="text-xs text-slate-grey font-mono mt-1">
-                                        {profile.email || 'operator@neurix.ai'}
-                                    </span>
-                                </div>
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator className="my-2 border-border" />
-                            <DropdownMenuItem onClick={onOpenProfile} className="rounded-lg focus:bg-black/5 dark:focus:bg-white/5 focus:text-foreground cursor-pointer text-slate-grey">
-                                <User className="mr-2 h-4 w-4" />
-                                Profile
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={onOpenSettings} className="rounded-lg focus:bg-black/5 dark:focus:bg-white/5 focus:text-foreground cursor-pointer text-slate-grey">
-                                <Settings className="mr-2 h-4 w-4" />
-                                Settings
-                            </DropdownMenuItem>
-                            {onBackToLanding && (
-                                <DropdownMenuItem onClick={onBackToLanding} className="rounded-lg focus:bg-black/5 dark:focus:bg-white/5 focus:text-foreground cursor-pointer text-slate-grey">
-                                    <Home className="mr-2 h-4 w-4" />
-                                    Home
-                                </DropdownMenuItem>
-                            )}
-                            <DropdownMenuSeparator className="my-2 border-border" />
-                            <DropdownMenuItem
-                                className="text-neurix-orange focus:text-neurix-orange-light focus:bg-neurix-orange/10 rounded-lg cursor-pointer"
-                                onClick={onBackToLanding}
-                            >
-                                <LogOut className="mr-2 h-4 w-4" />
-                                Terminate Uplink
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                 </div>
             </div>
         </header>

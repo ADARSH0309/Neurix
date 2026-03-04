@@ -1,11 +1,12 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useServer } from '../../context/ServerContext';
 import { useChat } from '../../context/ChatContext';
 import { useUI } from '../../context/UIContext';
 import {
-    LayoutGrid, MessageSquare, Settings, Plus, Terminal,
+    LayoutGrid, MessageSquare, Plus, Terminal,
     ChevronRight, ChevronLeft, Search, MoreHorizontal, Pin, PinOff,
-    Pencil, Trash2, User,
+    Pencil, Trash2,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,14 +15,32 @@ import { getServerIcon, getServerVisual } from '../../lib/server-utils';
 export function NavigationDock() {
     const { servers, activeServerId, setActiveServerId, connectServer } = useServer();
     const { sessions, activeSessionId, setActiveSessionId, createSession, deleteSession, renameSession, pinSession, unpinSession } = useChat();
-    const { setShowSettingsDialog, setIsToolsPanelOpen, isToolsPanelOpen, setShowProfileDialog } = useUI();
+    const { setIsToolsPanelOpen, isToolsPanelOpen } = useUI();
 
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [contextMenuId, setContextMenuId] = useState<string | null>(null);
+    const [contextMenuPos, setContextMenuPos] = useState<{ top: number; left: number } | null>(null);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editTitle, setEditTitle] = useState('');
     const editInputRef = useRef<HTMLInputElement>(null);
+
+    // Close context menu on outside click or scroll
+    useEffect(() => {
+        if (!contextMenuId) return;
+        const close = () => setContextMenuId(null);
+        window.addEventListener('scroll', close, true);
+        window.addEventListener('click', close);
+        return () => { window.removeEventListener('scroll', close, true); window.removeEventListener('click', close); };
+    }, [contextMenuId]);
+
+    const openContextMenu = useCallback((e: React.MouseEvent, sessionId: string) => {
+        e.stopPropagation();
+        if (contextMenuId === sessionId) { setContextMenuId(null); return; }
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        setContextMenuPos({ top: rect.bottom + 4, left: rect.right - 160 });
+        setContextMenuId(sessionId);
+    }, [contextMenuId]);
 
     const toggleDock = () => setIsCollapsed(!isCollapsed);
 
@@ -78,7 +97,7 @@ export function NavigationDock() {
                                 <span className="truncate flex-1 text-left">{session.title}</span>
                                 {session.pinned && <Pin size={12} className="shrink-0 text-neurix-orange" />}
                                 <button
-                                    onClick={(e) => { e.stopPropagation(); setContextMenuId(contextMenuId === session.id ? null : session.id); }}
+                                    onClick={(e) => openContextMenu(e, session.id)}
                                     className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted"
                                 >
                                     <MoreHorizontal size={14} />
@@ -88,25 +107,26 @@ export function NavigationDock() {
                     </button>
                 )}
 
-                <AnimatePresence>
-                    {contextMenuId === session.id && !isCollapsed && (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: -4 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                            transition={{ duration: 0.1 }}
-                            className="absolute right-0 top-full z-50 w-40 rounded-lg bg-popover border border-border shadow-xl py-1 mt-1"
-                        >
-                            <button onClick={() => handleRenameStart(session.id, session.title)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                                <Pencil size={12} /> Rename
-                            </button>
-                            <button onClick={() => handleTogglePin(session.id, session.pinned)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                                {session.pinned ? <PinOff size={12} /> : <Pin size={12} />} {session.pinned ? 'Unpin' : 'Pin'}
-                            </button>
-                            <button onClick={() => handleDelete(session.id)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/5 transition-colors">
-                                <Trash2 size={12} /> Delete
-                            </button>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                {contextMenuId === session.id && !isCollapsed && contextMenuPos && createPortal(
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.1 }}
+                        style={{ position: 'fixed', top: contextMenuPos.top, left: contextMenuPos.left }}
+                        className="z-[9999] w-40 rounded-lg bg-popover border border-border shadow-xl py-1 dark"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button onClick={() => handleRenameStart(session.id, session.title)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                            <Pencil size={12} /> Rename
+                        </button>
+                        <button onClick={() => handleTogglePin(session.id, session.pinned)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                            {session.pinned ? <PinOff size={12} /> : <Pin size={12} />} {session.pinned ? 'Unpin' : 'Pin'}
+                        </button>
+                        <button onClick={() => handleDelete(session.id)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/5 transition-colors">
+                            <Trash2 size={12} /> Delete
+                        </button>
+                    </motion.div>,
+                    document.body
+                )}
             </div>
         );
     };
@@ -235,30 +255,23 @@ export function NavigationDock() {
 
             {/* Footer */}
             <div className="p-3 mt-auto border-t border-white/[0.08] space-y-0.5 shrink-0">
-                {[
-                    { icon: User, label: 'Profile', onClick: () => setShowProfileDialog(true), active: false },
-                    { icon: Terminal, label: 'Tools HUD', onClick: () => setIsToolsPanelOpen(!isToolsPanelOpen), active: isToolsPanelOpen },
-                    { icon: Settings, label: 'Settings', onClick: () => setShowSettingsDialog(true), active: false },
-                ].map(({ icon: Icon, label, onClick, active }) => (
-                    <button
-                        key={label}
-                        onClick={onClick}
-                        className={cn(
-                            "w-full flex items-center gap-3 p-2.5 rounded-xl transition-all duration-300",
-                            active
-                                ? "text-white bg-electric-purple/15 border border-electric-purple/30 shadow-[0_0_12px_rgba(139,92,246,0.2)]"
-                                : "text-white/50 hover:text-white hover:bg-white/[0.05] border border-transparent"
-                        )}
-                    >
-                        <div className={cn(
-                            "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
-                            active ? "bg-electric-purple/20" : "bg-white/[0.06]"
-                        )}>
-                            <Icon size={16} />
-                        </div>
-                        {!isCollapsed && <span className="text-sm">{label}</span>}
-                    </button>
-                ))}
+                <button
+                    onClick={() => setIsToolsPanelOpen(!isToolsPanelOpen)}
+                    className={cn(
+                        "w-full flex items-center gap-3 p-2.5 rounded-xl transition-all duration-300",
+                        isToolsPanelOpen
+                            ? "text-white bg-electric-purple/15 border border-electric-purple/30 shadow-[0_0_12px_rgba(139,92,246,0.2)]"
+                            : "text-white/50 hover:text-white hover:bg-white/[0.05] border border-transparent"
+                    )}
+                >
+                    <div className={cn(
+                        "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
+                        isToolsPanelOpen ? "bg-electric-purple/20" : "bg-white/[0.06]"
+                    )}>
+                        <Terminal size={16} />
+                    </div>
+                    {!isCollapsed && <span className="text-sm">Tools HUD</span>}
+                </button>
             </div>
         </motion.div>
     );

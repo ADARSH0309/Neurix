@@ -71,7 +71,7 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-10 w-10 rounded-full text-obsidian/60 hover:text-neurix-orange hover:bg-black/5 dark:text-paper/60 dark:hover:text-paper dark:hover:bg-white/10 transition-all"
+                                className="h-10 w-10 rounded-full text-muted-foreground hover:text-neurix-orange hover:bg-black/5 dark:hover:bg-white/10 transition-all"
                             >
                                 <Paperclip className="h-5 w-5" strokeWidth={1.5} />
                             </Button>
@@ -89,7 +89,7 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
                                 onBlur={() => setIsFocused(false)}
                                 placeholder={placeholder || (activeServer ? `Message ${activeServer.name}...` : "Query the central memory...")}
                                 disabled={isLoading}
-                                className="w-full bg-transparent border-0 outline-none ring-0 focus-visible:ring-0 px-2 py-0 min-h-[24px] max-h-[200px] resize-none text-[16px] font-medium leading-relaxed text-obsidian dark:text-paper placeholder:text-obsidian/40 dark:placeholder:text-paper/40 overflow-y-auto custom-scrollbar"
+                                className="w-full bg-transparent border-0 outline-none ring-0 focus-visible:ring-0 px-2 py-0 min-h-[24px] max-h-[200px] resize-none text-[16px] font-medium leading-relaxed text-foreground placeholder:text-muted-foreground overflow-y-auto custom-scrollbar"
                                 rows={1}
                                 onInput={(e) => {
                                     const target = e.target as HTMLTextAreaElement;
@@ -112,7 +112,7 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-10 w-10 rounded-full text-obsidian/60 hover:text-neurix-orange hover:bg-black/5 dark:text-paper/60 dark:hover:text-paper dark:hover:bg-white/10 transition-all"
+                                            className="h-10 w-10 rounded-full text-muted-foreground hover:text-neurix-orange hover:bg-black/5 dark:hover:bg-white/10 transition-all"
                                         >
                                             <Mic className="h-5 w-5" strokeWidth={1.5} />
                                         </Button>
@@ -170,19 +170,19 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
                                 transition={{ duration: 0.2 }}
                                 className="overflow-hidden"
                             >
-                                <div className="flex items-center gap-3 text-[11px] font-mono uppercase tracking-wider text-obsidian/40 dark:text-paper/40 font-bold">
+                                <div className="flex items-center gap-3 text-[11px] font-mono uppercase tracking-wider text-muted-foreground font-bold">
                                     {activeServer && (
                                         <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-black/[0.03] dark:bg-white/[0.06] border border-black/[0.04] dark:border-white/[0.06]">
                                             <Globe className="w-3.5 h-3.5 text-mint-green" />
-                                            <span className="text-obsidian/70 dark:text-paper/70">{activeServer.name}</span>
+                                            <span className="text-foreground/70">{activeServer.name}</span>
                                         </div>
                                     )}
                                     <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-black/[0.03] dark:bg-white/[0.06] border border-black/[0.04] dark:border-white/[0.06]">
                                         <Command className="w-3.5 h-3.5 text-neurix-orange/80" />
-                                        <span className="text-obsidian/70 dark:text-paper/70">/ commands</span>
+                                        <span className="text-foreground/70">/ commands</span>
                                     </div>
-                                    <div className="ml-auto flex items-center gap-1.5 text-obsidian/50 dark:text-paper/40">
-                                        <kbd className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/[0.06] border border-black/10 dark:border-white/[0.08] text-[9px] text-obsidian/60 dark:text-paper/50">Enter</kbd>
+                                    <div className="ml-auto flex items-center gap-1.5 text-muted-foreground">
+                                        <kbd className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/[0.06] border border-black/10 dark:border-white/[0.08] text-[9px] text-muted-foreground">Enter</kbd>
                                         <span>send</span>
                                     </div>
                                 </div>

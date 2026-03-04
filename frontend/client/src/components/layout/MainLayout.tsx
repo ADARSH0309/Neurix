@@ -5,8 +5,6 @@ import { NavigationDock } from '../navigation/NavigationDock';
 import { ToolsHUD } from '../tools/ToolsHUD';
 import { BackgroundLayer } from './BackgroundLayer';
 import { Header } from '../Header';
-import { SettingsDialog } from '../SettingsDialog';
-import { ProfileDialog } from '../ProfileDialog';
 import { MobileTabBar } from '../navigation/MobileTabBar';
 
 interface MainLayoutProps {
@@ -20,17 +18,10 @@ export function MainLayout({ children }: MainLayoutProps) {
         setIsToolsPanelOpen,
         isMobileMenuOpen,
         setIsMobileMenuOpen,
-        showProfileDialog,
-        setShowProfileDialog,
-        showSettingsDialog,
-        setShowSettingsDialog,
         settings,
         updateSettings,
-        profile,
-        updateProfile,
         activities,
         markAllNotificationsRead,
-        clearAllData,
         backToLanding,
     } = useUI();
 
@@ -47,7 +38,6 @@ export function MainLayout({ children }: MainLayoutProps) {
             <div className="relative z-10 flex flex-col w-full h-full">
                 {/* Header */}
                 <Header
-                    profile={profile}
                     theme={resolvedTheme}
                     onToggleTheme={() => updateSettings({ ...settings, theme: resolvedTheme === 'dark' ? 'light' : 'dark' })}
                     onToggleSidebar={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -56,8 +46,6 @@ export function MainLayout({ children }: MainLayoutProps) {
                     activities={activities}
                     unreadCount={unreadCount}
                     onMarkAllRead={markAllNotificationsRead}
-                    onOpenProfile={() => setShowProfileDialog(true)}
-                    onOpenSettings={() => setShowSettingsDialog(true)}
                     onBackToLanding={backToLanding}
                 />
 
@@ -99,20 +87,6 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <MobileTabBar />
             </div>
 
-            {/* Dialogs */}
-            <SettingsDialog
-                open={showSettingsDialog}
-                onOpenChange={setShowSettingsDialog}
-                settings={settings}
-                onSave={updateSettings}
-                onClearData={clearAllData}
-            />
-            <ProfileDialog
-                open={showProfileDialog}
-                onOpenChange={setShowProfileDialog}
-                profile={profile}
-                onSave={updateProfile}
-            />
         </div>
     );
 }

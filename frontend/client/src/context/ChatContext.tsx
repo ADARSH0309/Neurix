@@ -1,9 +1,11 @@
-import { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import type { ChatSession, Message } from '../types';
 import { useServer } from './ServerContext';
 import { useUI } from './UIContext';
 import { toast } from 'sonner';
 import { generateToolsHelpMessage, matchUserInputToTool } from '../lib/mcp-api';
+import { isConfigured as isAIConfigured, chatWithAI, getAIFinalResponse } from '../lib/ai-service';
+import type OpenAI from 'openai';
 
 interface ChatContextType {
     sessions: ChatSession[];
@@ -106,6 +108,8 @@ function generateSuggestions(serverName: string, responseContent: string, server
     return [...new Set(suggestions)].slice(0, 3);
 }
 
+type ChatMessage = OpenAI.Chat.ChatCompletionMessageParam;
+
 export function ChatProvider({ children }: { children: ReactNode }) {
     const { activeServerId, servers, setActiveServerId: setServerActiveId, executeTool, findTool, fetchServerTools } = useServer();
     const { addActivity } = useUI();
@@ -114,6 +118,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     const [sessions, setSessions] = useState<ChatSession[]>(() => loadJson('neurix_sessions', []));
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+
+    // OpenAI conversation history per session (not persisted — resets on refresh)
+    const aiHistoryRef = useRef<Record<string, ChatMessage[]>>({});
 
     // Persistence
     useEffect(() => { localStorage.setItem('neurix_sessions', JSON.stringify(sessions)); }, [sessions]);
@@ -184,6 +191,138 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         setSessions(prev => prev.map(s => s.id === id ? { ...s, pinned: false } : s));
     };
 
+    // --- AI-powered sendMessage ---
+    const sendMessageWithAI = async (text: string, sessionId: string) => {
+        const history = aiHistoryRef.current[sessionId] || [];
+
+        // Call OpenAI with all connected server tools
+        const aiResponse = await chatWithAI(text, servers, history);
+
+        // Track conversation: add user message
+        history.push({ role: 'user', content: text });
+
+        if (aiResponse.toolCalls.length === 0) {
+            // No tool calls — just a text response
+            const responseText = aiResponse.text || 'I\'m not sure how to help with that. Try connecting to a service first.';
+            history.push({ role: 'assistant', content: responseText });
+            aiHistoryRef.current[sessionId] = history;
+            return responseText;
+        }
+
+        // Build the assistant message with tool_calls for conversation history
+        history.push({
+            role: 'assistant',
+            content: aiResponse.text || null,
+            tool_calls: aiResponse.toolCalls.map(tc => ({
+                id: tc.id,
+                type: 'function' as const,
+                function: {
+                    name: `${tc.serverId}__${tc.toolName}`,
+                    arguments: JSON.stringify(tc.args),
+                },
+            })),
+        } as ChatMessage);
+
+        // Execute each tool call and collect results
+        const toolResults: string[] = [];
+        for (const tc of aiResponse.toolCalls) {
+            const server = servers[tc.serverId];
+            if (!server || !server.connected) {
+                const errMsg = `Server "${tc.serverId}" is not connected.`;
+                toolResults.push(errMsg);
+                history.push({ role: 'tool', tool_call_id: tc.id, content: errMsg } as ChatMessage);
+                continue;
+            }
+            try {
+                addActivity('info', `Executing ${tc.toolName}`, tc.serverId, server.name);
+                const result = await executeTool(tc.serverId, tc.toolName, tc.args);
+                // Truncate very large results to avoid blowing up the context
+                const truncated = result.length > 4000 ? result.slice(0, 4000) + '\n...(truncated)' : result;
+                toolResults.push(truncated);
+                history.push({ role: 'tool', tool_call_id: tc.id, content: truncated } as ChatMessage);
+            } catch (err: unknown) {
+                const errMsg = err instanceof Error ? err.message : String(err);
+                toolResults.push(`Error: ${errMsg}`);
+                history.push({ role: 'tool', tool_call_id: tc.id, content: `Error: ${errMsg}` } as ChatMessage);
+            }
+        }
+
+        // Get final natural language summary from OpenAI
+        const finalResponse = await getAIFinalResponse(history);
+        history.push({ role: 'assistant', content: finalResponse });
+        aiHistoryRef.current[sessionId] = history;
+
+        return finalResponse;
+    };
+
+    // --- Keyword-matching fallback sendMessage (original logic) ---
+    const sendMessageWithKeywords = async (text: string, serverId: string) => {
+        const server = servers[serverId];
+        const lowerText = text.toLowerCase().trim();
+
+        // Check help
+        if (lowerText === 'help' || lowerText === '?' || lowerText.includes('what can you do')) {
+            return generateToolsHelpMessage(server.tools || [], server.name);
+        }
+
+        if (server.tools && server.tools.length > 0) {
+            const { tool, args, missingRequired } = findTool(serverId, text);
+            if (tool) {
+                if (missingRequired.length > 0) {
+                    const toolNameReadable = tool.name.replace(/_/g, ' ');
+                    const missingList = missingRequired.map(p => `- **${p}**`).join('\n');
+                    return `**${toolNameReadable}** requires the following argument(s):\n\n${missingList}\n\n**Usage:** \`${toolNameReadable} [${missingRequired[0]}]\``;
+                }
+                addActivity('info', `Executing ${tool.name}`, serverId, server.name);
+                return await executeTool(serverId, tool.name, args);
+            }
+
+            // Check other connected servers
+            for (const [sid, srv] of Object.entries(servers)) {
+                if (sid === serverId || !srv.connected || !srv.tools || srv.tools.length === 0) continue;
+                const result = matchUserInputToTool(text, srv.tools);
+                if (result.tool && result.missingRequired.length === 0) {
+                    setServerActiveId(sid);
+                    addActivity('info', `Auto-switched to ${srv.name}`, sid, srv.name);
+                    toast.info(`Switched to ${srv.name}`);
+                    return await executeTool(sid, result.tool.name, result.args);
+                }
+            }
+
+            return `I couldn't find a matching command for: "${text}"\n\n${generateToolsHelpMessage(server.tools, server.name)}`;
+        }
+
+        // No tools yet — fetch and retry
+        const fetchedTools = await fetchServerTools(serverId);
+        if (fetchedTools && fetchedTools.length > 0) {
+            const matched = matchUserInputToTool(text, fetchedTools);
+            if (matched.tool) {
+                if (matched.missingRequired.length > 0) {
+                    const toolNameReadable = matched.tool.name.replace(/_/g, ' ');
+                    const missingList = matched.missingRequired.map(p => `- **${p}**`).join('\n');
+                    return `**${toolNameReadable}** requires the following argument(s):\n\n${missingList}\n\n**Usage:** \`${toolNameReadable} [${matched.missingRequired[0]}]\``;
+                }
+                addActivity('info', `Executing ${matched.tool.name}`, serverId, server.name);
+                return await executeTool(serverId, matched.tool.name, matched.args);
+            }
+
+            // Check other connected servers
+            for (const [sid, srv] of Object.entries(servers)) {
+                if (sid === serverId || !srv.connected || !srv.tools || srv.tools.length === 0) continue;
+                const result = matchUserInputToTool(text, srv.tools);
+                if (result.tool && result.missingRequired.length === 0) {
+                    setServerActiveId(sid);
+                    toast.info(`Switched to ${srv.name}`);
+                    return await executeTool(sid, result.tool.name, result.args);
+                }
+            }
+
+            return generateToolsHelpMessage(fetchedTools, server.name);
+        }
+
+        return `Connecting to ${server.name}... Tools are still loading. Please try again in a moment.`;
+    };
+
     const sendMessage = async (text: string, targetSessionId?: string) => {
         let sessionId = targetSessionId || activeSessionId;
         if (!sessionId) {
@@ -227,87 +366,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
             if (!server.token) {
                 responseContent = 'Please connect to the server first.';
+            } else if (isAIConfigured()) {
+                // AI-powered path: OpenAI handles NLU + tool routing
+                responseContent = await sendMessageWithAI(text, sessionId);
             } else {
-                const lowerText = text.toLowerCase().trim();
-
-                // Check help
-                if (lowerText === 'help' || lowerText === '?' || lowerText.includes('what can you do')) {
-                    responseContent = generateToolsHelpMessage(server.tools || [], server.name);
-                } else if (server.tools && server.tools.length > 0) {
-                    // Match tool
-                    const { tool, args, missingRequired } = findTool(serverId, text);
-
-                    if (tool) {
-                        if (missingRequired.length > 0) {
-                            const toolNameReadable = tool.name.replace(/_/g, ' ');
-                            const missingList = missingRequired.map(p => `- **${p}**`).join('\n');
-                            responseContent = `**${toolNameReadable}** requires the following argument(s):\n\n${missingList}\n\n**Usage:** \`${toolNameReadable} [${missingRequired[0]}]\``;
-                        } else {
-                            addActivity('info', `Executing ${tool.name}`, serverId, server.name);
-                            responseContent = await executeTool(serverId, tool.name, args);
-                        }
-                    } else {
-                        // No tool matched on active server — check other connected servers
-                        let crossMatch: { matchedServerId: string; matchedTool: any; matchedArgs: any; missingReq: string[] } | null = null;
-
-                        for (const [sid, srv] of Object.entries(servers)) {
-                            if (sid === serverId || !srv.connected || !srv.tools || srv.tools.length === 0) continue;
-                            const result = matchUserInputToTool(text, srv.tools);
-                            if (result.tool && result.missingRequired.length === 0) {
-                                crossMatch = { matchedServerId: sid, matchedTool: result.tool, matchedArgs: result.args, missingReq: result.missingRequired };
-                                break;
-                            }
-                        }
-
-                        if (crossMatch) {
-                            const matchedServer = servers[crossMatch.matchedServerId];
-                            setServerActiveId(crossMatch.matchedServerId);
-                            addActivity('info', `Auto-switched to ${matchedServer.name}`, crossMatch.matchedServerId, matchedServer.name);
-                            toast.info(`Switched to ${matchedServer.name}`);
-                            responseContent = await executeTool(crossMatch.matchedServerId, crossMatch.matchedTool.name, crossMatch.matchedArgs);
-                        } else {
-                            responseContent = `I couldn't find a matching command for: "${text}"\n\n${generateToolsHelpMessage(server.tools, server.name)}`;
-                        }
-                    }
-                } else {
-                    // No tools yet - fetch them and retry
-                    const fetchedTools = await fetchServerTools(serverId);
-                    if (fetchedTools && fetchedTools.length > 0) {
-                        // Re-try matching with freshly fetched tools
-                        const matched = matchUserInputToTool(text, fetchedTools);
-                        if (matched.tool) {
-                            if (matched.missingRequired.length > 0) {
-                                const toolNameReadable = matched.tool.name.replace(/_/g, ' ');
-                                const missingList = matched.missingRequired.map(p => `- **${p}**`).join('\n');
-                                responseContent = `**${toolNameReadable}** requires the following argument(s):\n\n${missingList}\n\n**Usage:** \`${toolNameReadable} [${matched.missingRequired[0]}]\``;
-                            } else {
-                                addActivity('info', `Executing ${matched.tool.name}`, serverId, server.name);
-                                responseContent = await executeTool(serverId, matched.tool.name, matched.args);
-                            }
-                        } else {
-                            // Check other connected servers
-                            let crossMatch2: { matchedServerId: string; matchedTool: any; matchedArgs: any } | null = null;
-                            for (const [sid, srv] of Object.entries(servers)) {
-                                if (sid === serverId || !srv.connected || !srv.tools || srv.tools.length === 0) continue;
-                                const result = matchUserInputToTool(text, srv.tools);
-                                if (result.tool && result.missingRequired.length === 0) {
-                                    crossMatch2 = { matchedServerId: sid, matchedTool: result.tool, matchedArgs: result.args };
-                                    break;
-                                }
-                            }
-                            if (crossMatch2) {
-                                const ms = servers[crossMatch2.matchedServerId];
-                                setServerActiveId(crossMatch2.matchedServerId);
-                                toast.info(`Switched to ${ms.name}`);
-                                responseContent = await executeTool(crossMatch2.matchedServerId, crossMatch2.matchedTool.name, crossMatch2.matchedArgs);
-                            } else {
-                                responseContent = generateToolsHelpMessage(fetchedTools, server.name);
-                            }
-                        }
-                    } else {
-                        responseContent = `Connecting to ${server.name}... Tools are still loading. Please try again in a moment.`;
-                    }
-                }
+                // Fallback: keyword matching
+                responseContent = await sendMessageWithKeywords(text, serverId);
             }
 
             const suggestions = generateSuggestions(server.name, responseContent, serverId);

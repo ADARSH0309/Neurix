@@ -68,6 +68,7 @@ export default {
                 'slate-grey': '#8899A6', // Secondary Text
                 'warm-cream': '#fff3e6', // Light Background
                 'deep-purple': '#381932', // Dark Background
+                paper: '#fff3e6', // Light text for dark mode
             },
             borderRadius: {
                 lg: 'var(--radius)',

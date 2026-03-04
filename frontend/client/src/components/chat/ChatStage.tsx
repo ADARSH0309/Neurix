@@ -380,10 +380,10 @@ const ConnectedEmptyState = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, duration: 0.4 }}
             >
-                <h2 className="text-3xl font-serif-display font-medium text-obsidian dark:text-paper mb-2 tracking-tight">
+                <h2 className="text-3xl font-serif-display font-medium text-foreground mb-2 tracking-tight">
                     Connected to <span className="text-neurix-orange">{serverName}</span>
                 </h2>
-                <p className="text-obsidian/60 dark:text-paper/60 max-w-md mb-8 text-[15px] leading-relaxed mx-auto font-sans-body">
+                <p className="text-muted-foreground max-w-md mb-8 text-[15px] leading-relaxed mx-auto font-sans-body">
                     Try one of these to get started, or type your own message below.
                 </p>
             </motion.div>
@@ -408,8 +408,8 @@ const ConnectedEmptyState = ({
                             <div className="icon-circle w-8 h-8 group-hover:bg-neurix-orange transition-colors">
                                 <Sparkles className="w-4 h-4 text-white" />
                             </div>
-                            <span className="text-[15px] font-sans-body font-medium text-obsidian dark:text-paper transition-colors">{prompt}</span>
-                            <ArrowRight className="w-4 h-4 text-obsidian/40 dark:text-paper/40 group-hover:text-neurix-orange ml-auto transition-colors" />
+                            <span className="text-[15px] font-sans-body font-medium text-foreground transition-colors">{prompt}</span>
+                            <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-neurix-orange ml-auto transition-colors" />
                         </motion.button>
                     ))}
                 </div>
@@ -446,10 +446,10 @@ const DisconnectedEmptyState = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, duration: 0.4 }}
             >
-                <h2 className="text-3xl font-serif-display font-medium text-obsidian dark:text-paper mb-2 tracking-tight">
+                <h2 className="text-3xl font-serif-display font-medium text-foreground mb-2 tracking-tight">
                     Neurix <span className="font-semibold text-neurix-orange">Workstation</span>
                 </h2>
-                <p className="text-obsidian/60 dark:text-paper/60 max-w-md mb-10 text-[15px] font-sans-body leading-relaxed mx-auto">
+                <p className="text-muted-foreground max-w-md mb-10 text-[15px] font-sans-body leading-relaxed mx-auto">
                     Connect a service below to get started, or type a message to begin a conversation.
                 </p>
             </motion.div>
@@ -479,8 +479,8 @@ const DisconnectedEmptyState = ({
                                         <Icon size={22} />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <span className="block text-[15px] font-sans-body font-semibold text-obsidian dark:text-paper group-hover:text-neurix-orange transition-colors">{server.name}</span>
-                                        <span className="flex items-center gap-1 text-[11px] font-mono font-bold text-obsidian/40 dark:text-paper/40 group-hover:text-neurix-orange/80 uppercase tracking-widest transition-colors mt-1">
+                                        <span className="block text-[15px] font-sans-body font-semibold text-foreground group-hover:text-neurix-orange transition-colors">{server.name}</span>
+                                        <span className="flex items-center gap-1 text-[11px] font-mono font-bold text-muted-foreground group-hover:text-neurix-orange/80 uppercase tracking-widest transition-colors mt-1">
                                             Connect <ArrowRight className="w-3 h-3" />
                                         </span>
                                     </div>
