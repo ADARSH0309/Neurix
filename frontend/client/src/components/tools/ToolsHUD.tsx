@@ -68,7 +68,7 @@ export function ToolsHUD({ isOpen, onClose }: ToolsHUDProps) {
                     animate={{ x: 0, opacity: 1 }}
                     exit={{ x: '100%', opacity: 0 }}
                     transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                    className="dark fixed right-0 top-0 h-full w-80 lg:w-96 bg-background/95 text-foreground backdrop-blur-3xl border-l border-border z-50 flex flex-col shadow-[-8px_0_30px_rgba(56,25,50,0.15)]"
+                    className="fixed right-0 top-0 h-full w-80 lg:w-96 bg-background/95 text-foreground backdrop-blur-3xl border-l border-border z-50 flex flex-col shadow-[-8px_0_30px_rgba(0,0,0,0.08)] dark:shadow-[-8px_0_30px_rgba(15,5,29,0.15)]"
                 >
                     {/* HUD Header */}
                     <div className="h-16 px-5 flex items-center justify-between border-b border-border bg-black/[0.02] dark:bg-white/[0.02]">
@@ -112,8 +112,8 @@ export function ToolsHUD({ isOpen, onClose }: ToolsHUDProps) {
                     </div>
 
                     {/* Content */}
-                    <ScrollArea className="flex-1">
-                        <div className="p-5 space-y-6">
+                    <ScrollArea className="flex-1 overflow-hidden">
+                        <div className="p-5 space-y-6 overflow-hidden">
 
                             {/* Services Tab */}
                             {activeTab === 'services' && (
@@ -181,18 +181,18 @@ export function ToolsHUD({ isOpen, onClose }: ToolsHUDProps) {
 
                                     {/* Coming Soon */}
                                     {comingSoonServers.length > 0 && (
-                                        <div className="space-y-3 pt-4 border-t border-white/5">
+                                        <div className="space-y-3 pt-4 border-t border-border">
                                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Offline Nodes</span>
                                             <div className="space-y-2">
                                                 {comingSoonServers.map((server) => {
                                                     const Icon = getServerIcon(server.id);
                                                     return (
-                                                        <div key={server.id} className="flex items-center gap-3 p-2 rounded-lg border border-white/5 opacity-40 bg-black/20 pointer-events-none grayscale">
-                                                            <div className="w-8 h-8 rounded flex items-center justify-center bg-white/5 border border-white/5">
+                                                        <div key={server.id} className="flex items-center gap-3 p-2 rounded-lg border border-border/50 opacity-40 bg-black/5 dark:bg-black/20 pointer-events-none grayscale">
+                                                            <div className="w-8 h-8 rounded flex items-center justify-center bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5">
                                                                 <Icon className="w-4 h-4 text-slate-grey" />
                                                             </div>
                                                             <span className="text-xs font-medium text-slate-grey">{server.name}</span>
-                                                            <span className="ml-auto text-[9px] border border-white/10 px-1.5 py-0.5 rounded text-slate-500">OFFLINE</span>
+                                                            <span className="ml-auto text-[9px] border border-black/10 dark:border-white/10 px-1.5 py-0.5 rounded text-slate-500">OFFLINE</span>
                                                         </div>
                                                     );
                                                 })}
@@ -209,22 +209,20 @@ export function ToolsHUD({ isOpen, onClose }: ToolsHUDProps) {
                                         <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Quick Commands</span>
                                         <div className="grid grid-cols-2 gap-2">
                                             {quickActions.map((action) => (
-                                                <motion.button
+                                                <button
                                                     key={action.id}
-                                                    whileHover={{ scale: 1.02, y: -2 }}
-                                                    whileTap={{ scale: 0.98 }}
                                                     onClick={() => sendMessage(action.prompt)}
                                                     className={cn(
-                                                        "p-3 rounded-xl text-left transition-all border border-white/5 hover:border-white/20 group relative overflow-hidden",
+                                                        "min-w-0 p-3 rounded-xl text-left transition-all border border-black/5 dark:border-white/5 hover:border-black/20 dark:hover:border-white/20 hover:shadow-md group relative overflow-hidden",
                                                         action.bgColor
                                                     )}
                                                 >
                                                     <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center mb-2 shadow-lg", action.iconBg)}>
                                                         <action.icon className="w-4 h-4 text-white" />
                                                     </div>
-                                                    <p className="text-xs font-semibold text-white group-hover:text-white/90">{action.name}</p>
-                                                    <p className="text-[10px] text-white/50 mt-0.5 font-mono opacity-0 group-hover:opacity-100 transition-opacity">/run {action.id}</p>
-                                                </motion.button>
+                                                    <p className="text-xs font-semibold text-foreground truncate">{action.name}</p>
+                                                    <p className="text-[10px] text-muted-foreground mt-0.5 font-mono truncate opacity-0 group-hover:opacity-100 transition-opacity">/run {action.id}</p>
+                                                </button>
                                             ))}
                                         </div>
                                     </div>
@@ -241,10 +239,10 @@ export function ToolsHUD({ isOpen, onClose }: ToolsHUDProps) {
                                                     <button
                                                         key={tool.name}
                                                         onClick={() => sendMessage(tool.name.replace(/_/g, ' '))}
-                                                        className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 border border-transparent hover:border-border transition-all text-left group"
+                                                        className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 border border-transparent hover:border-border transition-all text-left group overflow-hidden"
                                                     >
-                                                        <Command className="w-3.5 h-3.5 text-slate-500 group-hover:text-neurix-orange transition-colors" />
-                                                        <div className="min-w-0">
+                                                        <Command className="w-3.5 h-3.5 shrink-0 text-slate-500 group-hover:text-neurix-orange transition-colors" />
+                                                        <div className="min-w-0 flex-1">
                                                             <div className="text-xs font-mono text-slate-500 dark:text-slate-300 group-hover:text-foreground transition-colors truncate">{tool.name}</div>
                                                             <div className="text-[10px] text-slate-500 truncate">{tool.description}</div>
                                                         </div>
@@ -265,7 +263,7 @@ export function ToolsHUD({ isOpen, onClose }: ToolsHUDProps) {
                                     </div>
 
                                     <div className="space-y-2 relative">
-                                        <div className="absolute left-2.5 top-2 bottom-2 w-px bg-white/5" />
+                                        <div className="absolute left-2.5 top-2 bottom-2 w-px bg-black/5 dark:bg-white/5" />
                                         {activities.length === 0 ? (
                                             <div className="text-center py-10 opacity-50">
                                                 <Activity className="w-6 h-6 text-slate-600 mx-auto mb-2" />

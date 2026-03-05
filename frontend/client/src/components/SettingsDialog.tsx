@@ -138,7 +138,7 @@ export function SettingsDialog({ open, onOpenChange, settings, onSave, onClearDa
                     {/* About */}
                     <div className="space-y-3">
                         <label className="text-xs font-bold text-slate-grey uppercase tracking-wider">About</label>
-                        <div className="flex items-start gap-3 p-3 rounded-xl bg-[#381932]/50 border border-white/5 backdrop-blur-sm">
+                        <div className="flex items-start gap-3 p-3 rounded-xl bg-[#0F051D]/50 border border-white/5 backdrop-blur-sm">
                             <Info className="w-4 h-4 text-electric-purple mt-0.5 shrink-0" />
                             <div className="text-xs text-slate-grey space-y-1">
                                 <p><strong className="text-white font-heading tracking-wide">Neurix Workstation</strong> v2.0.0</p>

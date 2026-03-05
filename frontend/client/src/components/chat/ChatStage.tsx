@@ -13,33 +13,62 @@ import ReactMarkdown from 'react-markdown';
 import {
     Copy, Check, RotateCcw, MoreHorizontal,
     Bot, User, Sparkles, AlertTriangle, ArrowRight,
-    Search, X, Zap
+    Search, X, Zap, FolderOpen, FileSearch, FolderPlus,
+    ListChecks, ClipboardList, BarChart3,
+    Mail, Inbox, MessageSquare as MailIcon,
+    CalendarDays, CalendarClock, CalendarCheck,
+    CheckSquare, ListTodo, PlusCircle, Share2, BrainCircuit,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 
-// Server-specific starter prompts
-const SERVER_PROMPTS: Record<string, { label: string; prompts: string[] }> = {
+// Server-specific starter prompts with icons and descriptions
+const SERVER_PROMPTS: Record<string, { label: string; prompts: { text: string; desc: string; icon: React.ElementType }[] }> = {
     gdrive: {
         label: 'Google Drive',
-        prompts: ['List my recent files', 'Search for documents', 'Create a new folder'],
+        prompts: [
+            { text: 'List recent files', desc: 'Shows the last documents you modified across all folders.', icon: FolderOpen },
+            { text: 'Search for documents', desc: 'Find files by name, type, or content in your Drive.', icon: FileSearch },
+            { text: 'Audit sharing', desc: 'Review files with sharing permissions and access levels.', icon: Share2 },
+            { text: 'Smart organize', desc: 'AI-suggested folder structures based on file content.', icon: BrainCircuit },
+        ],
     },
     gforms: {
         label: 'Google Forms',
-        prompts: ['List my forms', 'Show form responses', 'Search forms'],
+        prompts: [
+            { text: 'List my forms', desc: 'View all forms you\'ve created with response counts.', icon: ListChecks },
+            { text: 'Show form responses', desc: 'Get the latest responses from your forms.', icon: ClipboardList },
+            { text: 'Search forms', desc: 'Find forms by title or description.', icon: FileSearch },
+            { text: 'Form analytics', desc: 'View response trends and completion rates.', icon: BarChart3 },
+        ],
     },
     gmail: {
         label: 'Gmail',
-        prompts: ['Show unread emails', 'Search my inbox', 'List recent messages'],
+        prompts: [
+            { text: 'Show unread emails', desc: 'List all unread messages in your inbox.', icon: Mail },
+            { text: 'Search my inbox', desc: 'Find emails by sender, subject, or content.', icon: Inbox },
+            { text: 'List recent messages', desc: 'View your latest email conversations.', icon: MailIcon },
+            { text: 'Check starred', desc: 'Show all messages you\'ve starred for follow-up.', icon: Sparkles },
+        ],
     },
     gcalendar: {
         label: 'Google Calendar',
-        prompts: ['Show today\'s events', 'List upcoming meetings', 'Check my schedule'],
+        prompts: [
+            { text: 'Show today\'s events', desc: 'View all events scheduled for today.', icon: CalendarDays },
+            { text: 'List upcoming meetings', desc: 'See your meetings for the next 7 days.', icon: CalendarClock },
+            { text: 'Check my schedule', desc: 'Overview of your calendar availability.', icon: CalendarCheck },
+            { text: 'Find free time', desc: 'Check available slots in your schedule.', icon: Search },
+        ],
     },
     gtask: {
         label: 'Google Tasks',
-        prompts: ['Show my tasks', 'List task lists', 'Create a new task'],
+        prompts: [
+            { text: 'Show my tasks', desc: 'View all pending tasks in your default list.', icon: CheckSquare },
+            { text: 'List task lists', desc: 'View all your task lists and counts.', icon: ListTodo },
+            { text: 'Create a new task', desc: 'Add a task with title, notes, and due date.', icon: PlusCircle },
+            { text: 'Complete tasks', desc: 'Mark tasks as done or review completed items.', icon: Check },
+        ],
     },
 };
 
@@ -192,7 +221,7 @@ const ChatMessage = ({ msg, searchQuery }: { msg: Message; searchQuery?: string 
                                             );
                                         }
                                         return (
-                                            <div className="my-3 rounded-xl border border-border dark:border-white/[0.06] bg-muted dark:bg-[#381932] overflow-hidden">
+                                            <div className="my-3 rounded-xl border border-border dark:border-white/[0.06] bg-muted dark:bg-black/30 overflow-hidden">
                                                 <div className="flex items-center justify-between px-4 py-2 bg-muted/80 dark:bg-white/[0.03] border-b border-border dark:border-white/[0.06]">
                                                     <div className="flex items-center gap-2">
                                                         <div className="flex gap-1.5">
@@ -348,7 +377,7 @@ function isDifferentDay(d1?: string, d2?: string): boolean {
     return a.toDateString() !== b.toDateString();
 }
 
-// Connected Empty State - shows server-specific prompts
+// Connected Empty State - shows server-specific prompts in 2x2 grid
 const ConnectedEmptyState = ({
     serverId,
     serverName,
@@ -359,8 +388,13 @@ const ConnectedEmptyState = ({
     onSend: (text: string) => void;
 }) => {
     const Icon = getServerIcon(serverId);
-    const visual = getServerVisual(serverId);
-    const prompts = SERVER_PROMPTS[serverId]?.prompts || ['Help', 'What can you do?', 'List available tools'];
+    const defaultPrompts = [
+        { text: 'Help', desc: 'See what I can do for you.', icon: Sparkles },
+        { text: 'What can you do?', desc: 'List available capabilities.', icon: Zap },
+        { text: 'List available tools', desc: 'Show all tools for this service.', icon: ListTodo },
+        { text: 'Get started', desc: 'Quick overview and setup guide.', icon: ArrowRight },
+    ];
+    const prompts = SERVER_PROMPTS[serverId]?.prompts || defaultPrompts;
 
     return (
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
@@ -370,7 +404,7 @@ const ConnectedEmptyState = ({
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 className="relative mb-6"
             >
-                <div className="w-20 h-20 rounded-2xl bg-white/10 dark:bg-white/[0.08] border border-white/20 dark:border-white/10 flex items-center justify-center shadow-lg backdrop-blur-sm">
+                <div className="w-20 h-20 rounded-2xl bg-muted/50 dark:bg-white/[0.08] border border-border dark:border-white/10 flex items-center justify-center shadow-lg backdrop-blur-sm">
                     <Icon size={44} />
                 </div>
             </motion.div>
@@ -380,11 +414,11 @@ const ConnectedEmptyState = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, duration: 0.4 }}
             >
-                <h2 className="text-3xl font-serif-display font-medium text-foreground mb-2 tracking-tight">
+                <h2 className="text-3xl font-heading font-bold text-foreground mb-2 tracking-tight">
                     Connected to <span className="text-neurix-orange">{serverName}</span>
                 </h2>
-                <p className="text-muted-foreground max-w-md mb-8 text-[15px] leading-relaxed mx-auto font-sans-body">
-                    Try one of these to get started, or type your own message below.
+                <p className="text-muted-foreground max-w-lg mb-10 text-[15px] leading-relaxed mx-auto">
+                    Neurix has indexed your files. Try one of these actions to get started or type your own request below.
                 </p>
             </motion.div>
 
@@ -392,26 +426,30 @@ const ConnectedEmptyState = ({
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.4 }}
-                className="w-full max-w-md"
+                className="w-full max-w-2xl"
             >
-                <div className="space-y-2.5">
-                    {prompts.map((prompt, i) => (
-                        <motion.button
-                            key={prompt}
-                            initial={{ opacity: 0, x: -12 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.25 + i * 0.06 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => onSend(prompt)}
-                            className="list-item-hover w-full flex items-center gap-3 p-4 bg-transparent border border-border/10 text-left group"
-                        >
-                            <div className="icon-circle w-8 h-8 group-hover:bg-neurix-orange transition-colors">
-                                <Sparkles className="w-4 h-4 text-white" />
-                            </div>
-                            <span className="text-[15px] font-sans-body font-medium text-foreground transition-colors">{prompt}</span>
-                            <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-neurix-orange ml-auto transition-colors" />
-                        </motion.button>
-                    ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {prompts.slice(0, 4).map((prompt, i) => {
+                        const PromptIcon = prompt.icon;
+                        return (
+                            <motion.button
+                                key={prompt.text}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.25 + i * 0.06 }}
+                                whileTap={{ scale: 0.98 }}
+                                whileHover={{ scale: 1.02 }}
+                                onClick={() => onSend(prompt.text)}
+                                className="group text-left p-5 rounded-2xl border border-border hover:border-primary/30 dark:hover:border-electric-purple/30 bg-card hover:shadow-lg transition-all duration-300"
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-primary/8 dark:bg-electric-purple/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 dark:group-hover:bg-electric-purple/20 transition-colors">
+                                    <PromptIcon className="w-5 h-5 text-primary dark:text-electric-purple" />
+                                </div>
+                                <h3 className="text-[15px] font-semibold text-foreground mb-1.5">{prompt.text}</h3>
+                                <p className="text-[13px] text-muted-foreground leading-relaxed">{prompt.desc}</p>
+                            </motion.button>
+                        );
+                    })}
                 </div>
             </motion.div>
         </div>
@@ -435,7 +473,7 @@ const DisconnectedEmptyState = ({
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 className="relative mb-6 mt-auto"
             >
-                <div className="icon-circle w-20 h-20 shadow-[0_8px_30px_rgba(56,25,50,0.15)] relative overflow-hidden group">
+                <div className="icon-circle w-20 h-20 shadow-[0_8px_30px_rgba(15,5,29,0.15)] relative overflow-hidden group">
                     <div className="absolute inset-0 bg-neurix-gradient opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     <Bot className="w-10 h-10 text-white relative z-10" />
                 </div>
@@ -462,7 +500,7 @@ const DisconnectedEmptyState = ({
                     transition={{ delay: 0.2, duration: 0.4 }}
                     className="w-full max-w-lg mb-auto"
                 >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {servers.slice(0, 6).map((server, i) => {
                             const Icon = getServerIcon(server.id);
                             return (
@@ -472,18 +510,17 @@ const DisconnectedEmptyState = ({
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.25 + i * 0.05 }}
                                     whileTap={{ scale: 0.98 }}
+                                    whileHover={{ scale: 1.02 }}
                                     onClick={() => onSelect(server.id)}
-                                    className="editorial-card dark:context-card-dark p-4 flex items-center gap-4 text-left group hover:scale-[1.02] transition-all"
+                                    className="p-5 rounded-2xl border border-border hover:border-primary/30 dark:hover:border-electric-purple/30 bg-card text-left group hover:shadow-lg transition-all duration-300"
                                 >
-                                    <div className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/[0.1] flex items-center justify-center group-hover:bg-white/[0.1] transition-colors duration-300">
+                                    <div className="w-10 h-10 rounded-xl bg-muted/50 dark:bg-white/[0.06] border border-border/50 dark:border-white/[0.1] flex items-center justify-center mb-3 group-hover:bg-primary/10 dark:group-hover:bg-white/[0.1] transition-colors duration-300">
                                         <Icon size={22} />
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <span className="block text-[15px] font-sans-body font-semibold text-foreground group-hover:text-neurix-orange transition-colors">{server.name}</span>
-                                        <span className="flex items-center gap-1 text-[11px] font-mono font-bold text-muted-foreground group-hover:text-neurix-orange/80 uppercase tracking-widest transition-colors mt-1">
-                                            Connect <ArrowRight className="w-3 h-3" />
-                                        </span>
-                                    </div>
+                                    <span className="block text-[15px] font-semibold text-foreground group-hover:text-neurix-orange transition-colors mb-1">{server.name}</span>
+                                    <span className="flex items-center gap-1 text-[11px] font-mono font-bold text-muted-foreground group-hover:text-neurix-orange/80 uppercase tracking-widest transition-colors">
+                                        Connect <ArrowRight className="w-3 h-3" />
+                                    </span>
                                 </motion.button>
                             );
                         })}

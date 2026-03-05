@@ -350,7 +350,7 @@ export function ChatArea(): React.ReactElement {
                                                 {msg.role === 'user' ? (
                                                     <p>{msg.content}</p>
                                                 ) : (
-                                                    <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-black/5 dark:prose-pre:bg-[#381932]/80 prose-pre:border prose-pre:border-border prose-pre:backdrop-blur-2xl prose-code:text-electric-purple/90 prose-headings:text-foreground">
+                                                    <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-black/5 dark:prose-pre:bg-[#0F051D]/80 prose-pre:border prose-pre:border-border prose-pre:backdrop-blur-2xl prose-code:text-electric-purple/90 prose-headings:text-foreground">
                                                         <ReactMarkdown
                                                             components={{
                                                                 code(props) {

@@ -50,7 +50,7 @@ export function ProfileDialog({ open, onOpenChange, profile, onSave }: ProfileDi
                             <div className="absolute inset-0 bg-electric-purple/20 rounded-full blur-md group-hover:blur-lg transition-all" />
                             <Avatar className="h-24 w-24 border-2 border-white/10 relative">
                                 <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`} />
-                                <AvatarFallback className="bg-gradient-to-br from-[#381932] to-electric-purple/20 text-electric-purple text-3xl font-heading border border-white/5">
+                                <AvatarFallback className="bg-gradient-to-br from-[#0F051D] to-electric-purple/20 text-electric-purple text-3xl font-heading border border-white/5">
                                     {name.charAt(0).toUpperCase()}
                                 </AvatarFallback>
                             </Avatar>

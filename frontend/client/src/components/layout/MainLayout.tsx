@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { cn } from '../../lib/utils';
 import { useUI } from '../../context/UIContext';
 import { useServer } from '../../context/ServerContext';
 import { NavigationDock } from '../navigation/NavigationDock';
@@ -70,7 +71,10 @@ export function MainLayout({ children }: MainLayoutProps) {
                     )}
 
                     {/* Stage (Center) */}
-                    <main className="flex-1 relative flex flex-col h-full overflow-hidden transition-all duration-500 ease-out p-3 md:p-6 lg:p-8">
+                    <main className={cn(
+                        "flex-1 relative flex flex-col h-full overflow-hidden transition-all duration-500 ease-out p-3 md:p-6 lg:p-8",
+                        isToolsPanelOpen && "mr-80 lg:mr-96"
+                    )}>
                         <div className="flex-1 w-full max-w-5xl mx-auto h-full flex flex-col relative">
                             {children}
                         </div>

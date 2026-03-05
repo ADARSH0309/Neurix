@@ -231,22 +231,7 @@ function formatToolResponse(text: string, _toolName: string): string {
       if (data.files.length === 0) {
         return 'No files found.';
       }
-      let output = `Found **${data.files.length}** file(s):\n\n`;
-      data.files.slice(0, 15).forEach((file: any, index: number) => {
-        const icon = getFileIconEmoji(file.mimeType);
-        output += `${index + 1}. ${icon} **${file.name}**\n`;
-        if (file.modifiedTime) {
-          output += `   Modified: ${new Date(file.modifiedTime).toLocaleDateString()}\n`;
-        }
-        if (file.webViewLink) {
-          output += `   [Open in Drive](${file.webViewLink})\n`;
-        }
-        output += '\n';
-      });
-      if (data.files.length > 15) {
-        output += `\n*...and ${data.files.length - 15} more files.*`;
-      }
-      return output;
+      return formatDriveFiles(data.files);
     }
 
     // Handle forms list (Google Forms)
@@ -254,26 +239,12 @@ function formatToolResponse(text: string, _toolName: string): string {
       if (data.forms.length === 0) {
         return 'No forms found.';
       }
-      let output = `Found **${data.forms.length}** form(s):\n\n`;
-      data.forms.forEach((form: any, index: number) => {
-        output += `${index + 1}. **${form.title || form.name || 'Untitled'}**\n`;
-        if (form.formId) output += `   ID: \`${form.formId}\`\n`;
-        if (form.responderUri) output += `   [Open Form](${form.responderUri})\n`;
-        output += '\n';
-      });
-      return output;
+      return formatFormsList(data.forms);
     }
 
     // Handle single file/form details
     if (data.id && data.name) {
-      const icon = getFileIconEmoji(data.mimeType);
-      let output = `${icon} **${data.name}**\n\n`;
-      if (data.mimeType) output += `**Type:** ${data.mimeType}\n`;
-      if (data.size) output += `**Size:** ${formatFileSize(Number(data.size))}\n`;
-      if (data.modifiedTime) output += `**Modified:** ${new Date(data.modifiedTime).toLocaleDateString()}\n`;
-      if (data.createdTime) output += `**Created:** ${new Date(data.createdTime).toLocaleDateString()}\n`;
-      if (data.webViewLink) output += `\n[Open in Drive](${data.webViewLink})`;
-      return output;
+      return formatDriveSingleFile(data);
     }
 
     // Handle form creation response
@@ -287,157 +258,51 @@ function formatToolResponse(text: string, _toolName: string): string {
     // ── Google Calendar: Events list ──
     if (data.events && Array.isArray(data.events)) {
       if (data.events.length === 0) return 'No upcoming events in the next 30 days.';
-
-      const formatEventDate = (evt: any) => {
-        if (evt.start?.dateTime) {
-          const d = new Date(evt.start.dateTime);
-          return { date: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }), time: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }), isAllDay: false };
-        }
-        if (evt.start?.date) {
-          const d = new Date(evt.start.date + 'T00:00:00');
-          return { date: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }), time: 'All day', isAllDay: true };
-        }
-        return { date: 'Unknown', time: '', isAllDay: false };
-      };
-
-      const formatEndTime = (evt: any) => {
-        if (evt.end?.dateTime) return new Date(evt.end.dateTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        return '';
-      };
-
-      let output = `**Upcoming Events** (${data.events.length})\n\n`;
-      let lastDate = '';
-
-      data.events.slice(0, 20).forEach((evt: any) => {
-        const { date, time, isAllDay } = formatEventDate(evt);
-        if (date !== lastDate) {
-          output += `---\n**${date}**\n\n`;
-          lastDate = date;
-        }
-        const timeStr = isAllDay ? '🕐 All day' : `🕐 ${time}${formatEndTime(evt) ? ` – ${formatEndTime(evt)}` : ''}`;
-        output += `> **${evt.summary || '(No Title)'}**\n`;
-        output += `> ${timeStr}\n`;
-        if (evt.location) output += `> 📍 ${evt.location}\n`;
-        if (evt.hangoutLink) output += `> 🔗 [Join Meet](${evt.hangoutLink})\n`;
-        if (evt.htmlLink) output += `> [Open in Calendar](${evt.htmlLink})\n`;
-        output += '\n';
-      });
-      if (data.events.length > 20) output += `\n*...and ${data.events.length - 20} more events.*`;
-      return output;
+      return formatCalendarEvents(data.events);
     }
 
     // ── Google Calendar: Single event ──
     if (data.event && data.event.summary !== undefined) {
-      const evt = data.event;
-      const start = evt.start?.dateTime ? new Date(evt.start.dateTime).toLocaleString() : evt.start?.date || 'N/A';
-      const end = evt.end?.dateTime ? new Date(evt.end.dateTime).toLocaleString() : evt.end?.date || '';
-      let output = `**${evt.summary || '(No Title)'}**\n\n`;
-      output += `**When:** ${start}${end ? ` - ${end}` : ''}\n`;
-      if (evt.location) output += `**Where:** ${evt.location}\n`;
-      if (evt.description) output += `**Description:** ${evt.description}\n`;
-      if (evt.organizer?.email) output += `**Organizer:** ${evt.organizer.displayName || evt.organizer.email}\n`;
-      if (evt.attendees?.length) {
-        output += `**Attendees:** ${evt.attendees.map((a: any) => `${a.displayName || a.email} (${a.responseStatus || 'unknown'})`).join(', ')}\n`;
-      }
-      if (evt.hangoutLink) output += `**Google Meet:** [Join Meeting](${evt.hangoutLink})\n`;
-      if (evt.htmlLink) output += `\n[Open in Calendar](${evt.htmlLink})`;
-      return output;
+      return formatCalendarSingleEvent(data.event);
     }
 
     // ── Google Calendar: Calendars list ──
     if (data.calendars && Array.isArray(data.calendars)) {
       if (data.calendars.length === 0) return 'No calendars found.';
-      let output = `Found **${data.calendars.length}** calendar(s):\n\n`;
-      data.calendars.forEach((cal: any, i: number) => {
-        output += `${i + 1}. **${cal.summary || cal.id}**${cal.primary ? ' (Primary)' : ''}\n`;
-        if (cal.description) output += `   ${cal.description}\n`;
-        if (cal.timeZone) output += `   Timezone: ${cal.timeZone}\n`;
-        output += '\n';
-      });
-      return output;
+      return formatCalendarsList(data.calendars);
     }
 
     // ── Google Calendar: Single calendar ──
     if (data.calendar && data.calendar.summary !== undefined) {
-      const cal = data.calendar;
-      let output = `**${cal.summary || cal.id}**${cal.primary ? ' (Primary)' : ''}\n\n`;
-      if (cal.description) output += `**Description:** ${cal.description}\n`;
-      if (cal.timeZone) output += `**Timezone:** ${cal.timeZone}\n`;
-      if (cal.accessRole) output += `**Access:** ${cal.accessRole}\n`;
-      return output;
+      return formatCalendarDetail(data.calendar);
     }
 
     // ── Google Calendar: Search results ──
     if (data.query && data.events && Array.isArray(data.events)) {
       if (data.events.length === 0) return `No events found matching "${data.query}".`;
-      let output = `Found **${data.events.length}** event(s) for "${data.query}":\n\n`;
-      data.events.forEach((evt: any, i: number) => {
-        const start = evt.start?.dateTime ? new Date(evt.start.dateTime).toLocaleString() : evt.start?.date || '';
-        output += `${i + 1}. **${evt.summary || '(No Title)'}** - ${start}\n`;
-      });
-      return output;
+      return formatCalendarSearchResults(data.query, data.events);
     }
 
     // ── Google Tasks: Task lists ──
     if (data.taskLists && Array.isArray(data.taskLists)) {
       if (data.taskLists.length === 0) return 'No task lists found.';
-      let output = `**Your Task Lists** — ${data.taskLists.length} list${data.taskLists.length !== 1 ? 's' : ''}\n\n`;
-      data.taskLists.forEach((tl: any, i: number) => {
-        const title = tl.title || 'Untitled';
-        const updated = tl.updated ? new Date(tl.updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
-        output += `${i + 1}. **${title}**${updated ? `  —  ${updated}` : ''}\n`;
-      });
-      output += `\n[Open Google Tasks](https://tasks.google.com)`;
-      return output;
+      return formatTaskLists(data.taskLists);
     }
 
     // ── Google Tasks: Tasks list ──
     if (data.tasks && Array.isArray(data.tasks)) {
       if (data.tasks.length === 0) return 'No tasks found in this list.';
-      const completed = data.tasks.filter((t: any) => t.status === 'completed').length;
-      const pending = data.tasks.length - completed;
-      let output = `**Tasks** — ${pending} pending, ${completed} completed\n\n`;
-      data.tasks.forEach((task: any) => {
-        const icon = task.status === 'completed' ? '~~' : '';
-        const title = task.title || '(No Title)';
-        const due = task.due ? `  —  Due ${new Date(task.due).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : '';
-        const notes = task.notes ? `\n   *${task.notes.slice(0, 60)}${task.notes.length > 60 ? '...' : ''}*` : '';
-        if (task.status === 'completed') {
-          output += `- ~~${title}~~${due}\n`;
-        } else {
-          output += `- **${title}**${due}${notes}\n`;
-        }
-      });
-      output += `\n[Open Google Tasks](https://tasks.google.com)`;
-      return output;
+      return formatTasks(data.tasks);
     }
 
     // ── Google Tasks: Single task ──
     if (data.task && data.task.title !== undefined) {
-      const task = data.task;
-      const status = task.status === 'completed' ? 'Completed' : 'Pending';
-      let output = `**${task.title || '(No Title)'}**\n\n`;
-      if (data.taskListName) output += `**List:** ${data.taskListName}\n`;
-      output += `**Status:** ${status}\n`;
-      if (task.notes) output += `**Notes:** ${task.notes}\n`;
-      if (task.due) output += `**Due:** ${new Date(task.due).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}\n`;
-      if (task.completed) output += `**Completed:** ${new Date(task.completed).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}\n`;
-      if (task.links && task.links.length > 0) {
-        task.links.forEach((l: any) => {
-          if (l.link) output += `**Link:** [${l.description || 'Open'}](${l.link})\n`;
-        });
-      }
-      output += `\n[Open Google Tasks](https://tasks.google.com)`;
-      return output;
+      return formatSingleTask(data.task, data.taskListName);
     }
 
     // ── Google Tasks: Single task list ──
     if (data.taskList && data.taskList.title !== undefined) {
-      const tl = data.taskList;
-      let output = `**${tl.title || 'Untitled'}**\n\n`;
-      if (tl.updated) output += `**Last updated:** ${new Date(tl.updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}\n`;
-      output += `\n[Open Google Tasks](https://tasks.google.com)`;
-      return output;
+      return formatSingleTaskList(data.taskList);
     }
 
     // Default: return formatted JSON in a code block
@@ -626,6 +491,339 @@ function formatGmailDrafts(drafts: any[]): string {
   });
 
   return output;
+}
+
+// ── Google Drive formatting helpers ──
+
+function formatDriveFiles(files: any[]): string {
+  let output = `**Google Drive** — ${files.length} file${files.length !== 1 ? 's' : ''}\n\n`;
+
+  files.slice(0, 20).forEach((file: any, index: number) => {
+    const icon = getFileIconEmoji(file.mimeType);
+    const typeName = getDriveFileTypeName(file.mimeType);
+    const badges: string[] = [];
+    if (file.shared) badges.push('shared');
+    if (file.starred) badges.push('starred');
+    const badgeStr = badges.length > 0 ? `  \`${badges.join('  ')}\`` : '';
+
+    output += `---\n\n`;
+    output += `**${index + 1}. ${icon} ${file.name}**${badgeStr}\n\n`;
+    output += `> **Type:** ${typeName}\n`;
+    if (file.modifiedTime) output += `> **Modified:** ${formatSmartDate(file.modifiedTime)}\n`;
+    if (file.size) output += `> **Size:** ${formatFileSize(Number(file.size))}\n`;
+    if (file.owners && file.owners.length > 0) {
+      output += `> **Owner:** ${file.owners[0].displayName || file.owners[0].emailAddress || 'Unknown'}\n`;
+    }
+    output += '\n';
+    if (file.webViewLink) {
+      output += `[Open in Drive](${file.webViewLink})\n\n`;
+    }
+  });
+
+  if (files.length > 20) {
+    output += `---\n\n*...and ${files.length - 20} more files.*\n`;
+  }
+
+  return output;
+}
+
+function formatDriveSingleFile(data: any): string {
+  const icon = getFileIconEmoji(data.mimeType);
+  const typeName = getDriveFileTypeName(data.mimeType);
+
+  let output = `${icon} **${data.name}**\n\n`;
+  output += `> **Type:** ${typeName}\n`;
+  if (data.size) output += `> **Size:** ${formatFileSize(Number(data.size))}\n`;
+  if (data.modifiedTime) output += `> **Modified:** ${formatSmartDate(data.modifiedTime)}\n`;
+  if (data.createdTime) output += `> **Created:** ${formatSmartDate(data.createdTime)}\n`;
+  if (data.owners && data.owners.length > 0) {
+    output += `> **Owner:** ${data.owners[0].displayName || data.owners[0].emailAddress || 'Unknown'}\n`;
+  }
+  if (data.shared) output += `> **Shared:** Yes\n`;
+  output += '\n';
+  if (data.webViewLink) output += `[Open in Drive](${data.webViewLink})`;
+  return output;
+}
+
+function getDriveFileTypeName(mimeType: string): string {
+  if (!mimeType) return 'File';
+  if (mimeType.includes('folder')) return 'Folder';
+  if (mimeType.includes('document') || mimeType.includes('word')) return 'Document';
+  if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return 'Spreadsheet';
+  if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) return 'Presentation';
+  if (mimeType.includes('image')) return 'Image';
+  if (mimeType.includes('pdf')) return 'PDF';
+  if (mimeType.includes('video')) return 'Video';
+  if (mimeType.includes('audio')) return 'Audio';
+  if (mimeType.includes('form')) return 'Form';
+  if (mimeType.includes('zip') || mimeType.includes('compressed')) return 'Archive';
+  return 'File';
+}
+
+// ── Google Forms formatting helpers ──
+
+function formatFormsList(forms: any[]): string {
+  let output = `**Google Forms** — ${forms.length} form${forms.length !== 1 ? 's' : ''}\n\n`;
+
+  forms.forEach((form: any, index: number) => {
+    const title = form.title || form.name || 'Untitled';
+    output += `---\n\n`;
+    output += `**${index + 1}. 📋 ${title}**\n\n`;
+    if (form.formId) output += `> **Form ID:** \`${form.formId}\`\n`;
+    if (form.description) output += `> **Description:** ${form.description}\n`;
+    output += '\n';
+    if (form.responderUri) {
+      output += `[Open Form](${form.responderUri})\n\n`;
+    }
+  });
+
+  return output;
+}
+
+// ── Google Calendar formatting helpers ──
+
+function formatCalendarEvents(events: any[]): string {
+  let output = `**Upcoming Events** — ${events.length} event${events.length !== 1 ? 's' : ''}\n\n`;
+  let lastDate = '';
+
+  events.slice(0, 20).forEach((evt: any) => {
+    const { date, time, isAllDay } = parseEventDate(evt);
+    const endTime = evt.end?.dateTime ? new Date(evt.end.dateTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+
+    // Date header grouping
+    if (date !== lastDate) {
+      output += `---\n\n**📅 ${date}**\n\n`;
+      lastDate = date;
+    }
+
+    const timeStr = isAllDay ? 'All day' : `${time}${endTime ? ` – ${endTime}` : ''}`;
+
+    output += `> **${evt.summary || '(No Title)'}**\n`;
+    output += `> 🕐 ${timeStr}\n`;
+    if (evt.location) output += `> 📍 ${evt.location}\n`;
+    if (evt.hangoutLink) output += `> 🔗 [Join Google Meet](${evt.hangoutLink})\n`;
+    if (evt.attendees && evt.attendees.length > 0) {
+      output += `> 👥 ${evt.attendees.length} attendee${evt.attendees.length !== 1 ? 's' : ''}\n`;
+    }
+    if (evt.htmlLink) output += `> [Open in Calendar](${evt.htmlLink})\n`;
+    output += '\n';
+  });
+
+  if (events.length > 20) output += `---\n\n*...and ${events.length - 20} more events.*\n`;
+  return output;
+}
+
+function formatCalendarSingleEvent(evt: any): string {
+  const { date, time, isAllDay } = parseEventDate(evt);
+  const endTime = evt.end?.dateTime
+    ? new Date(evt.end.dateTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+    : '';
+  const timeStr = isAllDay ? 'All day' : `${time}${endTime ? ` – ${endTime}` : ''}`;
+
+  let output = `**${evt.summary || '(No Title)'}**\n\n`;
+  output += `> **Date:** ${date}\n`;
+  output += `> **Time:** ${timeStr}\n`;
+  if (evt.location) output += `> **Location:** 📍 ${evt.location}\n`;
+  if (evt.organizer?.email) output += `> **Organizer:** ${evt.organizer.displayName || evt.organizer.email}\n`;
+  output += '\n';
+
+  if (evt.description) {
+    const desc = evt.description.length > 300 ? evt.description.slice(0, 300) + '...' : evt.description;
+    output += `${desc}\n\n`;
+  }
+
+  if (evt.attendees && evt.attendees.length > 0) {
+    output += `**Attendees** (${evt.attendees.length})\n\n`;
+    evt.attendees.slice(0, 10).forEach((a: any) => {
+      const name = a.displayName || a.email;
+      const status = a.responseStatus === 'accepted' ? '✅' : a.responseStatus === 'declined' ? '❌' : a.responseStatus === 'tentative' ? '❓' : '⏳';
+      output += `- ${status} ${name}\n`;
+    });
+    if (evt.attendees.length > 10) output += `- *...and ${evt.attendees.length - 10} more*\n`;
+    output += '\n';
+  }
+
+  if (evt.hangoutLink) output += `🔗 [Join Google Meet](${evt.hangoutLink})\n\n`;
+  if (evt.htmlLink) output += `[Open in Calendar](${evt.htmlLink})`;
+  return output;
+}
+
+function formatCalendarsList(calendars: any[]): string {
+  let output = `**Your Calendars** — ${calendars.length} calendar${calendars.length !== 1 ? 's' : ''}\n\n`;
+
+  calendars.forEach((cal: any, i: number) => {
+    const primary = cal.primary ? `  \`primary\`` : '';
+    output += `---\n\n`;
+    output += `**${i + 1}. ${cal.summary || cal.id}**${primary}\n\n`;
+    if (cal.description) output += `> **Description:** ${cal.description}\n`;
+    if (cal.timeZone) output += `> **Timezone:** ${cal.timeZone}\n`;
+    if (cal.accessRole) output += `> **Access:** ${cal.accessRole}\n`;
+    output += '\n';
+  });
+
+  return output;
+}
+
+function formatCalendarDetail(cal: any): string {
+  const primary = cal.primary ? `  \`primary\`` : '';
+  let output = `**${cal.summary || cal.id}**${primary}\n\n`;
+  if (cal.description) output += `> **Description:** ${cal.description}\n`;
+  if (cal.timeZone) output += `> **Timezone:** ${cal.timeZone}\n`;
+  if (cal.accessRole) output += `> **Access:** ${cal.accessRole}\n`;
+  return output;
+}
+
+function formatCalendarSearchResults(query: string, events: any[]): string {
+  let output = `**Search Results** — ${events.length} event${events.length !== 1 ? 's' : ''} for "${query}"\n\n`;
+
+  events.forEach((evt: any, i: number) => {
+    const { date, time, isAllDay } = parseEventDate(evt);
+    const timeStr = isAllDay ? 'All day' : time;
+
+    output += `---\n\n`;
+    output += `**${i + 1}. ${evt.summary || '(No Title)'}**\n\n`;
+    output += `> **Date:** ${date}\n`;
+    output += `> **Time:** ${timeStr}\n`;
+    if (evt.location) output += `> **Location:** 📍 ${evt.location}\n`;
+    if (evt.htmlLink) output += `> [Open in Calendar](${evt.htmlLink})\n`;
+    output += '\n';
+  });
+
+  return output;
+}
+
+function parseEventDate(evt: any): { date: string; time: string; isAllDay: boolean } {
+  if (evt.start?.dateTime) {
+    const d = new Date(evt.start.dateTime);
+    return {
+      date: formatSmartDate(evt.start.dateTime, true),
+      time: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      isAllDay: false,
+    };
+  }
+  if (evt.start?.date) {
+    const d = new Date(evt.start.date + 'T00:00:00');
+    return {
+      date: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
+      time: 'All day',
+      isAllDay: true,
+    };
+  }
+  return { date: 'Unknown', time: '', isAllDay: false };
+}
+
+// ── Google Tasks formatting helpers ──
+
+function formatTaskLists(taskLists: any[]): string {
+  let output = `**Your Task Lists** — ${taskLists.length} list${taskLists.length !== 1 ? 's' : ''}\n\n`;
+
+  taskLists.forEach((tl: any, i: number) => {
+    const title = tl.title || 'Untitled';
+    output += `---\n\n`;
+    output += `**${i + 1}. ${title}**\n\n`;
+    if (tl.updated) output += `> **Last updated:** ${formatSmartDate(tl.updated)}\n`;
+    output += '\n';
+  });
+
+  output += `---\n\n[Open Google Tasks](https://tasks.google.com)`;
+  return output;
+}
+
+function formatTasks(tasks: any[]): string {
+  const completed = tasks.filter((t: any) => t.status === 'completed').length;
+  const pending = tasks.length - completed;
+  let output = `**Tasks** — ${pending} pending, ${completed} completed\n\n`;
+
+  // Pending tasks first
+  const pendingTasks = tasks.filter((t: any) => t.status !== 'completed');
+  const completedTasks = tasks.filter((t: any) => t.status === 'completed');
+
+  pendingTasks.forEach((task: any) => {
+    const title = task.title || '(No Title)';
+    const dueBadge = task.due ? `  \`due ${new Date(task.due).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}\`` : '';
+
+    output += `---\n\n`;
+    output += `**☐ ${title}**${dueBadge}\n\n`;
+    if (task.notes) {
+      const notes = task.notes.length > 120 ? task.notes.slice(0, 120) + '...' : task.notes;
+      output += `> ${notes}\n\n`;
+    }
+    if (task.links && task.links.length > 0) {
+      task.links.forEach((l: any) => {
+        if (l.link) output += `> 🔗 [${l.description || 'Link'}](${l.link})\n`;
+      });
+      output += '\n';
+    }
+  });
+
+  if (completedTasks.length > 0) {
+    output += `---\n\n**Completed** (${completedTasks.length})\n\n`;
+    completedTasks.forEach((task: any) => {
+      const title = task.title || '(No Title)';
+      output += `- ~~${title}~~\n`;
+    });
+    output += '\n';
+  }
+
+  output += `---\n\n[Open Google Tasks](https://tasks.google.com)`;
+  return output;
+}
+
+function formatSingleTask(task: any, taskListName?: string): string {
+  const status = task.status === 'completed' ? '✅ Completed' : '☐ Pending';
+  const icon = task.status === 'completed' ? '☑' : '☐';
+
+  let output = `**${icon} ${task.title || '(No Title)'}**\n\n`;
+  if (taskListName) output += `> **List:** ${taskListName}\n`;
+  output += `> **Status:** ${status}\n`;
+  if (task.due) output += `> **Due:** ${formatSmartDate(task.due, true)}\n`;
+  if (task.completed) output += `> **Completed:** ${formatSmartDate(task.completed)}\n`;
+  output += '\n';
+
+  if (task.notes) {
+    output += `${task.notes}\n\n`;
+  }
+  if (task.links && task.links.length > 0) {
+    task.links.forEach((l: any) => {
+      if (l.link) output += `🔗 [${l.description || 'Open'}](${l.link})\n`;
+    });
+    output += '\n';
+  }
+  output += `[Open Google Tasks](https://tasks.google.com)`;
+  return output;
+}
+
+function formatSingleTaskList(tl: any): string {
+  let output = `**${tl.title || 'Untitled'}**\n\n`;
+  if (tl.updated) output += `> **Last updated:** ${formatSmartDate(tl.updated)}\n`;
+  output += '\n';
+  output += `[Open Google Tasks](https://tasks.google.com)`;
+  return output;
+}
+
+// ── Shared formatting helpers ──
+
+function formatSmartDate(dateStr: string, includeWeekday = false): string {
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    if (isToday) {
+      return `Today at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    }
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (date.toDateString() === yesterday.toDateString()) {
+      return `Yesterday at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    }
+    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
+    if (includeWeekday) options.weekday = 'short';
+    return date.toLocaleDateString('en-US', options) +
+      ` at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  } catch {
+    return dateStr;
+  }
 }
 
 function formatEmailSender(from: string): string {

@@ -138,7 +138,7 @@ export function Header({
                             onFocus={() => setSearchFocused(true)}
                             onBlur={() => setSearchFocused(false)}
                             className={cn(
-                                "w-full h-10 pl-11 pr-16 bg-black/[0.02] dark:bg-[#381932]/60 backdrop-blur-3xl border border-border rounded-xl text-sm text-foreground placeholder:text-slate-grey/50 focus:outline-none transition-all duration-500 shadow-inner dark:shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]",
+                                "w-full h-10 pl-11 pr-16 bg-black/[0.02] dark:bg-[#0F051D]/60 backdrop-blur-3xl border border-border rounded-xl text-sm text-foreground placeholder:text-slate-grey/50 focus:outline-none transition-all duration-500 shadow-inner dark:shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]",
                                 "focus:bg-background focus:border-electric-purple/40 focus:ring-1 focus:ring-electric-purple/20 focus:shadow-[0_0_20px_rgba(139,92,246,0.2)]",
                                 "hover:bg-black/5 dark:hover:bg-white/[0.03] hover:border-black/10 dark:hover:border-white/10"
                             )}

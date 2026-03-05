@@ -3,8 +3,8 @@ import { memo } from 'react';
 export const BackgroundLayer = memo(function BackgroundLayer() {
     return (
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-background transition-colors duration-500">
-            {/* Light Mode Top Gradient (Warm Cream) */}
-            <div className="absolute inset-x-0 top-0 h-[600px] bg-gradient-to-b from-[#fff3e6] via-[#fff8f1]/50 to-transparent dark:hidden" />
+            {/* Light Mode - Clean white with subtle gradient */}
+            <div className="absolute inset-x-0 top-0 h-[600px] bg-gradient-to-b from-slate-50/80 to-transparent dark:hidden" />
 
             {/* Dark Mode Ambient Elements */}
             <div className="hidden dark:block">

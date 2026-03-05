@@ -521,7 +521,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                     isScrolled
                         ? cn(
                             "backdrop-blur-md shadow-lg",
-                            isDark ? "bg-[#381932]/95" : "bg-white/95"
+                            isDark ? "bg-[#0F051D]/95" : "bg-white/95"
                         )
                         : "bg-transparent"
                 )}
@@ -537,7 +537,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                             </div>
                             <span className={cn(
                                 "text-2xl font-serif-display font-bold tracking-tight",
-                                isDark ? "text-white" : "text-[#381932]"
+                                isDark ? "text-white" : "text-[#0F051D]"
                             )}>
                                 Neurix
                             </span>
@@ -553,7 +553,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                         "font-medium transition-colors flex items-center gap-1 relative group",
                                         isDark
                                             ? "text-white hover:text-primary"
-                                            : "text-[#381932] hover:text-primary"
+                                            : "text-[#0F051D] hover:text-primary"
                                     )}
                                     style={{ fontSize: '16px', fontFamily: 'Questrial, sans-serif' }}
                                 >
@@ -571,7 +571,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                     "p-2.5 rounded-full transition-all",
                                     isDark
                                         ? "text-white/70 hover:text-white hover:bg-white/10"
-                                        : "text-[#381932]/70 hover:text-[#381932] hover:bg-black/5"
+                                        : "text-[#0F051D]/70 hover:text-[#0F051D] hover:bg-black/5"
                                 )}
                                 aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
                             >
@@ -587,7 +587,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                     "hidden sm:inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold font-sans-body transition-all",
                                     isDark
                                         ? "bg-[#FF5500] text-white hover:bg-[#FF7A33] hover:scale-105"
-                                        : "bg-[#381932] text-white hover:bg-[#4a2344] hover:scale-105"
+                                        : "bg-[#0F051D] text-white hover:bg-[#1A0F2E] hover:scale-105"
                                 )}
                             >
                                 Get Started
@@ -599,7 +599,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                     "md:hidden p-2.5 rounded-full transition-colors",
                                     isDark
                                         ? "text-white/70 hover:text-white hover:bg-white/10"
-                                        : "text-[#381932]/70 hover:text-[#381932] hover:bg-black/5"
+                                        : "text-[#0F051D]/70 hover:text-[#0F051D] hover:bg-black/5"
                                 )}
                                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                                 aria-label="Toggle menu"
@@ -625,7 +625,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                             transition={{ duration: 0.2 }}
                             className={cn(
                                 "md:hidden overflow-hidden",
-                                isDark ? "bg-[#381932]" : "bg-white"
+                                isDark ? "bg-[#0F051D]" : "bg-white"
                             )}
                         >
                             <div className="px-6 py-6 space-y-2">
@@ -637,7 +637,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                             "block w-full text-left px-4 py-3 rounded-xl font-medium transition-colors",
                                             isDark
                                                 ? "text-white hover:text-primary hover:bg-white/10"
-                                                : "text-[#381932] hover:text-primary hover:bg-[#f5e6d6]"
+                                                : "text-[#0F051D] hover:text-primary hover:bg-[#f5e6d6]"
                                         )}
                                         style={{ fontSize: '16px', fontFamily: 'Questrial, sans-serif' }}
                                     >
@@ -691,7 +691,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                     <span className="block text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-serif-display font-bold tracking-tight leading-[1.05] text-white">
                                         Connect your
                                     </span>
-                                    <span className="block text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-serif-display font-bold tracking-tight leading-[1.05] text-[#381932] mt-1">
+                                    <span className="block text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-serif-display font-bold tracking-tight leading-[1.05] text-[#0F051D] mt-1">
                                         workspace.
                                     </span>
                                 </h1>
@@ -705,7 +705,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                 <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4">
                                     <button
                                         onClick={onGetStarted}
-                                        className="inline-flex items-center gap-2 px-8 py-4 rounded-full text-base font-semibold font-sans-body transition-all bg-[#381932] text-white hover:bg-[#4a2344] hover:scale-105 shadow-xl"
+                                        className="inline-flex items-center gap-2 px-8 py-4 rounded-full text-base font-semibold font-sans-body transition-all bg-[#0F051D] text-white hover:bg-[#1A0F2E] hover:scale-105 shadow-xl"
                                     >
                                         Sign in with Google
                                         <ArrowRight className="h-5 w-5" aria-hidden="true" />
@@ -729,8 +729,8 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                         transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.3 }}
                                         className="context-card-white p-8"
                                     >
-                                        <div className="text-7xl font-serif-display text-[#2a1226] mb-2 tracking-tight">40%</div>
-                                        <div className="text-base font-sans-body text-[#2a1226]/60">Time saved on file management</div>
+                                        <div className="text-7xl font-serif-display text-[#0A0316] mb-2 tracking-tight">40%</div>
+                                        <div className="text-base font-sans-body text-[#0A0316]/60">Time saved on file management</div>
                                     </motion.div>
 
                                     {/* Recent Updates Card */}
@@ -741,7 +741,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                         className="context-card-white p-6"
                                     >
                                         <div className="flex justify-between items-center mb-5">
-                                            <h3 className="text-2xl font-serif-display text-[#2a1226] tracking-tight">Recent updates</h3>
+                                            <h3 className="text-2xl font-serif-display text-[#0A0316] tracking-tight">Recent updates</h3>
                                             <div className="icon-circle-orange w-10 h-10 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
                                                 <ArrowRight className="w-4 h-4 text-white" />
                                             </div>
@@ -757,10 +757,10 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                                         <item.icon className="w-4 h-4 text-white" />
                                                     </div>
                                                     <div className="flex-1">
-                                                        <div className="text-sm font-sans-medium text-[#2a1226]">{item.name}</div>
-                                                        <div className="text-xs font-sans-body text-[#2a1226]/40">{item.time}</div>
+                                                        <div className="text-sm font-sans-medium text-[#0A0316]">{item.name}</div>
+                                                        <div className="text-xs font-sans-body text-[#0A0316]/40">{item.time}</div>
                                                     </div>
-                                                    <ChevronRight className="w-4 h-4 text-[#2a1226]/30 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    <ChevronRight className="w-4 h-4 text-[#0A0316]/30 opacity-0 group-hover:opacity-100 transition-opacity" />
                                                 </div>
                                             ))}
                                         </div>
@@ -802,7 +802,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                 </section>
 
                 {/* ====== 3. FEATURE SHOWCASE - Editorial Tech Design ====== */}
-                <Section id="features" className={cn("py-24 lg:py-32 px-4 sm:px-6 lg:px-8", isDark ? "bg-[#381932]" : "bg-[#f5e6d6]")} ariaLabel="Feature Showcase">
+                <Section id="features" className={cn("py-24 lg:py-32 px-4 sm:px-6 lg:px-8", isDark ? "bg-[#0F051D]" : "bg-[#f5e6d6]")} ariaLabel="Feature Showcase">
                     <div className="max-w-7xl mx-auto">
                         {/* Editorial header */}
                         <motion.div
@@ -817,15 +817,15 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                             </p>
                             <h2 className={cn(
                                 "text-4xl sm:text-5xl lg:text-6xl font-serif-display font-bold tracking-tight mb-6",
-                                isDark ? "text-white" : "text-[#381932]"
+                                isDark ? "text-white" : "text-[#0F051D]"
                             )}>
                                 Everything you need,
                                 <br />
-                                <span className={isDark ? "text-white/50" : "text-[#381932]/50"}>nothing you don&apos;t.</span>
+                                <span className={isDark ? "text-white/50" : "text-[#0F051D]/50"}>nothing you don&apos;t.</span>
                             </h2>
                             <p className={cn(
                                 "text-lg font-sans-body max-w-xl mx-auto",
-                                isDark ? "text-white/60" : "text-[#381932]/60"
+                                isDark ? "text-white/60" : "text-[#0F051D]/60"
                             )}>
                                 Simple, powerful tools that work together seamlessly.
                             </p>
@@ -844,7 +844,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                 <div className={cn(
                                     "editorial-card rounded-[20px] p-8 h-full transition-all duration-300",
                                     isDark
-                                        ? "bg-[#4a2344] hover:shadow-[0_20px_60px_rgba(255,85,0,0.15)]"
+                                        ? "bg-[#1A0F2E] hover:shadow-[0_20px_60px_rgba(255,85,0,0.15)]"
                                         : "bg-white hover:shadow-[0_20px_60px_rgba(0,0,0,0.1)]"
                                 )}>
                                     <div className="w-14 h-14 rounded-2xl bg-[#FF5500] flex items-center justify-center mb-6">
@@ -853,14 +853,14 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
 
                                     <h3 className={cn(
                                         "text-2xl font-serif-display font-bold mb-3",
-                                        isDark ? "text-white" : "text-[#381932]"
+                                        isDark ? "text-white" : "text-[#0F051D]"
                                     )}>
                                         Unified Chat Interface
                                     </h3>
 
                                     <p className={cn(
                                         "text-base font-sans-body mb-6 leading-relaxed",
-                                        isDark ? "text-white/60" : "text-[#381932]/60"
+                                        isDark ? "text-white/60" : "text-[#0F051D]/60"
                                     )}>
                                         One conversation to control all your services. Switch between Drive, Gmail, Calendar, and Tasks naturally.
                                     </p>
@@ -868,7 +868,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                     {/* Chat preview */}
                                     <div className={cn(
                                         "rounded-2xl p-5 space-y-4",
-                                        isDark ? "bg-[#381932]" : "bg-[#f5e6d6]"
+                                        isDark ? "bg-[#0F051D]" : "bg-[#f5e6d6]"
                                     )}>
                                         <div className="flex gap-3 items-start">
                                             <div className="w-9 h-9 rounded-full bg-[#FF5500] flex items-center justify-center shrink-0">
@@ -907,23 +907,23 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                 <div className={cn(
                                     "editorial-card rounded-[20px] p-8 h-full transition-all duration-300",
                                     isDark
-                                        ? "bg-[#4a2344] hover:shadow-[0_20px_60px_rgba(255,85,0,0.15)]"
+                                        ? "bg-[#1A0F2E] hover:shadow-[0_20px_60px_rgba(255,85,0,0.15)]"
                                         : "bg-white hover:shadow-[0_20px_60px_rgba(0,0,0,0.1)]"
                                 )}>
-                                    <div className="w-14 h-14 rounded-2xl bg-[#381932] flex items-center justify-center mb-6">
+                                    <div className="w-14 h-14 rounded-2xl bg-[#0F051D] flex items-center justify-center mb-6">
                                         <Layers className="w-7 h-7 text-white" />
                                     </div>
 
                                     <h3 className={cn(
                                         "text-2xl font-serif-display font-bold mb-3",
-                                        isDark ? "text-white" : "text-[#381932]"
+                                        isDark ? "text-white" : "text-[#0F051D]"
                                     )}>
                                         30+ MCP Tools
                                     </h3>
 
                                     <p className={cn(
                                         "text-base font-sans-body mb-6 leading-relaxed",
-                                        isDark ? "text-white/60" : "text-[#381932]/60"
+                                        isDark ? "text-white/60" : "text-[#0F051D]/60"
                                     )}>
                                         Full-featured integrations across Google Drive, Forms, Gmail, Calendar, and Tasks.
                                     </p>
@@ -949,12 +949,12 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                                 className={cn(
                                                     "aspect-square rounded-xl flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-105",
                                                     isDark
-                                                        ? "bg-[#381932] hover:bg-[#FF5500]/10"
+                                                        ? "bg-[#0F051D] hover:bg-[#FF5500]/10"
                                                         : "bg-[#f5e6d6] hover:bg-[#FF5500]/10"
                                                 )}
                                             >
-                                                <Icon className={cn("w-5 h-5", isDark ? "text-white/70" : "text-[#381932]/70")} />
-                                                <span className={cn("text-[10px] font-semibold font-sans-body", isDark ? "text-white/50" : "text-[#381932]/50")}>{label}</span>
+                                                <Icon className={cn("w-5 h-5", isDark ? "text-white/70" : "text-[#0F051D]/70")} />
+                                                <span className={cn("text-[10px] font-semibold font-sans-body", isDark ? "text-white/50" : "text-[#0F051D]/50")}>{label}</span>
                                             </motion.div>
                                         ))}
                                     </div>
@@ -962,7 +962,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                     {/* Stats */}
                                     <div className={cn(
                                         "mt-6 pt-6 border-t flex items-center gap-8",
-                                        isDark ? "border-white/10" : "border-[#381932]/10"
+                                        isDark ? "border-white/10" : "border-[#0F051D]/10"
                                     )}>
                                         {[
                                             { value: "99.9%", label: "Uptime" },
@@ -970,8 +970,8 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                             { value: "24/7", label: "Support" }
                                         ].map(({ value, label }) => (
                                             <div key={label}>
-                                                <div className={cn("text-xl font-serif-display font-bold", isDark ? "text-white" : "text-[#381932]")}>{value}</div>
-                                                <div className={cn("text-xs font-sans-body", isDark ? "text-white/50" : "text-[#381932]/50")}>{label}</div>
+                                                <div className={cn("text-xl font-serif-display font-bold", isDark ? "text-white" : "text-[#0F051D]")}>{value}</div>
+                                                <div className={cn("text-xs font-sans-body", isDark ? "text-white/50" : "text-[#0F051D]/50")}>{label}</div>
                                             </div>
                                         ))}
                                     </div>
@@ -989,23 +989,23 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                 <div className={cn(
                                     "editorial-card rounded-[20px] p-8 h-full transition-all duration-300",
                                     isDark
-                                        ? "bg-[#4a2344] hover:shadow-[0_20px_60px_rgba(255,85,0,0.15)]"
+                                        ? "bg-[#1A0F2E] hover:shadow-[0_20px_60px_rgba(255,85,0,0.15)]"
                                         : "bg-white hover:shadow-[0_20px_60px_rgba(0,0,0,0.1)]"
                                 )}>
-                                    <div className="w-14 h-14 rounded-2xl bg-[#381932] flex items-center justify-center mb-6">
+                                    <div className="w-14 h-14 rounded-2xl bg-[#0F051D] flex items-center justify-center mb-6">
                                         <FormInput className="w-7 h-7 text-white" />
                                     </div>
 
                                     <h3 className={cn(
                                         "text-2xl font-serif-display font-bold mb-3",
-                                        isDark ? "text-white" : "text-[#381932]"
+                                        isDark ? "text-white" : "text-[#0F051D]"
                                     )}>
                                         Smart Forms
                                     </h3>
 
                                     <p className={cn(
                                         "text-base font-sans-body mb-6 leading-relaxed",
-                                        isDark ? "text-white/60" : "text-[#381932]/60"
+                                        isDark ? "text-white/60" : "text-[#0F051D]/60"
                                     )}>
                                         Create surveys, add questions, and analyze responses with AI assistance.
                                     </p>
@@ -1013,11 +1013,11 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                     {/* Form preview */}
                                     <div className={cn(
                                         "rounded-2xl p-4 space-y-2",
-                                        isDark ? "bg-[#381932]" : "bg-[#f5e6d6]"
+                                        isDark ? "bg-[#0F051D]" : "bg-[#f5e6d6]"
                                     )}>
                                         <div className={cn(
                                             "text-sm font-sans-medium px-3 py-2 rounded-xl",
-                                            isDark ? "bg-[#4a2344] text-white" : "bg-white text-[#381932]"
+                                            isDark ? "bg-[#1A0F2E] text-white" : "bg-white text-[#0F051D]"
                                         )}>
                                             Customer Feedback
                                         </div>
@@ -1026,12 +1026,12 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                                 key={i}
                                                 className={cn(
                                                     "text-sm font-sans-body px-3 py-2 rounded-xl flex items-center gap-2",
-                                                    isDark ? "text-white/50" : "text-[#381932]/60"
+                                                    isDark ? "text-white/50" : "text-[#0F051D]/60"
                                                 )}
                                             >
                                                 <div className={cn(
                                                     "w-3 h-3 rounded-full border-2",
-                                                    isDark ? "border-white/30" : "border-[#381932]/30"
+                                                    isDark ? "border-white/30" : "border-[#0F051D]/30"
                                                 )} />
                                                 {q}
                                             </div>
@@ -1041,10 +1041,10 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                     {/* Progress */}
                                     <div className="mt-6">
                                         <div className="flex justify-between text-sm font-sans-body mb-2">
-                                            <span className={isDark ? "text-white/50" : "text-[#381932]/60"}>Response rate</span>
-                                            <span className={cn("font-sans-medium", isDark ? "text-white" : "text-[#381932]")}>84%</span>
+                                            <span className={isDark ? "text-white/50" : "text-[#0F051D]/60"}>Response rate</span>
+                                            <span className={cn("font-sans-medium", isDark ? "text-white" : "text-[#0F051D]")}>84%</span>
                                         </div>
-                                        <div className={cn("h-2 rounded-full overflow-hidden", isDark ? "bg-[#4a2344]" : "bg-[#E5E5E5]")}>
+                                        <div className={cn("h-2 rounded-full overflow-hidden", isDark ? "bg-[#1A0F2E]" : "bg-[#E5E5E5]")}>
                                             <motion.div
                                                 className="h-full rounded-full bg-[#FF5500]"
                                                 initial={{ width: 0 }}
@@ -1068,7 +1068,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                 <div className={cn(
                                     "editorial-card rounded-[20px] p-8 h-full transition-all duration-300",
                                     isDark
-                                        ? "bg-[#4a2344] hover:shadow-[0_20px_60px_rgba(255,85,0,0.15)]"
+                                        ? "bg-[#1A0F2E] hover:shadow-[0_20px_60px_rgba(255,85,0,0.15)]"
                                         : "bg-white hover:shadow-[0_20px_60px_rgba(0,0,0,0.1)]"
                                 )}>
                                     <div className="w-14 h-14 rounded-2xl bg-[#FF5500] flex items-center justify-center mb-6">
@@ -1077,14 +1077,14 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
 
                                     <h3 className={cn(
                                         "text-2xl font-serif-display font-bold mb-3",
-                                        isDark ? "text-white" : "text-[#381932]"
+                                        isDark ? "text-white" : "text-[#0F051D]"
                                     )}>
                                         Enterprise Security
                                     </h3>
 
                                     <p className={cn(
                                         "text-base font-sans-body mb-6 leading-relaxed",
-                                        isDark ? "text-white/60" : "text-[#381932]/60"
+                                        isDark ? "text-white/60" : "text-[#0F051D]/60"
                                     )}>
                                         OAuth 2.0, encrypted sessions, and enterprise-grade infrastructure.
                                     </p>
@@ -1105,7 +1105,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                                 transition={{ delay: 0.4 + i * 0.1 }}
                                                 className={cn(
                                                     "flex items-center gap-3 text-sm font-sans-body list-item-hover p-2 -mx-2",
-                                                    isDark ? "text-white/60" : "text-[#381932]/60"
+                                                    isDark ? "text-white/60" : "text-[#0F051D]/60"
                                                 )}
                                             >
                                                 <div className="icon-circle w-9 h-9 shrink-0">
@@ -1122,7 +1122,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                 </Section>
 
                 {/* ====== 4. INTEGRATIONS - Editorial Tech ====== */}
-                <Section id="integrations" className={cn("py-24 lg:py-32 px-4 sm:px-6 lg:px-8", isDark ? "bg-[#2a1226]" : "bg-[#f5e6d6]")} ariaLabel="Integrations">
+                <Section id="integrations" className={cn("py-24 lg:py-32 px-4 sm:px-6 lg:px-8", isDark ? "bg-[#0A0316]" : "bg-[#f5e6d6]")} ariaLabel="Integrations">
                     <div className="max-w-6xl mx-auto">
                         <div className="text-center mb-16">
                             <p className="text-sm font-semibold font-sans-body tracking-widest uppercase mb-4 text-[#FF5500]">
@@ -1130,13 +1130,13 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                             </p>
                             <h2 className={cn(
                                 "text-4xl sm:text-5xl font-serif-display font-bold tracking-tight mb-4",
-                                isDark ? "text-white" : "text-[#381932]"
+                                isDark ? "text-white" : "text-[#0F051D]"
                             )}>
                                 Connect your favorite tools
                             </h2>
                             <p className={cn(
                                 "text-lg font-sans-body max-w-xl mx-auto",
-                                isDark ? "text-white/60" : "text-[#381932]/60"
+                                isDark ? "text-white/60" : "text-[#0F051D]/60"
                             )}>
                                 Seamless integrations with the services you already use.
                             </p>
@@ -1182,7 +1182,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                 </Section>
 
                 {/* ====== 5. CORE CAPABILITIES - Editorial Tech ====== */}
-                <Section id="how-it-works" className={cn("py-24 lg:py-32 px-4 sm:px-6 lg:px-8", isDark ? "bg-[#381932]" : "bg-white")} ariaLabel="Core Capabilities">
+                <Section id="how-it-works" className={cn("py-24 lg:py-32 px-4 sm:px-6 lg:px-8", isDark ? "bg-[#0F051D]" : "bg-white")} ariaLabel="Core Capabilities">
                     <div className="max-w-7xl mx-auto">
                         <div className="text-center mb-16">
                             <p className="text-sm font-semibold font-sans-body tracking-widest uppercase mb-4 text-[#FF5500]">
@@ -1190,13 +1190,13 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                             </p>
                             <h2 className={cn(
                                 "text-4xl sm:text-5xl font-serif-display font-bold tracking-tight mb-4",
-                                isDark ? "text-white" : "text-[#381932]"
+                                isDark ? "text-white" : "text-[#0F051D]"
                             )}>
                                 Core Capabilities
                             </h2>
                             <p className={cn(
                                 "text-lg font-sans-body max-w-2xl mx-auto",
-                                isDark ? "text-white/60" : "text-[#381932]/60"
+                                isDark ? "text-white/60" : "text-[#0F051D]/60"
                             )}>
                                 Purpose-built for the Model Context Protocol with enterprise features
                             </p>
@@ -1212,7 +1212,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                 className={cn(
                                     "editorial-card rounded-[20px] p-7 h-full transition-all duration-300",
                                     isDark
-                                        ? "bg-[#4a2344] hover:shadow-[0_15px_50px_rgba(255,85,0,0.12)]"
+                                        ? "bg-[#1A0F2E] hover:shadow-[0_15px_50px_rgba(255,85,0,0.12)]"
                                         : "bg-[#f5e6d6] hover:shadow-[0_15px_50px_rgba(0,0,0,0.08)]"
                                 )}
                             >
@@ -1221,11 +1221,11 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                 </div>
                                 <h3 className={cn(
                                     "text-xl font-serif-display font-bold mb-3",
-                                    isDark ? "text-white" : "text-[#381932]"
+                                    isDark ? "text-white" : "text-[#0F051D]"
                                 )}>Purpose-built for MCP</h3>
                                 <p className={cn(
                                     "text-sm font-sans-body mb-5 leading-relaxed",
-                                    isDark ? "text-white/60" : "text-[#381932]/60"
+                                    isDark ? "text-white/60" : "text-[#0F051D]/60"
                                 )}>
                                     Native Model Context Protocol support with JSON-RPC 2.0, tool discovery, and seamless AI integration.
                                 </p>
@@ -1236,8 +1236,8 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                             className={cn(
                                                 "text-xs font-sans-medium px-3 py-1.5 rounded-full",
                                                 isDark
-                                                    ? "bg-[#381932] text-white/60"
-                                                    : "bg-white text-[#381932]/60"
+                                                    ? "bg-[#0F051D] text-white/60"
+                                                    : "bg-white text-[#0F051D]/60"
                                             )}
                                         >
                                             {tag}
@@ -1255,33 +1255,33 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                 className={cn(
                                     "editorial-card rounded-[20px] p-7 h-full transition-all duration-300",
                                     isDark
-                                        ? "bg-[#4a2344] hover:shadow-[0_15px_50px_rgba(255,85,0,0.12)]"
+                                        ? "bg-[#1A0F2E] hover:shadow-[0_15px_50px_rgba(255,85,0,0.12)]"
                                         : "bg-[#f5e6d6] hover:shadow-[0_15px_50px_rgba(0,0,0,0.08)]"
                                 )}
                             >
-                                <div className="w-12 h-12 rounded-2xl bg-[#381932] flex items-center justify-center mb-5">
+                                <div className="w-12 h-12 rounded-2xl bg-[#0F051D] flex items-center justify-center mb-5">
                                     <MessageSquare className="w-6 h-6 text-white" aria-hidden="true" />
                                 </div>
                                 <h3 className={cn(
                                     "text-xl font-serif-display font-bold mb-3",
-                                    isDark ? "text-white" : "text-[#381932]"
+                                    isDark ? "text-white" : "text-[#0F051D]"
                                 )}>Built for Effortless Use</h3>
                                 <p className={cn(
                                     "text-sm font-sans-body mb-5 leading-relaxed",
-                                    isDark ? "text-white/60" : "text-[#381932]/60"
+                                    isDark ? "text-white/60" : "text-[#0F051D]/60"
                                 )}>
                                     Just type what you need. No complex APIs to learn.
                                 </p>
                                 <div className={cn(
                                     "rounded-2xl p-4 space-y-2 text-xs font-mono",
-                                    isDark ? "bg-[#381932]" : "bg-white"
+                                    isDark ? "bg-[#0F051D]" : "bg-white"
                                 )}>
                                     {[
                                         '> List my recent files',
                                         '> Search for "Q4 report"',
                                         '> Create a feedback form',
                                     ].map((cmd, i) => (
-                                        <div key={i} className={isDark ? "text-white/50" : "text-[#381932]/50"}>
+                                        <div key={i} className={isDark ? "text-white/50" : "text-[#0F051D]/50"}>
                                             <span className="text-[#FF5500]">&gt;</span>{cmd.slice(1)}
                                         </div>
                                     ))}
@@ -1298,7 +1298,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                 className={cn(
                                     "editorial-card rounded-[20px] p-7 h-full transition-all duration-300",
                                     isDark
-                                        ? "bg-[#4a2344] hover:shadow-[0_15px_50px_rgba(255,85,0,0.12)]"
+                                        ? "bg-[#1A0F2E] hover:shadow-[0_15px_50px_rgba(255,85,0,0.12)]"
                                         : "bg-[#f5e6d6] hover:shadow-[0_15px_50px_rgba(0,0,0,0.08)]"
                                 )}
                             >
@@ -1307,11 +1307,11 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                 </div>
                                 <h3 className={cn(
                                     "text-xl font-serif-display font-bold mb-3",
-                                    isDark ? "text-white" : "text-[#381932]"
+                                    isDark ? "text-white" : "text-[#0F051D]"
                                 )}>Engineered for Security</h3>
                                 <p className={cn(
                                     "text-sm font-sans-body mb-5 leading-relaxed",
-                                    isDark ? "text-white/60" : "text-[#381932]/60"
+                                    isDark ? "text-white/60" : "text-[#0F051D]/60"
                                 )}>
                                     Enterprise-grade protection with OAuth 2.0, encrypted sessions, and automatic token management.
                                 </p>
@@ -1323,7 +1323,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                     ].map((item, i) => (
                                         <div key={i} className={cn(
                                             "flex items-center gap-2.5 text-sm font-sans-body",
-                                            isDark ? "text-white/60" : "text-[#381932]/60"
+                                            isDark ? "text-white/60" : "text-[#0F051D]/60"
                                         )}>
                                             <div className="w-6 h-6 rounded-lg bg-[#FF5500]/20 flex items-center justify-center">
                                                 <item.icon className="w-3.5 h-3.5 text-[#FF5500]" aria-hidden="true" />
@@ -1338,7 +1338,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                 </Section>
 
                 {/* ====== 6. SCALABLE SOLUTIONS - Editorial Tech ====== */}
-                <Section className={cn("py-24 lg:py-32 px-4 sm:px-6 lg:px-8", isDark ? "bg-[#2a1226]" : "bg-[#f5e6d6]")} ariaLabel="Scalable Solutions">
+                <Section className={cn("py-24 lg:py-32 px-4 sm:px-6 lg:px-8", isDark ? "bg-[#0A0316]" : "bg-[#f5e6d6]")} ariaLabel="Scalable Solutions">
                     <div className="max-w-7xl mx-auto">
                         <div className="text-center mb-16">
                             <p className="text-sm font-semibold font-sans-body tracking-widest uppercase mb-4 text-[#FF5500]">
@@ -1346,13 +1346,13 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                             </p>
                             <h2 className={cn(
                                 "text-4xl sm:text-5xl font-serif-display font-bold tracking-tight mb-4",
-                                isDark ? "text-white" : "text-[#381932]"
+                                isDark ? "text-white" : "text-[#0F051D]"
                             )}>
                                 Scalable Solutions
                             </h2>
                             <p className={cn(
                                 "text-lg font-sans-body max-w-2xl mx-auto",
-                                isDark ? "text-white/60" : "text-[#381932]/60"
+                                isDark ? "text-white/60" : "text-[#0F051D]/60"
                             )}>
                                 From file management to code reviews, handle it all through conversation
                             </p>
@@ -1368,7 +1368,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                 className={cn(
                                     "editorial-card rounded-[24px] p-8 h-full transition-all duration-300",
                                     isDark
-                                        ? "bg-[#381932] hover:shadow-[0_20px_60px_rgba(255,85,0,0.15)]"
+                                        ? "bg-[#0F051D] hover:shadow-[0_20px_60px_rgba(255,85,0,0.15)]"
                                         : "bg-white hover:shadow-[0_20px_60px_rgba(0,0,0,0.1)]"
                                 )}
                             >
@@ -1378,7 +1378,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                     </div>
                                     <h3 className={cn(
                                         "text-xl font-serif-display font-bold",
-                                        isDark ? "text-white" : "text-[#381932]"
+                                        isDark ? "text-white" : "text-[#0F051D]"
                                     )}>
                                         Real-Time File Operations
                                     </h3>
@@ -1394,7 +1394,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                             className={cn(
                                                 "list-item-hover flex items-center gap-3 rounded-2xl px-4 py-3 transition-all",
                                                 isDark
-                                                    ? "bg-[#4a2344]"
+                                                    ? "bg-[#1A0F2E]"
                                                     : "bg-[#f5e6d6]"
                                             )}
                                         >
@@ -1402,7 +1402,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                                 <file.icon className="w-5 h-5 text-white" aria-hidden="true" />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className={cn("text-sm font-sans-medium truncate", isDark ? "text-white" : "text-[#381932]")}>{file.name}</div>
+                                                <div className={cn("text-sm font-sans-medium truncate", isDark ? "text-white" : "text-[#0F051D]")}>{file.name}</div>
                                             </div>
                                             <span className="text-xs font-sans-body px-3 py-1 rounded-full bg-[#FF5500]/10 text-[#FF5500]">
                                                 {file.status}
@@ -1410,7 +1410,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                         </div>
                                     ))}
                                 </div>
-                                <p className={cn("text-sm font-sans-body mt-6", isDark ? "text-white/50" : "text-[#381932]/50")}>
+                                <p className={cn("text-sm font-sans-body mt-6", isDark ? "text-white/50" : "text-[#0F051D]/50")}>
                                     Upload, download, search, and share files instantly through chat commands.
                                 </p>
                             </motion.div>
@@ -1424,27 +1424,27 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                 className={cn(
                                     "editorial-card rounded-[24px] p-8 h-full transition-all duration-300",
                                     isDark
-                                        ? "bg-[#381932] hover:shadow-[0_20px_60px_rgba(255,85,0,0.15)]"
+                                        ? "bg-[#0F051D] hover:shadow-[0_20px_60px_rgba(255,85,0,0.15)]"
                                         : "bg-white hover:shadow-[0_20px_60px_rgba(0,0,0,0.1)]"
                                 )}
                             >
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-12 h-12 rounded-2xl bg-[#381932] flex items-center justify-center">
+                                    <div className="w-12 h-12 rounded-2xl bg-[#0F051D] flex items-center justify-center">
                                         <FormInput className="w-6 h-6 text-white" aria-hidden="true" />
                                     </div>
                                     <h3 className={cn(
                                         "text-xl font-serif-display font-bold",
-                                        isDark ? "text-white" : "text-[#381932]"
+                                        isDark ? "text-white" : "text-[#0F051D]"
                                     )}>
                                         Smart Form Management
                                     </h3>
                                 </div>
                                 <div className={cn(
                                     "rounded-2xl p-5 space-y-4",
-                                    isDark ? "bg-[#4a2344]" : "bg-[#f5e6d6]"
+                                    isDark ? "bg-[#1A0F2E]" : "bg-[#f5e6d6]"
                                 )}>
                                     <div className="flex items-center justify-between">
-                                        <span className={cn("text-sm font-sans-medium", isDark ? "text-white" : "text-[#381932]")}>New Employee Onboarding</span>
+                                        <span className={cn("text-sm font-sans-medium", isDark ? "text-white" : "text-[#0F051D]")}>New Employee Onboarding</span>
                                         <span className="text-xs font-sans-body px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-500">
                                             Live
                                         </span>
@@ -1455,20 +1455,20 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                                 key={i}
                                                 className={cn(
                                                     "rounded-xl px-4 py-3 text-sm font-sans-body flex items-center justify-between",
-                                                    isDark ? "bg-[#381932]" : "bg-white"
+                                                    isDark ? "bg-[#0F051D]" : "bg-white"
                                                 )}
                                             >
-                                                <span className={isDark ? "text-white/60" : "text-[#381932]/60"}>{field}</span>
-                                                <ChevronRight className={cn("w-4 h-4", isDark ? "text-white/30" : "text-[#381932]/30")} aria-hidden="true" />
+                                                <span className={isDark ? "text-white/60" : "text-[#0F051D]/60"}>{field}</span>
+                                                <ChevronRight className={cn("w-4 h-4", isDark ? "text-white/30" : "text-[#0F051D]/30")} aria-hidden="true" />
                                             </div>
                                         ))}
                                     </div>
-                                    <div className={cn("flex items-center gap-2 text-sm font-sans-body pt-2", isDark ? "text-white/50" : "text-[#381932]/50")}>
+                                    <div className={cn("flex items-center gap-2 text-sm font-sans-body pt-2", isDark ? "text-white/50" : "text-[#0F051D]/50")}>
                                         <Activity className="w-4 h-4 text-[#FF5500]" aria-hidden="true" />
                                         <span>42 responses collected</span>
                                     </div>
                                 </div>
-                                <p className={cn("text-sm font-sans-body mt-6", isDark ? "text-white/50" : "text-[#381932]/50")}>
+                                <p className={cn("text-sm font-sans-body mt-6", isDark ? "text-white/50" : "text-[#0F051D]/50")}>
                                     Create forms, add questions dynamically, and analyze responses with AI.
                                 </p>
                             </motion.div>
@@ -1477,7 +1477,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                 </Section>
 
                 {/* ====== 7. MORE FEATURES - Editorial Tech ====== */}
-                <Section className={cn("py-24 lg:py-32 px-4 sm:px-6 lg:px-8", isDark ? "bg-[#381932]" : "bg-white")} ariaLabel="More Features">
+                <Section className={cn("py-24 lg:py-32 px-4 sm:px-6 lg:px-8", isDark ? "bg-[#0F051D]" : "bg-white")} ariaLabel="More Features">
                     <div className="max-w-7xl mx-auto">
                         <div className="text-center mb-16">
                             <p className="text-sm font-semibold font-sans-body tracking-widest uppercase mb-4 text-[#FF5500]">
@@ -1485,13 +1485,13 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                             </p>
                             <h2 className={cn(
                                 "text-4xl sm:text-5xl font-serif-display font-bold tracking-tight mb-4",
-                                isDark ? "text-white" : "text-[#381932]"
+                                isDark ? "text-white" : "text-[#0F051D]"
                             )}>
                                 Built for Reliability
                             </h2>
                             <p className={cn(
                                 "text-lg font-sans-body max-w-2xl mx-auto",
-                                isDark ? "text-white/60" : "text-[#381932]/60"
+                                isDark ? "text-white/60" : "text-[#0F051D]/60"
                             )}>
                                 Production-ready features designed for enterprise workloads
                             </p>
@@ -1509,7 +1509,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                     icon: Database,
                                     title: 'Session Management',
                                     description: 'Redis-backed session storage with HTTP-only cookies. Secure, scalable, and persistent across requests.',
-                                    iconBg: 'bg-[#381932]',
+                                    iconBg: 'bg-[#0F051D]',
                                 },
                                 {
                                     icon: Download,
@@ -1527,7 +1527,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                     className={cn(
                                         "editorial-card rounded-[20px] p-7 h-full transition-all duration-300",
                                         isDark
-                                            ? "bg-[#4a2344] hover:shadow-[0_15px_50px_rgba(255,85,0,0.12)]"
+                                            ? "bg-[#1A0F2E] hover:shadow-[0_15px_50px_rgba(255,85,0,0.12)]"
                                             : "bg-[#f5e6d6] hover:shadow-[0_15px_50px_rgba(0,0,0,0.08)]"
                                     )}
                                 >
@@ -1539,11 +1539,11 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                     </div>
                                     <h3 className={cn(
                                         "text-xl font-serif-display font-bold mb-3",
-                                        isDark ? "text-white" : "text-[#381932]"
+                                        isDark ? "text-white" : "text-[#0F051D]"
                                     )}>{feature.title}</h3>
                                     <p className={cn(
                                         "text-sm font-sans-body leading-relaxed",
-                                        isDark ? "text-white/60" : "text-[#381932]/60"
+                                        isDark ? "text-white/60" : "text-[#0F051D]/60"
                                     )}>{feature.description}</p>
                                 </motion.div>
                             ))}
@@ -1552,7 +1552,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                 </Section>
 
                 {/* ====== 8. PLATFORM PREVIEW - Editorial Tech ====== */}
-                <Section className={cn("py-24 lg:py-32 px-4 sm:px-6 lg:px-8", isDark ? "bg-[#2a1226]" : "bg-[#f5e6d6]")} ariaLabel="Platform Preview">
+                <Section className={cn("py-24 lg:py-32 px-4 sm:px-6 lg:px-8", isDark ? "bg-[#0A0316]" : "bg-[#f5e6d6]")} ariaLabel="Platform Preview">
                     <div className="max-w-5xl mx-auto">
                         <div className="text-center mb-12">
                             <p className="text-sm font-semibold font-sans-body tracking-widest uppercase mb-4 text-[#FF5500]">
@@ -1560,13 +1560,13 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                             </p>
                             <h2 className={cn(
                                 "text-4xl sm:text-5xl font-serif-display font-bold tracking-tight mb-4",
-                                isDark ? "text-white" : "text-[#381932]"
+                                isDark ? "text-white" : "text-[#0F051D]"
                             )}>
                                 See Neurix in Action
                             </h2>
                             <p className={cn(
                                 "text-lg font-sans-body max-w-2xl mx-auto",
-                                isDark ? "text-white/60" : "text-[#381932]/60"
+                                isDark ? "text-white/60" : "text-[#0F051D]/60"
                             )}>
                                 A clean, modern interface designed for productivity
                             </p>
@@ -1582,12 +1582,12 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                             {/* Browser chrome frame */}
                             <div className={cn(
                                 "rounded-[24px] overflow-hidden shadow-2xl",
-                                isDark ? "bg-[#381932] shadow-[0_30px_80px_rgba(0,0,0,0.5)]" : "bg-white shadow-[0_30px_80px_rgba(0,0,0,0.15)]"
+                                isDark ? "bg-[#0F051D] shadow-[0_30px_80px_rgba(0,0,0,0.5)]" : "bg-white shadow-[0_30px_80px_rgba(0,0,0,0.15)]"
                             )}>
                                 {/* Title bar */}
                                 <div className={cn(
                                     "h-12 flex items-center px-5 gap-2 border-b",
-                                    isDark ? "bg-[#2a1226] border-[#4a2344]" : "bg-[#f5e6d6] border-[#E5E5E5]"
+                                    isDark ? "bg-[#0A0316] border-[#1A0F2E]" : "bg-[#f5e6d6] border-[#E5E5E5]"
                                 )}>
                                     <div className="flex gap-2">
                                         <div className="w-3 h-3 rounded-full bg-[#FF5F57]" />
@@ -1596,7 +1596,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                     </div>
                                     <div className={cn(
                                         "flex-1 text-center text-xs font-sans-body",
-                                        isDark ? "text-white/40" : "text-[#381932]/40"
+                                        isDark ? "text-white/40" : "text-[#0F051D]/40"
                                     )}>
                                         localhost:5173
                                     </div>
@@ -1607,13 +1607,13 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                     {/* Sidebar */}
                                     <div className={cn(
                                         "w-56 shrink-0 border-r p-5 hidden sm:flex flex-col",
-                                        isDark ? "bg-[#2a1226] border-[#4a2344]" : "bg-[#f5e6d6] border-[#E5E5E5]"
+                                        isDark ? "bg-[#0A0316] border-[#1A0F2E]" : "bg-[#f5e6d6] border-[#E5E5E5]"
                                     )}>
                                         <div className="flex items-center gap-2.5 mb-6">
                                             <div className="w-8 h-8 rounded-xl bg-[#FF5500] flex items-center justify-center">
                                                 <Brain className="w-4 h-4 text-white" aria-hidden="true" />
                                             </div>
-                                            <span className={cn("text-sm font-serif-display font-bold", isDark ? "text-white" : "text-[#381932]")}>Neurix</span>
+                                            <span className={cn("text-sm font-serif-display font-bold", isDark ? "text-white" : "text-[#0F051D]")}>Neurix</span>
                                         </div>
                                         <div className="space-y-2 text-sm font-sans-body">
                                             {['Google Drive', 'Google Forms', 'Gmail', 'Google Tasks'].map((item, i) => (
@@ -1623,7 +1623,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                                         "px-4 py-2.5 rounded-xl font-medium transition-colors",
                                                         i === 0
                                                             ? "bg-[#FF5500] text-white"
-                                                            : (isDark ? "text-white/50 hover:text-white hover:bg-white/5" : "text-[#381932]/50 hover:text-[#381932] hover:bg-black/5"),
+                                                            : (isDark ? "text-white/50 hover:text-white hover:bg-white/5" : "text-[#0F051D]/50 hover:text-[#0F051D] hover:bg-black/5"),
                                                         ""
                                                     )}
                                                 >
@@ -1631,7 +1631,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className={cn("mt-auto text-sm font-sans-body flex items-center gap-2", isDark ? "text-white/50" : "text-[#381932]/50")}>
+                                        <div className={cn("mt-auto text-sm font-sans-body flex items-center gap-2", isDark ? "text-white/50" : "text-[#0F051D]/50")}>
                                             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                                             3 Connected
                                         </div>
@@ -1642,17 +1642,17 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                         {/* Chat header */}
                                         <div className={cn(
                                             "h-14 border-b flex items-center px-5 gap-3",
-                                            isDark ? "border-[#4a2344]" : "border-[#E5E5E5]"
+                                            isDark ? "border-[#1A0F2E]" : "border-[#E5E5E5]"
                                         )}>
                                             <div className="w-8 h-8 rounded-xl bg-[#FF5500]/10 flex items-center justify-center">
                                                 <Plug className="w-4 h-4 text-[#FF5500]" aria-hidden="true" />
                                             </div>
-                                            <span className={cn("text-sm font-sans-medium", isDark ? "text-white" : "text-[#381932]")}>All Services</span>
-                                            <span className={cn("text-xs font-sans-body", isDark ? "text-white/40" : "text-[#381932]/40")}>30+ tools available</span>
+                                            <span className={cn("text-sm font-sans-medium", isDark ? "text-white" : "text-[#0F051D]")}>All Services</span>
+                                            <span className={cn("text-xs font-sans-body", isDark ? "text-white/40" : "text-[#0F051D]/40")}>30+ tools available</span>
                                         </div>
 
                                         {/* Messages */}
-                                        <div className={cn("flex-1 p-5 space-y-4 overflow-hidden", isDark ? "bg-[#381932]" : "bg-white")}>
+                                        <div className={cn("flex-1 p-5 space-y-4 overflow-hidden", isDark ? "bg-[#0F051D]" : "bg-white")}>
                                             {/* User message */}
                                             <div className="flex justify-end">
                                                 <div className="chat-bubble-user font-sans-body text-sm max-w-[70%]">
@@ -1668,7 +1668,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                                     <p>Found <strong>8 presentations</strong> matching your query:</p>
                                                     <div className="mt-3 space-y-2">
                                                         {['Q4 Strategy Deck.pptx', 'Product Launch Plan.pptx', 'Team Roadmap 2025.pptx'].map((file, i) => (
-                                                            <div key={i} className={cn("flex items-center gap-2 text-xs", isDark ? "text-white/50" : "text-[#381932]/50")}>
+                                                            <div key={i} className={cn("flex items-center gap-2 text-xs", isDark ? "text-white/50" : "text-[#0F051D]/50")}>
                                                                 <FileText className="w-3.5 h-3.5" aria-hidden="true" />
                                                                 {file}
                                                             </div>
@@ -1697,11 +1697,11 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                         {/* Input bar - Pulse Command Bar style */}
                                         <div className={cn(
                                             "border-t px-5 py-4 flex items-center gap-3",
-                                            isDark ? "border-[#4a2344]" : "border-[#E5E5E5]"
+                                            isDark ? "border-[#1A0F2E]" : "border-[#E5E5E5]"
                                         )}>
                                             <div className={cn(
                                                 "flex-1 rounded-full px-5 py-3 text-sm font-sans-body flex items-center",
-                                                isDark ? "bg-[#4a2344] text-white/40" : "bg-[#f5e6d6] text-[#381932]/40"
+                                                isDark ? "bg-[#1A0F2E] text-white/40" : "bg-[#f5e6d6] text-[#0F051D]/40"
                                             )}>
                                                 Type a message...
                                             </div>
@@ -1717,7 +1717,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                 </Section>
 
                 {/* ====== 8.5. TESTIMONIALS - Editorial Tech ====== */}
-                <Section className={cn("py-24 lg:py-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden", isDark ? "bg-[#381932]" : "bg-white")} ariaLabel="Testimonials">
+                <Section className={cn("py-24 lg:py-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden", isDark ? "bg-[#0F051D]" : "bg-white")} ariaLabel="Testimonials">
                     <div className="relative z-10 max-w-7xl mx-auto">
                         <div className="text-center mb-12">
                             <p className="text-sm font-semibold font-sans-body tracking-widest uppercase mb-4 text-[#FF5500]">
@@ -1725,13 +1725,13 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                             </p>
                             <h2 className={cn(
                                 "text-4xl sm:text-5xl font-serif-display font-bold tracking-tight mb-4",
-                                isDark ? "text-white" : "text-[#381932]"
+                                isDark ? "text-white" : "text-[#0F051D]"
                             )}>
                                 Loved by Developers
                             </h2>
                             <p className={cn(
                                 "text-lg font-sans-body max-w-2xl mx-auto",
-                                isDark ? "text-white/60" : "text-[#381932]/60"
+                                isDark ? "text-white/60" : "text-[#0F051D]/60"
                             )}>
                                 See what our users are saying about Neurix
                             </p>
@@ -1739,8 +1739,8 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
 
                         {/* Testimonials Marquee */}
                         <div className="relative">
-                            <div className={cn("pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r z-10", isDark ? "from-[#381932]" : "from-white")} />
-                            <div className={cn("pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l z-10", isDark ? "from-[#381932]" : "from-white")} />
+                            <div className={cn("pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r z-10", isDark ? "from-[#0F051D]" : "from-white")} />
+                            <div className={cn("pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l z-10", isDark ? "from-[#0F051D]" : "from-white")} />
 
                             <Marquee pauseOnHover className="[--duration:30s]">
                                 {[
@@ -1754,18 +1754,18 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                         className={cn(
                                             "relative h-full w-72 cursor-pointer overflow-hidden rounded-[20px] p-5 mx-3 transition-all duration-300",
                                             isDark
-                                                ? "bg-[#4a2344] hover:shadow-[0_10px_40px_rgba(255,85,0,0.1)]"
+                                                ? "bg-[#1A0F2E] hover:shadow-[0_10px_40px_rgba(255,85,0,0.1)]"
                                                 : "bg-[#f5e6d6] hover:shadow-[0_10px_40px_rgba(0,0,0,0.08)]"
                                         )}
                                     >
                                         <div className="flex flex-row items-center gap-3">
                                             <img className="rounded-full" width="40" height="40" alt="" src={review.img} />
                                             <div className="flex flex-col">
-                                                <figcaption className={cn("text-sm font-sans-medium", isDark ? "text-white" : "text-[#381932]")}>{review.name}</figcaption>
-                                                <p className={cn("text-xs font-sans-body", isDark ? "text-white/40" : "text-[#381932]/40")}>{review.username}</p>
+                                                <figcaption className={cn("text-sm font-sans-medium", isDark ? "text-white" : "text-[#0F051D]")}>{review.name}</figcaption>
+                                                <p className={cn("text-xs font-sans-body", isDark ? "text-white/40" : "text-[#0F051D]/40")}>{review.username}</p>
                                             </div>
                                         </div>
-                                        <blockquote className={cn("mt-4 text-sm font-sans-body leading-relaxed", isDark ? "text-white/60" : "text-[#381932]/60")}>{review.body}</blockquote>
+                                        <blockquote className={cn("mt-4 text-sm font-sans-body leading-relaxed", isDark ? "text-white/60" : "text-[#0F051D]/60")}>{review.body}</blockquote>
                                     </figure>
                                 ))}
                             </Marquee>
@@ -1782,18 +1782,18 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                         className={cn(
                                             "relative h-full w-72 cursor-pointer overflow-hidden rounded-[20px] p-5 mx-3 transition-all duration-300",
                                             isDark
-                                                ? "bg-[#4a2344] hover:shadow-[0_10px_40px_rgba(255,85,0,0.1)]"
+                                                ? "bg-[#1A0F2E] hover:shadow-[0_10px_40px_rgba(255,85,0,0.1)]"
                                                 : "bg-[#f5e6d6] hover:shadow-[0_10px_40px_rgba(0,0,0,0.08)]"
                                         )}
                                     >
                                         <div className="flex flex-row items-center gap-3">
                                             <img className="rounded-full" width="40" height="40" alt="" src={review.img} />
                                             <div className="flex flex-col">
-                                                <figcaption className={cn("text-sm font-sans-medium", isDark ? "text-white" : "text-[#381932]")}>{review.name}</figcaption>
-                                                <p className={cn("text-xs font-sans-body", isDark ? "text-white/40" : "text-[#381932]/40")}>{review.username}</p>
+                                                <figcaption className={cn("text-sm font-sans-medium", isDark ? "text-white" : "text-[#0F051D]")}>{review.name}</figcaption>
+                                                <p className={cn("text-xs font-sans-body", isDark ? "text-white/40" : "text-[#0F051D]/40")}>{review.username}</p>
                                             </div>
                                         </div>
-                                        <blockquote className={cn("mt-4 text-sm font-sans-body leading-relaxed", isDark ? "text-white/60" : "text-[#381932]/60")}>{review.body}</blockquote>
+                                        <blockquote className={cn("mt-4 text-sm font-sans-body leading-relaxed", isDark ? "text-white/60" : "text-[#0F051D]/60")}>{review.body}</blockquote>
                                     </figure>
                                 ))}
                             </Marquee>
@@ -1817,7 +1817,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                             <h2 className="text-4xl sm:text-5xl md:text-6xl font-serif-display font-bold tracking-tight mb-6 text-white">
                                 Ready to Transform
                                 <br />
-                                <span className="text-[#381932]">Your Workflow?</span>
+                                <span className="text-[#0F051D]">Your Workflow?</span>
                             </h2>
                             <p className="text-lg font-sans-body mb-10 max-w-xl mx-auto text-white/90">
                                 Connect your favorite services and experience the power of MCP-driven conversations.
@@ -1828,7 +1828,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                                     onClick={onGetStarted}
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
-                                    className="inline-flex items-center gap-3 px-8 py-4 rounded-full font-semibold font-sans-body transition-all bg-[#381932] text-white hover:bg-[#4a2344] shadow-xl"
+                                    className="inline-flex items-center gap-3 px-8 py-4 rounded-full font-semibold font-sans-body transition-all bg-[#0F051D] text-white hover:bg-[#1A0F2E] shadow-xl"
                                 >
                                     <span>Launch Neurix</span>
                                     <ArrowRight className="h-5 w-5" aria-hidden="true" />
@@ -1840,7 +1840,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
             </main>
 
             {/* ====== 10. FOOTER - Editorial Tech ====== */}
-            <footer className={cn("py-16 px-4 sm:px-6 lg:px-8", isDark ? "bg-[#2a1226]" : "bg-[#381932]")} role="contentinfo">
+            <footer className={cn("py-16 px-4 sm:px-6 lg:px-8", isDark ? "bg-[#0A0316]" : "bg-[#0F051D]")} role="contentinfo">
                 <div className="max-w-7xl mx-auto">
                     <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
                         {/* Brand */}
@@ -1945,7 +1945,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                     distance={100}
                     className={cn(
                         "rounded-full backdrop-blur-md shadow-xl",
-                        isDark ? "bg-[#381932]/95 shadow-[0_10px_40px_rgba(0,0,0,0.4)]" : "bg-white/95 shadow-[0_10px_40px_rgba(0,0,0,0.15)]"
+                        isDark ? "bg-[#0F051D]/95 shadow-[0_10px_40px_rgba(0,0,0,0.4)]" : "bg-white/95 shadow-[0_10px_40px_rgba(0,0,0,0.15)]"
                     )}
                 >
                     <DockIcon>
@@ -1953,7 +1953,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                             onClick={() => scrollToSection('features')}
                             className={cn(
                                 "flex items-center justify-center w-full h-full rounded-full transition-all",
-                                isDark ? "text-white/60 hover:text-[#FF5500] hover:bg-white/10" : "text-[#381932]/60 hover:text-[#FF5500] hover:bg-black/5"
+                                isDark ? "text-white/60 hover:text-[#FF5500] hover:bg-white/10" : "text-[#0F051D]/60 hover:text-[#FF5500] hover:bg-black/5"
                             )}
                             aria-label="Features"
                         >
@@ -1965,7 +1965,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                             onClick={() => scrollToSection('integrations')}
                             className={cn(
                                 "flex items-center justify-center w-full h-full rounded-full transition-all",
-                                isDark ? "text-white/60 hover:text-[#FF5500] hover:bg-white/10" : "text-[#381932]/60 hover:text-[#FF5500] hover:bg-black/5"
+                                isDark ? "text-white/60 hover:text-[#FF5500] hover:bg-white/10" : "text-[#0F051D]/60 hover:text-[#FF5500] hover:bg-black/5"
                             )}
                             aria-label="Integrations"
                         >
@@ -1977,7 +1977,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                             onClick={() => scrollToSection('how-it-works')}
                             className={cn(
                                 "flex items-center justify-center w-full h-full rounded-full transition-all",
-                                isDark ? "text-white/60 hover:text-[#FF5500] hover:bg-white/10" : "text-[#381932]/60 hover:text-[#FF5500] hover:bg-black/5"
+                                isDark ? "text-white/60 hover:text-[#FF5500] hover:bg-white/10" : "text-[#0F051D]/60 hover:text-[#FF5500] hover:bg-black/5"
                             )}
                             aria-label="Capabilities"
                         >
@@ -1989,7 +1989,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                             onClick={() => scrollToSection('security')}
                             className={cn(
                                 "flex items-center justify-center w-full h-full rounded-full transition-all",
-                                isDark ? "text-white/60 hover:text-[#FF5500] hover:bg-white/10" : "text-[#381932]/60 hover:text-[#FF5500] hover:bg-black/5"
+                                isDark ? "text-white/60 hover:text-[#FF5500] hover:bg-white/10" : "text-[#0F051D]/60 hover:text-[#FF5500] hover:bg-black/5"
                             )}
                             aria-label="Security"
                         >

@@ -2,6 +2,7 @@
 
 ## Workflow
 - `.env` files are blocked by permission settings — tell user to create them manually instead of retrying
+- Commits: short single-line message, no Co-Authored-By tag
 
 ## Frontend / CSS
 - Custom CSS classes (`.text-paper`) do NOT work with Tailwind variant prefixes (`dark:text-paper`). Colors must be registered in `tailwind.config.js` for `dark:`, `hover:`, opacity modifiers (`/60`) etc. to generate correct CSS

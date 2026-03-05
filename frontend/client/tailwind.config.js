@@ -59,15 +59,15 @@ export default {
                     ring: 'hsl(var(--sidebar-ring))',
                 },
                 // Neurix Visual Identity System
-                obsidian: '#381932', // Primary Background (Deep Purple)
-                midnight: '#2a1226', // Sidebar Background (Darkest Purple)
+                obsidian: '#0F051D', // Primary Background (Deep Indigo)
+                midnight: '#0A0316', // Sidebar Background (Darkest)
                 'electric-purple': '#8B5CF6', // AI Accent
                 'neurix-orange': '#FF5500', // Brand Accent
                 'neurix-orange-light': '#FF7A33', // Brand Accent Hover
                 'mint-green': '#10B981', // Status Accent
                 'slate-grey': '#8899A6', // Secondary Text
                 'warm-cream': '#fff3e6', // Light Background
-                'deep-purple': '#381932', // Dark Background
+                'deep-purple': '#0F051D', // Dark Background
                 paper: '#fff3e6', // Light text for dark mode
             },
             borderRadius: {

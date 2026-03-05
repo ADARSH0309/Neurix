@@ -102,7 +102,7 @@ export function Sidebar({
             <aside
                 className={cn(
                     "fixed inset-y-0 left-0 z-50 flex flex-col w-[280px]",
-                    "bg-[#381932]/80 backdrop-blur-3xl border-r border-white-[0.05]",
+                    "bg-[#0F051D]/80 backdrop-blur-3xl border-r border-white-[0.05]",
                     "shadow-[0_0_40px_rgba(0,0,0,0.5)]",
                     "md:relative md:z-auto",
                     isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
@@ -116,7 +116,7 @@ export function Sidebar({
                         onClick={onNewChat}
                         className="w-full flex items-center gap-3 px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:border-electric-purple/30 hover:bg-white/[0.04] hover:shadow-[0_0_15px_rgba(139,92,246,0.1)] transition-all group items-center justify-start text-sm font-medium text-slate-grey hover:text-white backdrop-blur-md"
                     >
-                        <div className="w-6 h-6 rounded flex items-center justify-center bg-[#381932] border border-white/10 group-hover:border-electric-purple/50 group-hover:text-electric-purple transition-colors shadow-inner">
+                        <div className="w-6 h-6 rounded flex items-center justify-center bg-[#0F051D] border border-white/10 group-hover:border-electric-purple/50 group-hover:text-electric-purple transition-colors shadow-inner">
                             <Plus className="w-4 h-4" />
                         </div>
                         <span className="tracking-wide">New Session</span>
