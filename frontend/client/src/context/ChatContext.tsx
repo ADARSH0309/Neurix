@@ -225,12 +225,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
         // Execute each tool call and collect results
         const toolResults: string[] = [];
+        let hasError = false;
         for (const tc of aiResponse.toolCalls) {
             const server = servers[tc.serverId];
             if (!server || !server.connected) {
                 const errMsg = `Server "${tc.serverId}" is not connected.`;
                 toolResults.push(errMsg);
                 history.push({ role: 'tool', tool_call_id: tc.id, content: errMsg } as ChatMessage);
+                hasError = true;
                 continue;
             }
             try {
@@ -244,14 +246,24 @@ export function ChatProvider({ children }: { children: ReactNode }) {
                 const errMsg = err instanceof Error ? err.message : String(err);
                 toolResults.push(`Error: ${errMsg}`);
                 history.push({ role: 'tool', tool_call_id: tc.id, content: `Error: ${errMsg}` } as ChatMessage);
+                hasError = true;
             }
         }
 
-        // Get final natural language summary from OpenAI
-        const finalResponse = await getAIFinalResponse(history);
-        history.push({ role: 'assistant', content: finalResponse });
-        aiHistoryRef.current[sessionId] = history;
+        // Use the formatted tool result directly (preserves structured formatting from formatToolResponse).
+        // Only call AI for summarization when there are multiple tool calls or errors.
+        let finalResponse: string;
+        if (toolResults.length === 1 && !hasError) {
+            // Single successful tool call — use the pre-formatted result directly
+            finalResponse = toolResults[0];
+            history.push({ role: 'assistant', content: finalResponse });
+        } else {
+            // Multiple tools or errors — let AI summarize
+            finalResponse = await getAIFinalResponse(history);
+            history.push({ role: 'assistant', content: finalResponse });
+        }
 
+        aiHistoryRef.current[sessionId] = history;
         return finalResponse;
     };
 
