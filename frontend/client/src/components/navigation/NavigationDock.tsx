@@ -38,7 +38,10 @@ export function NavigationDock() {
         e.stopPropagation();
         if (contextMenuId === sessionId) { setContextMenuId(null); return; }
         const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-        setContextMenuPos({ top: rect.bottom + 4, left: rect.right - 160 });
+        const menuHeight = 110;
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const top = spaceBelow < menuHeight ? rect.top - menuHeight : rect.bottom + 4;
+        setContextMenuPos({ top, left: rect.right - 160 });
         setContextMenuId(sessionId);
     }, [contextMenuId]);
 
