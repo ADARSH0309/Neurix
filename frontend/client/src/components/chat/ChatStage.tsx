@@ -114,7 +114,7 @@ function TypingIndicator({ serverName, serverId }: { serverName?: string; server
 }
 
 // Message Component
-const ChatMessage = ({ msg, searchQuery }: { msg: Message; searchQuery?: string }) => {
+const ChatMessage = ({ msg, searchQuery, onRetry }: { msg: Message; searchQuery?: string; onRetry?: () => void }) => {
     const [copied, setCopied] = useState(false);
 
     const handleCopy = async (content: string) => {
@@ -351,15 +351,31 @@ const ChatMessage = ({ msg, searchQuery }: { msg: Message; searchQuery?: string 
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 text-muted-foreground hover:text-neurix-orange rounded-lg"
+                            className="h-7 w-7 text-muted-foreground hover:text-foreground rounded-lg"
                             onClick={() => handleCopy(msg.content)}
+                            title="Copy response"
                         >
                             {copied ? <Check className="w-3.5 h-3.5 text-mint-green" /> : <Copy className="w-3.5 h-3.5" />}
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-neurix-orange rounded-lg">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-muted-foreground hover:text-foreground rounded-lg"
+                            onClick={onRetry}
+                            title="Retry"
+                        >
                             <RotateCcw className="w-3.5 h-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-neurix-orange rounded-lg">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-muted-foreground hover:text-foreground rounded-lg"
+                            onClick={() => {
+                                const plain = msg.content.replace(/[#*_`~>\-\[\]()!|]/g, '').replace(/\n{3,}/g, '\n\n').trim();
+                                handleCopy(plain);
+                            }}
+                            title="Copy as plain text"
+                        >
                             <MoreHorizontal className="w-3.5 h-3.5" />
                         </Button>
                     </div>
@@ -678,10 +694,16 @@ export function ChatStage() {
                                 {displayMessages.map((msg, idx) => {
                                     const prevMsg = idx > 0 ? displayMessages[idx - 1] : null;
                                     const showDateSep = idx === 0 || isDifferentDay(prevMsg?.createdAt, msg.createdAt);
+                                    // Find the user message that preceded this assistant message for retry
+                                    const userMsgBefore = msg.role === 'assistant' && prevMsg?.role === 'user' ? prevMsg : null;
                                     return (
                                         <div key={msg.id}>
                                             {showDateSep && msg.createdAt && <DateSeparator dateString={msg.createdAt} />}
-                                            <ChatMessage msg={msg} searchQuery={searchQuery} />
+                                            <ChatMessage
+                                                msg={msg}
+                                                searchQuery={searchQuery}
+                                                onRetry={userMsgBefore ? () => sendMessage(userMsgBefore.content) : undefined}
+                                            />
                                         </div>
                                     );
                                 })}
