@@ -1,21 +1,22 @@
 import OpenAI from 'openai';
 import type { McpTool, McpServer } from '../types';
 
-// Initialize OpenAI client (browser-side)
-let openaiClient: OpenAI | null = null;
+// Initialize Groq client via OpenAI-compatible SDK
+let groqClient: OpenAI | null = null;
 
 function getClient(): OpenAI {
-    if (!openaiClient) {
-        openaiClient = new OpenAI({
-            apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+    if (!groqClient) {
+        groqClient = new OpenAI({
+            apiKey: import.meta.env.VITE_GROQ_API_KEY,
+            baseURL: 'https://api.groq.com/openai/v1',
             dangerouslyAllowBrowser: true,
         });
     }
-    return openaiClient;
+    return groqClient;
 }
 
 export function isConfigured(): boolean {
-    return !!import.meta.env.VITE_OPENAI_API_KEY;
+    return !!import.meta.env.VITE_GROQ_API_KEY;
 }
 
 /** Convert MCP tools from all servers into OpenAI function-calling format, prefixed with serverId */
@@ -48,6 +49,40 @@ function parsePrefixedToolName(prefixed: string): { serverId: string; toolName: 
     return { serverId: prefixed.slice(0, idx), toolName: prefixed.slice(idx + 2) };
 }
 
+/** Parse text-based function calls that Llama sometimes outputs instead of proper tool_calls */
+function parseTextFunctionCalls(text: string): { cleanText: string; toolCalls: AIToolCall[] } {
+    const toolCalls: AIToolCall[] = [];
+    // Match <function=name>{args}</function> pattern
+    const regex = /<function=([^>]+)>(.*?)<\/function>/gs;
+    let match;
+    let callIndex = 0;
+
+    while ((match = regex.exec(text)) !== null) {
+        const fullName = match[1].trim();
+        const argsStr = match[2].trim();
+        const { serverId, toolName } = parsePrefixedToolName(fullName);
+
+        let args: Record<string, any> = {};
+        try {
+            args = argsStr ? JSON.parse(argsStr) : {};
+        } catch {
+            args = {};
+        }
+
+        toolCalls.push({
+            id: `text_call_${callIndex++}`,
+            serverId,
+            toolName,
+            args,
+        });
+    }
+
+    // Remove the function call tags from the visible text
+    const cleanText = text.replace(/<function=[^>]+>.*?<\/function>/gs, '').trim();
+
+    return { cleanText: cleanText || null as any, toolCalls };
+}
+
 export interface AIToolCall {
     id: string;
     serverId: string;
@@ -64,11 +99,13 @@ type ChatMessage = OpenAI.Chat.ChatCompletionMessageParam;
 
 const SYSTEM_PROMPT = `You are Neurix, a helpful AI assistant that connects to Google services (Gmail, Drive, Forms, Calendar, Tasks) via MCP servers.
 
-When the user asks you to do something, use the available tools to fulfill their request. You can call multiple tools if needed.
-
-When presenting tool results to the user, format them in a clean, readable way using markdown. Be concise but helpful.
-
-If no tool matches the user's request, respond conversationally and suggest what tools are available.`;
+IMPORTANT RULES:
+- When the user asks you to do something, ALWAYS use the provided tools via function calling. Do NOT write function calls as text.
+- Only call a tool when you have ALL required parameters. If a required parameter is missing, ask the user for it instead of guessing.
+- You can call multiple tools if needed.
+- When presenting tool results to the user, format them in a clean, readable way using markdown. Be concise but helpful.
+- If no tool matches the user's request, respond conversationally and suggest what tools are available.
+- NEVER output raw XML or function tags in your response text.`;
 
 /** Send a user message with available tools, get back text and/or tool calls */
 export async function chatWithAI(
@@ -86,16 +123,18 @@ export async function chatWithAI(
     ];
 
     const response = await client.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'llama-3.3-70b-versatile',
         messages,
         tools: tools.length > 0 ? tools : undefined,
-        temperature: 0.3,
+        tool_choice: tools.length > 0 ? 'auto' : undefined,
+        temperature: 0.2,
     });
 
     const choice = response.choices[0];
     const assistantMessage = choice.message;
 
-    const toolCalls: AIToolCall[] = (assistantMessage.tool_calls || [])
+    // Parse proper tool_calls from the API response
+    const apiToolCalls: AIToolCall[] = (assistantMessage.tool_calls || [])
         .filter((tc): tc is OpenAI.Chat.ChatCompletionMessageToolCall & { type: 'function' } => tc.type === 'function')
         .map(tc => {
             const { serverId, toolName } = parsePrefixedToolName(tc.function.name);
@@ -108,9 +147,21 @@ export async function chatWithAI(
             return { id: tc.id, serverId, toolName, args };
         });
 
+    // Also check if the model embedded function calls in the text (Llama fallback)
+    let text = assistantMessage.content;
+    let textToolCalls: AIToolCall[] = [];
+
+    if (text && /<function=/.test(text)) {
+        const parsed = parseTextFunctionCalls(text);
+        text = parsed.cleanText;
+        textToolCalls = parsed.toolCalls;
+    }
+
+    const allToolCalls = [...apiToolCalls, ...textToolCalls];
+
     return {
-        text: assistantMessage.content,
-        toolCalls,
+        text: text || null,
+        toolCalls: allToolCalls,
     };
 }
 
@@ -126,9 +177,9 @@ export async function getAIFinalResponse(
     ];
 
     const response = await client.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'llama-3.3-70b-versatile',
         messages,
-        temperature: 0.3,
+        temperature: 0.2,
     });
 
     return response.choices[0].message.content || '';
