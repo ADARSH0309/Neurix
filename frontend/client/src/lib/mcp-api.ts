@@ -189,11 +189,7 @@ function formatToolResponse(text: string, _toolName: string): string {
 
     // ── Gmail: Profile ──
     if (data.action === 'get_profile' && data.emailAddress) {
-      return `**Gmail Profile**\n\n` +
-        `**Email:** ${data.emailAddress}\n` +
-        `**Total Messages:** ${data.messagesTotal?.toLocaleString() || 'N/A'}\n` +
-        `**Total Threads:** ${data.threadsTotal?.toLocaleString() || 'N/A'}\n` +
-        (data.historyId ? `**History ID:** \`${data.historyId}\`` : '');
+      return formatGmailProfile(data);
     }
 
     // ── Gmail: Labels list ──
@@ -249,10 +245,7 @@ function formatToolResponse(text: string, _toolName: string): string {
 
     // Handle form creation response
     if (data.formId && data.responderUri) {
-      return `**Form created successfully!**\n\n` +
-        `**Title:** ${data.title || 'Untitled'}\n` +
-        `**Form ID:** \`${data.formId}\`\n\n` +
-        `[Open Form](${data.responderUri})`;
+      return formatFormCreation(data);
     }
 
     // ── Google Calendar: Events list ──
@@ -315,12 +308,20 @@ function formatToolResponse(text: string, _toolName: string): string {
 
 // ── Gmail formatting helpers ──
 
-function formatGmailMessages(messages: any[]): string {
-  if (messages.length === 0) {
-    return 'No emails found.';
-  }
+function formatGmailProfile(data: any): string {
+  let output = `**📧 Gmail Profile**\n\n`;
+  output += `> **Email:** ${data.emailAddress}\n`;
+  output += `> **Total Messages:** ${data.messagesTotal?.toLocaleString() || 'N/A'}\n`;
+  output += `> **Total Threads:** ${data.threadsTotal?.toLocaleString() || 'N/A'}\n`;
+  if (data.historyId) output += `> **History ID:** \`${data.historyId}\`\n`;
+  output += `\n[Open Gmail](https://mail.google.com)`;
+  return output;
+}
 
-  let output = `**Inbox** - ${messages.length} message${messages.length !== 1 ? 's' : ''}\n\n`;
+function formatGmailMessages(messages: any[]): string {
+  if (messages.length === 0) return 'No emails found.';
+
+  let output = `**📧 Inbox** — ${messages.length} message${messages.length !== 1 ? 's' : ''}\n\n`;
 
   messages.slice(0, 25).forEach((msg, index) => {
     const from = msg.from || 'Unknown sender';
@@ -328,8 +329,6 @@ function formatGmailMessages(messages: any[]): string {
     const date = msg.date || '';
     const isUnread = msg.labels?.includes('UNREAD');
     const isStarred = msg.labels?.includes('STARRED');
-
-    // Use snippet for clean preview (Gmail API generates a clean text summary)
     const preview = (msg.snippet || '').replace(/\s+/g, ' ').trim();
 
     const badges: string[] = [];
@@ -337,159 +336,142 @@ function formatGmailMessages(messages: any[]): string {
     if (isStarred) badges.push('starred');
     const badgeStr = badges.length > 0 ? `  \`${badges.join('  ')}\`` : '';
 
-    // Gmail web link
-    const gmailLink = msg.id ? `[Open in Gmail](https://mail.google.com/mail/u/0/#inbox/${msg.id})` : '';
-
     output += `---\n\n`;
     output += `**${index + 1}. ${subject}**${badgeStr}\n\n`;
-    output += `> **From:** ${formatEmailSender(from)}  \n`;
+    output += `> **From:** ${formatEmailSender(from)}\n`;
     output += `> **Date:** ${date ? formatEmailDate(date) : 'Unknown'}\n\n`;
-    if (preview) {
-      output += `${preview}\n\n`;
-    }
-    if (gmailLink) {
-      output += `${gmailLink}\n\n`;
-    }
+    if (preview) output += `${preview}\n\n`;
+    if (msg.id) output += `[Open in Gmail](https://mail.google.com/mail/u/0/#inbox/${msg.id})\n\n`;
   });
 
-  if (messages.length > 25) {
-    output += `---\n\n*...and ${messages.length - 25} more messages.*\n`;
-  }
-
+  if (messages.length > 25) output += `---\n\n*...and ${messages.length - 25} more messages.*\n`;
   return output;
 }
 
 function formatGmailSingleMessage(msg: any): string {
-  let output = `**${msg.subject || '(No subject)'}**\n\n`;
-  output += `**From:** ${formatEmailSender(msg.from || 'Unknown')}\n`;
-  output += `**To:** ${msg.to || 'Unknown'}\n`;
-  if (msg.cc) output += `**CC:** ${msg.cc}\n`;
-  if (msg.date) output += `**Date:** ${formatEmailDate(msg.date)}\n`;
+  const isStarred = msg.labels?.includes('STARRED');
+  const badgeStr = isStarred ? `  \`starred\`` : '';
+
+  let output = `**📧 ${msg.subject || '(No subject)'}**${badgeStr}\n\n`;
+  output += `> **From:** ${formatEmailSender(msg.from || 'Unknown')}\n`;
+  output += `> **To:** ${msg.to || 'Unknown'}\n`;
+  if (msg.cc) output += `> **CC:** ${msg.cc}\n`;
+  if (msg.date) output += `> **Date:** ${formatEmailDate(msg.date)}\n`;
   if (msg.attachments && msg.attachments.length > 0) {
-    output += `**Attachments:** ${msg.attachments.map((a: any) => a.filename).join(', ')}\n`;
+    output += `> **Attachments:** ${msg.attachments.map((a: any) => a.filename).join(', ')}\n`;
   }
   output += '\n---\n\n';
 
-  // Clean up HTML if needed
   let body = msg.body || msg.snippet || '';
-  if (msg.isHtml) {
-    body = stripHtmlTags(body);
-  }
-  // Truncate very long bodies
-  if (body.length > 2000) {
-    body = body.slice(0, 2000) + '\n\n*... (message truncated)*';
-  }
+  if (msg.isHtml) body = stripHtmlTags(body);
+  if (body.length > 2000) body = body.slice(0, 2000) + '\n\n*... (message truncated)*';
   output += body;
 
-  // Gmail link
-  if (msg.id) {
-    output += `\n\n---\n\n[Open in Gmail](https://mail.google.com/mail/u/0/#inbox/${msg.id})`;
-  }
-
+  if (msg.id) output += `\n\n---\n\n[Open in Gmail](https://mail.google.com/mail/u/0/#inbox/${msg.id})`;
   return output;
 }
 
 function formatGmailActionResponse(data: any): string {
   const actionMessages: Record<string, string> = {
-    'send_message': `**Email sent successfully!**\n\nMessage ID: \`${data.id}\`${data.threadId ? `\nThread ID: \`${data.threadId}\`` : ''}`,
-    'reply_to_message': `**Reply sent successfully!**\n\nMessage ID: \`${data.id}\`${data.threadId ? `\nThread ID: \`${data.threadId}\`` : ''}`,
-    'forward_message': `**Message forwarded successfully!**\n\nMessage ID: \`${data.id}\`${data.threadId ? `\nThread ID: \`${data.threadId}\`` : ''}`,
-    'trash_message': `**Message moved to trash.**\n\nMessage ID: \`${data.messageId}\``,
-    'untrash_message': `**Message restored from trash.**\n\nMessage ID: \`${data.messageId}\``,
-    'delete_message': `**Message permanently deleted.**\n\nMessage ID: \`${data.messageId}\``,
-    'mark_as_read': `**Message marked as read.**\n\nMessage ID: \`${data.messageId}\``,
-    'mark_as_unread': `**Message marked as unread.**\n\nMessage ID: \`${data.messageId}\``,
-    'star_message': `**Message starred.**\n\nMessage ID: \`${data.messageId}\``,
-    'unstar_message': `**Star removed from message.**\n\nMessage ID: \`${data.messageId}\``,
-    'archive_message': `**Message archived.**\n\nMessage ID: \`${data.messageId}\``,
-    'modify_labels': `**Labels updated.**\n\nMessage ID: \`${data.messageId}\``,
-    'trash_thread': `**Thread moved to trash.**\n\nThread ID: \`${data.threadId}\``,
-    'delete_thread': `**Thread permanently deleted.**\n\nThread ID: \`${data.threadId}\``,
-    'create_label': `**Label created!**\n\nName: ${data.name}\nID: \`${data.id}\``,
-    'update_label': `**Label updated!**\n\nName: ${data.name}\nID: \`${data.id}\``,
-    'delete_label': `**Label deleted.**\n\nLabel ID: \`${data.labelId}\``,
-    'create_draft': `**Draft created!**\n\nDraft ID: \`${data.draftId}\``,
-    'delete_draft': `**Draft deleted.**\n\nDraft ID: \`${data.draftId}\``,
-    'send_draft': `**Draft sent!**\n\nMessage ID: \`${data.id}\`${data.threadId ? `\nThread ID: \`${data.threadId}\`` : ''}`,
-    'get_attachment': `**Attachment retrieved.**\n\nSize: ${formatFileSize(data.size || 0)}`,
+    'send_message': `**📨 Email sent successfully!**\n\n> **Message ID:** \`${data.id}\`${data.threadId ? `\n> **Thread ID:** \`${data.threadId}\`` : ''}`,
+    'reply_to_message': `**📨 Reply sent successfully!**\n\n> **Message ID:** \`${data.id}\`${data.threadId ? `\n> **Thread ID:** \`${data.threadId}\`` : ''}`,
+    'forward_message': `**📨 Message forwarded!**\n\n> **Message ID:** \`${data.id}\`${data.threadId ? `\n> **Thread ID:** \`${data.threadId}\`` : ''}`,
+    'trash_message': `**🗑️ Message moved to trash.**\n\n> **Message ID:** \`${data.messageId}\``,
+    'untrash_message': `**📥 Message restored from trash.**\n\n> **Message ID:** \`${data.messageId}\``,
+    'delete_message': `**🗑️ Message permanently deleted.**\n\n> **Message ID:** \`${data.messageId}\``,
+    'mark_as_read': `**📖 Message marked as read.**\n\n> **Message ID:** \`${data.messageId}\``,
+    'mark_as_unread': `**📩 Message marked as unread.**\n\n> **Message ID:** \`${data.messageId}\``,
+    'star_message': `**⭐ Message starred.**\n\n> **Message ID:** \`${data.messageId}\``,
+    'unstar_message': `**⭐ Star removed from message.**\n\n> **Message ID:** \`${data.messageId}\``,
+    'archive_message': `**📦 Message archived.**\n\n> **Message ID:** \`${data.messageId}\``,
+    'modify_labels': `**🏷️ Labels updated.**\n\n> **Message ID:** \`${data.messageId}\``,
+    'trash_thread': `**🗑️ Thread moved to trash.**\n\n> **Thread ID:** \`${data.threadId}\``,
+    'delete_thread': `**🗑️ Thread permanently deleted.**\n\n> **Thread ID:** \`${data.threadId}\``,
+    'create_label': `**🏷️ Label created!**\n\n> **Name:** ${data.name}\n> **ID:** \`${data.id}\``,
+    'update_label': `**🏷️ Label updated!**\n\n> **Name:** ${data.name}\n> **ID:** \`${data.id}\``,
+    'delete_label': `**🏷️ Label deleted.**\n\n> **Label ID:** \`${data.labelId}\``,
+    'create_draft': `**📝 Draft created!**\n\n> **Draft ID:** \`${data.draftId}\``,
+    'delete_draft': `**🗑️ Draft deleted.**\n\n> **Draft ID:** \`${data.draftId}\``,
+    'send_draft': `**📨 Draft sent!**\n\n> **Message ID:** \`${data.id}\`${data.threadId ? `\n> **Thread ID:** \`${data.threadId}\`` : ''}`,
+    'get_attachment': `**📎 Attachment retrieved.**\n\n> **Size:** ${formatFileSize(data.size || 0)}`,
   };
 
-  return actionMessages[data.action] || `**Operation completed successfully.**`;
+  const msg = actionMessages[data.action] || `**Operation completed successfully.**`;
+  return msg + `\n\n[Open Gmail](https://mail.google.com)`;
 }
 
 function formatGmailLabels(labels: any[]): string {
-  if (!labels || labels.length === 0) {
-    return 'No labels found.';
-  }
+  if (!labels || labels.length === 0) return 'No labels found.';
 
   const systemLabels = labels.filter((l: any) => l.type === 'system');
   const userLabels = labels.filter((l: any) => l.type !== 'system');
 
-  let output = '**Gmail Labels**\n\n';
+  let output = `**🏷️ Gmail Labels** — ${labels.length} label${labels.length !== 1 ? 's' : ''}\n\n`;
 
   if (systemLabels.length > 0) {
-    output += '**System Labels:**\n';
+    output += `**System Labels:**\n\n`;
     systemLabels.forEach((l: any) => {
-      output += `- ${l.name} (\`${l.id}\`)\n`;
+      output += `---\n\n> **${l.name}**  \`${l.id}\`\n\n`;
     });
   }
 
   if (userLabels.length > 0) {
-    output += '\n**Custom Labels:**\n';
+    output += `**Custom Labels:**\n\n`;
     userLabels.forEach((l: any) => {
-      output += `- ${l.name} (\`${l.id}\`)\n`;
+      output += `---\n\n> **${l.name}**  \`${l.id}\`\n\n`;
     });
   }
 
+  output += `[Open Gmail](https://mail.google.com)`;
   return output;
 }
 
 function formatGmailThreads(threads: any[]): string {
-  if (!threads || threads.length === 0) {
-    return 'No threads found.';
-  }
+  if (!threads || threads.length === 0) return 'No threads found.';
 
-  let output = `**${threads.length} thread(s)**\n\n`;
+  let output = `**📧 Threads** — ${threads.length} thread${threads.length !== 1 ? 's' : ''}\n\n`;
+
   threads.slice(0, 20).forEach((thread: any, i: number) => {
-    output += `${i + 1}. **Thread** \`${thread.id}\`\n`;
+    output += `---\n\n`;
+    output += `**${i + 1}. Thread** \`${thread.id}\`\n\n`;
     if (thread.snippet) {
-      output += `   ${thread.snippet.slice(0, 100)}${thread.snippet.length > 100 ? '...' : ''}\n`;
+      output += `> ${thread.snippet.slice(0, 120)}${thread.snippet.length > 120 ? '...' : ''}\n\n`;
     }
-    output += '\n';
   });
 
+  if (threads.length > 20) output += `---\n\n*...and ${threads.length - 20} more threads.*\n`;
+  output += `\n[Open Gmail](https://mail.google.com)`;
   return output;
 }
 
 function formatGmailThreadDetail(data: any): string {
-  let output = `**Thread** \`${data.threadId}\` - ${data.messages.length} message(s)\n\n`;
+  let output = `**📧 Thread** \`${data.threadId}\` — ${data.messages.length} message${data.messages.length !== 1 ? 's' : ''}\n\n`;
 
   data.messages.forEach((msg: any, i: number) => {
     output += `---\n\n`;
-    output += `**Message ${i + 1}:** ${msg.subject || '(No subject)'}\n`;
-    output += `**From:** ${formatEmailSender(msg.from || '')}\n`;
-    if (msg.date) output += `**Date:** ${formatEmailDate(msg.date)}\n`;
+    output += `**${i + 1}. ${msg.subject || '(No subject)'}**\n\n`;
+    output += `> **From:** ${formatEmailSender(msg.from || 'Unknown')}\n`;
+    if (msg.date) output += `> **Date:** ${formatEmailDate(msg.date)}\n`;
     output += '\n';
-    if (msg.snippet) {
-      output += `${msg.snippet.slice(0, 200)}${msg.snippet.length > 200 ? '...' : ''}\n`;
-    }
-    if (msg.id) output += `\nID: \`${msg.id}\`\n`;
-    output += '\n';
+    if (msg.snippet) output += `${msg.snippet.slice(0, 200)}${msg.snippet.length > 200 ? '...' : ''}\n\n`;
   });
 
+  output += `[Open Gmail](https://mail.google.com)`;
   return output;
 }
 
 function formatGmailDrafts(drafts: any[]): string {
-  if (!drafts || drafts.length === 0) {
-    return 'No drafts found.';
-  }
+  if (!drafts || drafts.length === 0) return 'No drafts found.';
 
-  let output = `**${drafts.length} draft(s)**\n\n`;
-  drafts.forEach((draft: any, i: number) => {
-    output += `${i + 1}. Draft ID: \`${draft.id}\`\n`;
+  let output = `**📝 Drafts** — ${drafts.length} draft${drafts.length !== 1 ? 's' : ''}\n\n`;
+
+  drafts.slice(0, 20).forEach((draft: any, i: number) => {
+    output += `---\n\n`;
+    output += `**${i + 1}.** Draft ID: \`${draft.id}\`\n\n`;
   });
 
+  if (drafts.length > 20) output += `---\n\n*...and ${drafts.length - 20} more drafts.*\n`;
+  output += `\n[Open Gmail](https://mail.google.com)`;
   return output;
 }
 
@@ -562,28 +544,36 @@ function getDriveFileTypeName(mimeType: string): string {
 
 // ── Google Forms formatting helpers ──
 
-function formatFormsList(forms: any[]): string {
-  let output = `**Google Forms** — ${forms.length} form${forms.length !== 1 ? 's' : ''}\n\n`;
+function formatFormCreation(data: any): string {
+  let output = `**📋 Form created successfully!**\n\n`;
+  output += `> **Title:** ${data.title || 'Untitled'}\n`;
+  output += `> **Form ID:** \`${data.formId}\`\n`;
+  output += `\n[Open Form](${data.responderUri})`;
+  return output;
+}
 
-  forms.forEach((form: any, index: number) => {
+function formatFormsList(forms: any[]): string {
+  let output = `**📋 Google Forms** — ${forms.length} form${forms.length !== 1 ? 's' : ''}\n\n`;
+
+  forms.slice(0, 20).forEach((form: any, index: number) => {
     const title = form.title || form.name || 'Untitled';
     output += `---\n\n`;
     output += `**${index + 1}. 📋 ${title}**\n\n`;
     if (form.formId) output += `> **Form ID:** \`${form.formId}\`\n`;
     if (form.description) output += `> **Description:** ${form.description}\n`;
     output += '\n';
-    if (form.responderUri) {
-      output += `[Open Form](${form.responderUri})\n\n`;
-    }
+    if (form.responderUri) output += `[Open Form](${form.responderUri})\n\n`;
   });
 
+  if (forms.length > 20) output += `---\n\n*...and ${forms.length - 20} more forms.*\n`;
+  output += `\n[Open Google Forms](https://docs.google.com/forms)`;
   return output;
 }
 
 // ── Google Calendar formatting helpers ──
 
 function formatCalendarEvents(events: any[]): string {
-  let output = `**Upcoming Events** — ${events.length} event${events.length !== 1 ? 's' : ''}\n\n`;
+  let output = `**📅 Upcoming Events** — ${events.length} event${events.length !== 1 ? 's' : ''}\n\n`;
   let lastDate = '';
 
   events.slice(0, 20).forEach((evt: any) => {
@@ -649,9 +639,9 @@ function formatCalendarSingleEvent(evt: any): string {
 }
 
 function formatCalendarsList(calendars: any[]): string {
-  let output = `**Your Calendars** — ${calendars.length} calendar${calendars.length !== 1 ? 's' : ''}\n\n`;
+  let output = `**📅 Your Calendars** — ${calendars.length} calendar${calendars.length !== 1 ? 's' : ''}\n\n`;
 
-  calendars.forEach((cal: any, i: number) => {
+  calendars.slice(0, 20).forEach((cal: any, i: number) => {
     const primary = cal.primary ? `  \`primary\`` : '';
     output += `---\n\n`;
     output += `**${i + 1}. ${cal.summary || cal.id}**${primary}\n\n`;
@@ -661,22 +651,25 @@ function formatCalendarsList(calendars: any[]): string {
     output += '\n';
   });
 
+  if (calendars.length > 20) output += `---\n\n*...and ${calendars.length - 20} more calendars.*\n`;
+  output += `\n[Open Google Calendar](https://calendar.google.com)`;
   return output;
 }
 
 function formatCalendarDetail(cal: any): string {
   const primary = cal.primary ? `  \`primary\`` : '';
-  let output = `**${cal.summary || cal.id}**${primary}\n\n`;
+  let output = `**📅 ${cal.summary || cal.id}**${primary}\n\n`;
   if (cal.description) output += `> **Description:** ${cal.description}\n`;
   if (cal.timeZone) output += `> **Timezone:** ${cal.timeZone}\n`;
   if (cal.accessRole) output += `> **Access:** ${cal.accessRole}\n`;
+  output += `\n[Open Google Calendar](https://calendar.google.com)`;
   return output;
 }
 
 function formatCalendarSearchResults(query: string, events: any[]): string {
-  let output = `**Search Results** — ${events.length} event${events.length !== 1 ? 's' : ''} for "${query}"\n\n`;
+  let output = `**🔍 Search Results** — ${events.length} event${events.length !== 1 ? 's' : ''} for "${query}"\n\n`;
 
-  events.forEach((evt: any, i: number) => {
+  events.slice(0, 20).forEach((evt: any, i: number) => {
     const { date, time, isAllDay } = parseEventDate(evt);
     const timeStr = isAllDay ? 'All day' : time;
 
@@ -689,6 +682,8 @@ function formatCalendarSearchResults(query: string, events: any[]): string {
     output += '\n';
   });
 
+  if (events.length > 20) output += `---\n\n*...and ${events.length - 20} more results.*\n`;
+  output += `\n[Open Google Calendar](https://calendar.google.com)`;
   return output;
 }
 
@@ -715,9 +710,9 @@ function parseEventDate(evt: any): { date: string; time: string; isAllDay: boole
 // ── Google Tasks formatting helpers ──
 
 function formatTaskLists(taskLists: any[]): string {
-  let output = `**Your Task Lists** — ${taskLists.length} list${taskLists.length !== 1 ? 's' : ''}\n\n`;
+  let output = `**✅ Your Task Lists** — ${taskLists.length} list${taskLists.length !== 1 ? 's' : ''}\n\n`;
 
-  taskLists.forEach((tl: any, i: number) => {
+  taskLists.slice(0, 20).forEach((tl: any, i: number) => {
     const title = tl.title || 'Untitled';
     output += `---\n\n`;
     output += `**${i + 1}. ${title}**\n\n`;
@@ -725,6 +720,7 @@ function formatTaskLists(taskLists: any[]): string {
     output += '\n';
   });
 
+  if (taskLists.length > 20) output += `---\n\n*...and ${taskLists.length - 20} more lists.*\n`;
   output += `---\n\n[Open Google Tasks](https://tasks.google.com)`;
   return output;
 }
@@ -732,13 +728,13 @@ function formatTaskLists(taskLists: any[]): string {
 function formatTasks(tasks: any[]): string {
   const completed = tasks.filter((t: any) => t.status === 'completed').length;
   const pending = tasks.length - completed;
-  let output = `**Tasks** — ${pending} pending, ${completed} completed\n\n`;
+  let output = `**✅ Tasks** — ${pending} pending, ${completed} completed\n\n`;
 
   // Pending tasks first
   const pendingTasks = tasks.filter((t: any) => t.status !== 'completed');
   const completedTasks = tasks.filter((t: any) => t.status === 'completed');
 
-  pendingTasks.forEach((task: any) => {
+  pendingTasks.slice(0, 20).forEach((task: any) => {
     const title = task.title || '(No Title)';
     const dueBadge = task.due ? `  \`due ${new Date(task.due).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}\`` : '';
 
@@ -756,12 +752,15 @@ function formatTasks(tasks: any[]): string {
     }
   });
 
+  if (pendingTasks.length > 20) output += `---\n\n*...and ${pendingTasks.length - 20} more pending tasks.*\n\n`;
+
   if (completedTasks.length > 0) {
     output += `---\n\n**Completed** (${completedTasks.length})\n\n`;
-    completedTasks.forEach((task: any) => {
+    completedTasks.slice(0, 10).forEach((task: any) => {
       const title = task.title || '(No Title)';
       output += `- ~~${title}~~\n`;
     });
+    if (completedTasks.length > 10) output += `- *...and ${completedTasks.length - 10} more*\n`;
     output += '\n';
   }
 
@@ -794,7 +793,7 @@ function formatSingleTask(task: any, taskListName?: string): string {
 }
 
 function formatSingleTaskList(tl: any): string {
-  let output = `**${tl.title || 'Untitled'}**\n\n`;
+  let output = `**✅ ${tl.title || 'Untitled'}**\n\n`;
   if (tl.updated) output += `> **Last updated:** ${formatSmartDate(tl.updated)}\n`;
   output += '\n';
   output += `[Open Google Tasks](https://tasks.google.com)`;
