@@ -173,10 +173,10 @@ const ChatMessage = ({ msg, searchQuery, onRetry }: { msg: Message; searchQuery?
             {/* Avatar */}
             <div
                 className={cn(
-                    'shrink-0 mt-1 shadow-md transition-all',
+                    'shrink-0 mt-1 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all',
                     msg.role === 'user'
-                        ? 'icon-circle-orange text-white w-9 h-9'
-                        : 'icon-circle text-white w-9 h-9'
+                        ? 'bg-primary text-white'
+                        : 'bg-neurix-orange/90 text-white'
                 )}
             >
                 {msg.role === 'user' ? <User size={14} /> : <Bot size={14} />}
