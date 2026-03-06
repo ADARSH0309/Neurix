@@ -478,7 +478,7 @@ function formatGmailDrafts(drafts: any[]): string {
 // ── Google Drive formatting helpers ──
 
 function formatDriveFiles(files: any[]): string {
-  let output = `**Google Drive** — ${files.length} file${files.length !== 1 ? 's' : ''}\n\n`;
+  let output = `**📂 Google Drive** — ${files.length} file${files.length !== 1 ? 's' : ''}\n\n`;
 
   files.slice(0, 20).forEach((file: any, index: number) => {
     const icon = getFileIconEmoji(file.mimeType);
@@ -506,6 +506,7 @@ function formatDriveFiles(files: any[]): string {
     output += `---\n\n*...and ${files.length - 20} more files.*\n`;
   }
 
+  output += `\n[Open Google Drive](https://drive.google.com)`;
   return output;
 }
 
@@ -513,7 +514,7 @@ function formatDriveSingleFile(data: any): string {
   const icon = getFileIconEmoji(data.mimeType);
   const typeName = getDriveFileTypeName(data.mimeType);
 
-  let output = `${icon} **${data.name}**\n\n`;
+  let output = `**${icon} ${data.name}**\n\n`;
   output += `> **Type:** ${typeName}\n`;
   if (data.size) output += `> **Size:** ${formatFileSize(Number(data.size))}\n`;
   if (data.modifiedTime) output += `> **Modified:** ${formatSmartDate(data.modifiedTime)}\n`;
@@ -588,18 +589,19 @@ function formatCalendarEvents(events: any[]): string {
 
     const timeStr = isAllDay ? 'All day' : `${time}${endTime ? ` – ${endTime}` : ''}`;
 
-    output += `> **${evt.summary || '(No Title)'}**\n`;
-    output += `> 🕐 ${timeStr}\n`;
-    if (evt.location) output += `> 📍 ${evt.location}\n`;
-    if (evt.hangoutLink) output += `> 🔗 [Join Google Meet](${evt.hangoutLink})\n`;
+    output += `> **Event:** ${evt.summary || '(No Title)'}\n`;
+    output += `> **Time:** ${timeStr}\n`;
+    if (evt.location) output += `> **Location:** 📍 ${evt.location}\n`;
+    if (evt.hangoutLink) output += `> **Meet:** 🔗 [Join Google Meet](${evt.hangoutLink})\n`;
     if (evt.attendees && evt.attendees.length > 0) {
-      output += `> 👥 ${evt.attendees.length} attendee${evt.attendees.length !== 1 ? 's' : ''}\n`;
+      output += `> **Attendees:** 👥 ${evt.attendees.length} attendee${evt.attendees.length !== 1 ? 's' : ''}\n`;
     }
     if (evt.htmlLink) output += `> [Open in Calendar](${evt.htmlLink})\n`;
     output += '\n';
   });
 
   if (events.length > 20) output += `---\n\n*...and ${events.length - 20} more events.*\n`;
+  output += `\n[Open Google Calendar](https://calendar.google.com)`;
   return output;
 }
 
@@ -610,7 +612,7 @@ function formatCalendarSingleEvent(evt: any): string {
     : '';
   const timeStr = isAllDay ? 'All day' : `${time}${endTime ? ` – ${endTime}` : ''}`;
 
-  let output = `**${evt.summary || '(No Title)'}**\n\n`;
+  let output = `**📅 ${evt.summary || '(No Title)'}**\n\n`;
   output += `> **Date:** ${date}\n`;
   output += `> **Time:** ${timeStr}\n`;
   if (evt.location) output += `> **Location:** 📍 ${evt.location}\n`;
@@ -788,7 +790,7 @@ function formatSingleTask(task: any, taskListName?: string): string {
     });
     output += '\n';
   }
-  output += `[Open Google Tasks](https://tasks.google.com)`;
+  output += `---\n\n[Open Google Tasks](https://tasks.google.com)`;
   return output;
 }
 
@@ -796,7 +798,7 @@ function formatSingleTaskList(tl: any): string {
   let output = `**✅ ${tl.title || 'Untitled'}**\n\n`;
   if (tl.updated) output += `> **Last updated:** ${formatSmartDate(tl.updated)}\n`;
   output += '\n';
-  output += `[Open Google Tasks](https://tasks.google.com)`;
+  output += `---\n\n[Open Google Tasks](https://tasks.google.com)`;
   return output;
 }
 
