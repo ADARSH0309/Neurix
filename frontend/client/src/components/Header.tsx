@@ -90,7 +90,6 @@ export function Header({
                         title="Back to Home"
                     >
                         <Logo />
-                        <span className="font-heading font-bold text-lg tracking-tight hidden lg:block text-foreground">Neurix</span>
                     </button>
 
                     {/* Divider */}

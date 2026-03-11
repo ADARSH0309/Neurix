@@ -148,7 +148,7 @@ export function NavigationDock() {
                     <>
                         <button
                             onClick={createSession}
-                            className="flex-1 flex items-center justify-center gap-2 h-9 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm font-medium"
+                            className="flex-1 flex items-center justify-center gap-2 h-9 rounded-lg bg-muted dark:bg-white/[0.08] text-foreground hover:bg-muted/80 dark:hover:bg-white/[0.12] border border-border transition-colors text-sm font-medium"
                         >
                             <Plus size={16} />
                             New Chat
@@ -162,7 +162,7 @@ export function NavigationDock() {
                         <button onClick={toggleDock} className="h-9 w-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                             <ChevronRight size={18} />
                         </button>
-                        <button onClick={createSession} className="h-9 w-9 rounded-lg flex items-center justify-center bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                        <button onClick={createSession} className="h-9 w-9 rounded-lg flex items-center justify-center bg-muted dark:bg-white/[0.08] text-foreground hover:bg-muted/80 dark:hover:bg-white/[0.12] border border-border transition-colors">
                             <Plus size={16} />
                         </button>
                     </div>
