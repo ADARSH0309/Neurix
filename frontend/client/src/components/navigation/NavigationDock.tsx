@@ -11,6 +11,29 @@ import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getServerIcon } from '../../lib/server-utils';
 
+const serviceDescriptions: Record<string, { tagline: string; capabilities: string[] }> = {
+    gdrive: {
+        tagline: 'Access, search, and manage your Google Drive files and folders.',
+        capabilities: ['List Files', 'Search', 'Upload', 'Organize'],
+    },
+    gforms: {
+        tagline: 'Create, edit, and analyze Google Forms and survey responses.',
+        capabilities: ['Create Forms', 'View Responses', 'Edit Questions'],
+    },
+    gmail: {
+        tagline: 'Read, compose, and manage emails from your Gmail inbox.',
+        capabilities: ['Read Mail', 'Send Mail', 'Search', 'Labels'],
+    },
+    gcalendar: {
+        tagline: 'View, create, and manage events on your Google Calendar.',
+        capabilities: ['View Events', 'Create Events', 'Schedule'],
+    },
+    gtask: {
+        tagline: 'Organize and track your to-dos with Google Tasks.',
+        capabilities: ['List Tasks', 'Create Tasks', 'Mark Complete'],
+    },
+};
+
 export function NavigationDock() {
     const { servers, activeServerId, setActiveServerId, connectServer, disconnectServer } = useServer();
     const { sessions, activeSessionId, setActiveSessionId, createSession, deleteSession, renameSession, pinSession, unpinSession } = useChat();
@@ -256,7 +279,7 @@ export function NavigationDock() {
                 </div>
             </motion.div>
 
-            {/* Services Panel — Landscape Popup */}
+            {/* Services Panel — Centered Landscape Popup */}
             {createPortal(
                 <AnimatePresence>
                     {showServicesPanel && (
@@ -268,125 +291,140 @@ export function NavigationDock() {
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.2 }}
-                                className="fixed inset-0 z-[9998] bg-black/40 backdrop-blur-sm"
+                                className="fixed inset-0 z-[9998] bg-black/50 dark:bg-black/60 backdrop-blur-md"
                                 onClick={() => setShowServicesPanel(false)}
                             />
-                            {/* Panel */}
-                            <motion.div
-                                key="services-panel"
-                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                                className="fixed z-[9999] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-3xl bg-background/95 backdrop-blur-3xl border border-border rounded-2xl shadow-2xl dark:shadow-[0_25px_60px_rgba(0,0,0,0.6)]"
-                            >
-                            {/* Panel Header */}
-                            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 rounded-xl bg-primary/10 dark:bg-electric-purple/15 flex items-center justify-center">
-                                        <Cpu size={18} className="text-primary dark:text-electric-purple" />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-sm font-semibold text-foreground">MCP Services</h2>
-                                        <p className="text-[11px] text-muted-foreground">
-                                            {connectedCount} of {totalCount} nodes online
-                                        </p>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => setShowServicesPanel(false)}
-                                    className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                            {/* Centering wrapper */}
+                            <div className="fixed inset-0 z-[9999] flex items-center justify-center pointer-events-none">
+                                <motion.div
+                                    key="services-panel"
+                                    initial={{ opacity: 0, scale: 0.92, y: 30 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.92, y: 30 }}
+                                    transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+                                    className="pointer-events-auto w-[92vw] max-w-4xl bg-background border border-border rounded-2xl shadow-2xl dark:shadow-[0_25px_80px_rgba(0,0,0,0.7)] overflow-hidden"
                                 >
-                                    <X size={16} />
-                                </button>
-                            </div>
-
-                            {/* Panel Body — Grid */}
-                            <div className="p-5 grid grid-cols-2 lg:grid-cols-3 gap-3 max-h-[60vh] overflow-y-auto no-scrollbar">
-                                {Object.values(servers).map(server => {
-                                    const ServerIcon = getServerIcon(server.id);
-                                    const isActive = activeServerId === server.id && server.connected;
-
-                                    return (
-                                        <div
-                                            key={server.id}
-                                            className={cn(
-                                                "rounded-xl border p-4 transition-all duration-200 flex flex-col gap-3",
-                                                server.connected
-                                                    ? isActive
-                                                        ? "border-primary/30 dark:border-electric-purple/30 bg-primary/5 dark:bg-electric-purple/8"
-                                                        : "border-border bg-muted/20 dark:bg-white/[0.02] hover:border-primary/20 dark:hover:border-electric-purple/20"
-                                                    : "border-border bg-muted/10 dark:bg-white/[0.01]"
-                                            )}
-                                        >
-                                            {/* Server Info */}
-                                            <div className="flex items-start gap-3">
-                                                <div className={cn(
-                                                    "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden transition-all",
-                                                    server.connected
-                                                        ? "bg-background dark:bg-white/[0.08] shadow-sm"
-                                                        : "bg-muted/50 dark:bg-white/[0.03] opacity-50"
-                                                )}>
-                                                    <ServerIcon size={22} />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="text-sm font-medium text-foreground truncate">{server.name}</div>
-                                                    <div className="flex items-center gap-1.5 mt-1">
-                                                        <span className={cn(
-                                                            "w-2 h-2 rounded-full shrink-0",
-                                                            server.connected ? "bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]" : "bg-muted-foreground/25"
-                                                        )} />
-                                                        <span className={cn(
-                                                            "text-[11px]",
-                                                            server.connected ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground/50"
-                                                        )}>
-                                                            {server.connected ? 'Connected' : 'Offline'}
-                                                        </span>
-                                                    </div>
-                                                    {server.connected && server.tools && (
-                                                        <p className="text-[10px] text-muted-foreground/50 mt-1">{server.tools.length} tools available</p>
-                                                    )}
-                                                </div>
+                                    {/* Panel Header */}
+                                    <div className="flex items-center justify-between px-6 py-5 border-b border-border bg-muted/30 dark:bg-white/[0.02]">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-electric-purple/10 dark:from-electric-purple/20 dark:to-primary/10 flex items-center justify-center border border-primary/10 dark:border-electric-purple/20">
+                                                <Cpu size={20} className="text-primary dark:text-electric-purple" />
                                             </div>
-
-                                            {/* Actions */}
-                                            <div className="flex gap-2 mt-auto">
-                                                {server.connected ? (
-                                                    <>
-                                                        <button
-                                                            onClick={() => { setActiveServerId(server.id); setShowServicesPanel(false); }}
-                                                            className={cn(
-                                                                "flex-1 h-8 rounded-lg text-xs font-medium transition-colors",
-                                                                isActive
-                                                                    ? "bg-primary/15 dark:bg-electric-purple/20 text-primary dark:text-electric-purple"
-                                                                    : "bg-muted dark:bg-white/[0.06] text-muted-foreground hover:text-foreground hover:bg-muted/80 dark:hover:bg-white/[0.1]"
-                                                            )}
-                                                        >
-                                                            {isActive ? 'Active' : 'Select'}
-                                                        </button>
-                                                        <button
-                                                            onClick={() => disconnectServer(server.id)}
-                                                            className="h-8 w-8 rounded-lg flex items-center justify-center bg-muted dark:bg-white/[0.06] text-muted-foreground hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
-                                                            title="Disconnect"
-                                                        >
-                                                            <WifiOff size={13} />
-                                                        </button>
-                                                    </>
-                                                ) : (
-                                                    <button
-                                                        onClick={() => connectServer(server.id)}
-                                                        className="flex-1 h-8 rounded-lg text-xs font-medium bg-muted dark:bg-white/[0.06] text-muted-foreground hover:text-foreground hover:bg-muted/80 dark:hover:bg-white/[0.1] transition-colors flex items-center justify-center gap-1.5"
-                                                    >
-                                                        <Wifi size={12} />
-                                                        Connect
-                                                    </button>
-                                                )}
+                                            <div>
+                                                <h2 className="text-base font-semibold text-foreground">Neural Services</h2>
+                                                <p className="text-xs text-muted-foreground mt-0.5">
+                                                    {connectedCount} of {totalCount} MCP nodes active
+                                                </p>
                                             </div>
                                         </div>
-                                    );
-                                })}
+                                        <button
+                                            onClick={() => setShowServicesPanel(false)}
+                                            className="h-9 w-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                                        >
+                                            <X size={18} />
+                                        </button>
+                                    </div>
+
+                                    {/* Panel Body — Grid */}
+                                    <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[65vh] overflow-y-auto no-scrollbar">
+                                        {Object.values(servers).map(server => {
+                                            const ServerIcon = getServerIcon(server.id);
+                                            const isActive = activeServerId === server.id && server.connected;
+                                            const desc = serviceDescriptions[server.id] || { tagline: 'MCP Service', capabilities: [] };
+
+                                            return (
+                                                <div
+                                                    key={server.id}
+                                                    className={cn(
+                                                        "rounded-xl border p-4 transition-all duration-200 flex flex-col gap-3 group",
+                                                        server.connected
+                                                            ? isActive
+                                                                ? "border-primary/30 dark:border-electric-purple/30 bg-primary/5 dark:bg-electric-purple/8"
+                                                                : "border-border bg-background hover:border-primary/20 dark:hover:border-electric-purple/20 hover:shadow-sm"
+                                                            : "border-border bg-muted/30 dark:bg-white/[0.015] hover:bg-muted/50 dark:hover:bg-white/[0.03]"
+                                                    )}
+                                                >
+                                                    {/* Icon + Name + Status */}
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={cn(
+                                                            "w-11 h-11 rounded-xl flex items-center justify-center shrink-0 overflow-hidden transition-all border",
+                                                            server.connected
+                                                                ? "bg-background dark:bg-white/[0.06] border-border shadow-sm"
+                                                                : "bg-muted/50 dark:bg-white/[0.03] border-transparent opacity-60 group-hover:opacity-80"
+                                                        )}>
+                                                            <ServerIcon size={24} />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="text-sm font-semibold text-foreground truncate">{server.name}</div>
+                                                            <div className="flex items-center gap-1.5 mt-0.5">
+                                                                <span className={cn(
+                                                                    "w-2 h-2 rounded-full shrink-0 transition-colors",
+                                                                    server.connected ? "bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]" : "bg-muted-foreground/20"
+                                                                )} />
+                                                                <span className={cn(
+                                                                    "text-[11px] font-medium",
+                                                                    server.connected ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground/50"
+                                                                )}>
+                                                                    {server.connected ? 'Online' : 'Offline'}
+                                                                </span>
+                                                                {server.connected && server.tools && (
+                                                                    <span className="text-[10px] text-muted-foreground/40 ml-auto">{server.tools.length} tools</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Description */}
+                                                    <div className="space-y-1.5">
+                                                        <p className="text-[11px] text-muted-foreground leading-relaxed">{desc.tagline}</p>
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {desc.capabilities.map((cap, i) => (
+                                                                <span key={i} className="text-[9px] font-medium px-1.5 py-0.5 rounded-md bg-muted/60 dark:bg-white/[0.05] text-muted-foreground/70 border border-border/50">
+                                                                    {cap}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Action */}
+                                                    <div className="flex gap-2 mt-auto pt-1">
+                                                        {server.connected ? (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => { setActiveServerId(server.id); setShowServicesPanel(false); }}
+                                                                    className={cn(
+                                                                        "flex-1 h-8 rounded-lg text-xs font-medium transition-colors",
+                                                                        isActive
+                                                                            ? "bg-primary/15 dark:bg-electric-purple/20 text-primary dark:text-electric-purple"
+                                                                            : "bg-muted dark:bg-white/[0.06] text-muted-foreground hover:text-foreground hover:bg-muted/80 dark:hover:bg-white/[0.1]"
+                                                                    )}
+                                                                >
+                                                                    {isActive ? 'Active' : 'Open'}
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => disconnectServer(server.id)}
+                                                                    className="h-8 w-8 rounded-lg flex items-center justify-center bg-muted dark:bg-white/[0.06] text-muted-foreground hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                                                                    title="Disconnect"
+                                                                >
+                                                                    <WifiOff size={13} />
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => connectServer(server.id)}
+                                                                className="flex-1 h-8 rounded-lg text-xs font-medium bg-primary/10 dark:bg-electric-purple/15 text-primary dark:text-electric-purple hover:bg-primary/20 dark:hover:bg-electric-purple/25 transition-colors flex items-center justify-center gap-1.5 border border-primary/15 dark:border-electric-purple/20"
+                                                            >
+                                                                <Wifi size={12} />
+                                                                Initialize Connection
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </motion.div>
                             </div>
-                        </motion.div>
                         </>
                     )}
                 </AnimatePresence>,
