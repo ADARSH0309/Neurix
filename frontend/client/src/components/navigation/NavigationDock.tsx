@@ -257,26 +257,29 @@ export function NavigationDock() {
             </motion.div>
 
             {/* Services Panel — Landscape Popup */}
-            <AnimatePresence>
-                {showServicesPanel && createPortal(
-                    <>
-                        {/* Backdrop */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="fixed inset-0 z-[9998] bg-black/40 backdrop-blur-sm"
-                            onClick={() => setShowServicesPanel(false)}
-                        />
-                        {/* Panel */}
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                            className="fixed z-[9999] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-3xl bg-background/95 backdrop-blur-3xl border border-border rounded-2xl shadow-2xl dark:shadow-[0_25px_60px_rgba(0,0,0,0.6)]"
-                        >
+            {createPortal(
+                <AnimatePresence>
+                    {showServicesPanel && (
+                        <>
+                            {/* Backdrop */}
+                            <motion.div
+                                key="services-backdrop"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="fixed inset-0 z-[9998] bg-black/40 backdrop-blur-sm"
+                                onClick={() => setShowServicesPanel(false)}
+                            />
+                            {/* Panel */}
+                            <motion.div
+                                key="services-panel"
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                                className="fixed z-[9999] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-3xl bg-background/95 backdrop-blur-3xl border border-border rounded-2xl shadow-2xl dark:shadow-[0_25px_60px_rgba(0,0,0,0.6)]"
+                            >
                             {/* Panel Header */}
                             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
                                 <div className="flex items-center gap-3">
@@ -384,10 +387,11 @@ export function NavigationDock() {
                                 })}
                             </div>
                         </motion.div>
-                    </>,
-                    document.body
-                )}
-            </AnimatePresence>
+                        </>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
         </>
     );
 }
