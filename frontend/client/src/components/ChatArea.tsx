@@ -7,7 +7,6 @@ import {
     Copy,
     Check,
     RotateCcw,
-    MoreHorizontal,
     FileText,
     Mic,
     Bot,
@@ -56,13 +55,12 @@ function TypingIndicator(): React.ReactElement {
 export function ChatArea(): React.ReactElement {
     const { currentSession, sendMessage, isLoading } = useChat();
     const { servers, activeServerId, setActiveServerId } = useServer();
-    const { profile, setIsToolsPanelOpen, isToolsPanelOpen } = useUI();
+    const { profile } = useUI();
 
     const activeServer = activeServerId ? servers[activeServerId] : null;
     const messages = currentSession?.messages || [];
     const onSelectServer = setActiveServerId;
     const onSendMessage = sendMessage;
-    const onToggleToolsPanel = () => setIsToolsPanelOpen(!isToolsPanelOpen);
 
     const [input, setInput] = useState('');
     const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -263,17 +261,6 @@ export function ChatArea(): React.ReactElement {
                 {/* Header - Transparent/Glass */}
                 <header className="h-16 flex items-center justify-between px-6 border-b border-border backdrop-blur-2xl sticky top-0 z-[50] bg-background/60">
                     <div className="flex items-center space-x-4 min-w-0">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={onToggleToolsPanel}
-                            className="text-slate-grey hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground transition-colors"
-                        >
-                            <MoreHorizontal className="w-5 h-5" />
-                        </Button>
-
-                        <div className="h-8 w-px bg-border hidden sm:block" />
-
                         <div className="flex items-center space-x-3 overflow-hidden">
                             <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg bg-electric-purple/10 border border-electric-purple/20 shadow-[0_0_10px_rgba(139,92,246,0.1)] flex-shrink-0 text-electric-purple">
                                 {activeServer ? (

@@ -6,9 +6,6 @@ interface UIContextType {
     // Layout State
     isMobileMenuOpen: boolean;
     setIsMobileMenuOpen: (open: boolean) => void;
-    isToolsPanelOpen: boolean;
-    setIsToolsPanelOpen: (open: boolean) => void;
-
     // Dialog State
     showProfileDialog: boolean;
     setShowProfileDialog: (show: boolean) => void;
@@ -56,7 +53,6 @@ const generateId = (): string => Date.now().toString(36) + Math.random().toStrin
 export function UIProvider({ children }: { children: ReactNode }) {
     // --- State ---
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isToolsPanelOpen, setIsToolsPanelOpen] = useState(false);
     const [showProfileDialog, setShowProfileDialog] = useState(false);
     const [showSettingsDialog, setShowSettingsDialog] = useState(false);
 
@@ -84,13 +80,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
         root.classList.add(resolvedTheme);
         localStorage.setItem('theme', resolvedTheme);
     }, [resolvedTheme]);
-
-    // Responsive Tools Panel
-    useEffect(() => {
-        if (window.innerWidth >= 1280) {
-            setIsToolsPanelOpen(true);
-        }
-    }, []);
 
     // --- Actions ---
 
@@ -159,7 +148,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
     return (
         <UIContext.Provider value={{
             isMobileMenuOpen, setIsMobileMenuOpen,
-            isToolsPanelOpen, setIsToolsPanelOpen,
             showProfileDialog, setShowProfileDialog,
             showSettingsDialog, setShowSettingsDialog,
             settings, updateSettings, resolvedTheme: resolvedTheme || 'dark',

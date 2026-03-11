@@ -1,14 +1,13 @@
-import { MessageSquare, Zap, Terminal } from 'lucide-react';
+import { MessageSquare, Zap } from 'lucide-react';
 import { useUI } from '../../context/UIContext';
 import { cn } from '../../lib/utils';
 
 export function MobileTabBar() {
-    const { setIsMobileMenuOpen, setIsToolsPanelOpen, isToolsPanelOpen } = useUI();
+    const { setIsMobileMenuOpen } = useUI();
 
     const tabs = [
         { id: 'chat', label: 'Chat', icon: MessageSquare, onClick: () => setIsMobileMenuOpen(false), active: false },
         { id: 'integrations', label: 'Systems', icon: Zap, onClick: () => setIsMobileMenuOpen(true), active: false },
-        { id: 'tools', label: 'Tools', icon: Terminal, onClick: () => setIsToolsPanelOpen(!isToolsPanelOpen), active: isToolsPanelOpen },
     ];
 
     return (

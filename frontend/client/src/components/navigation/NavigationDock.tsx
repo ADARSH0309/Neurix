@@ -11,26 +11,51 @@ import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getServerIcon } from '../../lib/server-utils';
 
-const serviceDescriptions: Record<string, { tagline: string; capabilities: string[] }> = {
+const serviceInfo: Record<string, { tagline: string; capabilities: string[]; accent: string; accentBg: string; accentBorder: string; btnClass: string; tagClass: string }> = {
     gdrive: {
-        tagline: 'Access, search, and manage your Google Drive files and folders.',
+        tagline: 'Access, search, and manage your Drive files and folders.',
         capabilities: ['List Files', 'Search', 'Upload', 'Organize'],
+        accent: 'text-blue-600 dark:text-blue-400',
+        accentBg: 'bg-blue-500/8 dark:bg-blue-500/10',
+        accentBorder: 'border-blue-500/20 dark:border-blue-400/20',
+        btnClass: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 border-blue-500/20',
+        tagClass: 'bg-blue-500/8 text-blue-600/70 dark:text-blue-400/70 border-blue-500/15',
     },
     gforms: {
-        tagline: 'Create, edit, and analyze Google Forms and survey responses.',
+        tagline: 'Create, edit, and analyze forms and survey responses.',
         capabilities: ['Create Forms', 'View Responses', 'Edit Questions'],
+        accent: 'text-purple-600 dark:text-purple-400',
+        accentBg: 'bg-purple-500/8 dark:bg-purple-500/10',
+        accentBorder: 'border-purple-500/20 dark:border-purple-400/20',
+        btnClass: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 border-purple-500/20',
+        tagClass: 'bg-purple-500/8 text-purple-600/70 dark:text-purple-400/70 border-purple-500/15',
     },
     gmail: {
-        tagline: 'Read, compose, and manage emails from your Gmail inbox.',
+        tagline: 'Read, compose, and manage emails from your inbox.',
         capabilities: ['Read Mail', 'Send Mail', 'Search', 'Labels'],
+        accent: 'text-red-600 dark:text-red-400',
+        accentBg: 'bg-red-500/8 dark:bg-red-500/10',
+        accentBorder: 'border-red-500/20 dark:border-red-400/20',
+        btnClass: 'bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 border-red-500/20',
+        tagClass: 'bg-red-500/8 text-red-600/70 dark:text-red-400/70 border-red-500/15',
     },
     gcalendar: {
-        tagline: 'View, create, and manage events on your Google Calendar.',
+        tagline: 'View, create, and manage your calendar events.',
         capabilities: ['View Events', 'Create Events', 'Schedule'],
+        accent: 'text-teal-600 dark:text-teal-400',
+        accentBg: 'bg-teal-500/8 dark:bg-teal-500/10',
+        accentBorder: 'border-teal-500/20 dark:border-teal-400/20',
+        btnClass: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 hover:bg-teal-500/20 border-teal-500/20',
+        tagClass: 'bg-teal-500/8 text-teal-600/70 dark:text-teal-400/70 border-teal-500/15',
     },
     gtask: {
-        tagline: 'Organize and track your to-dos with Google Tasks.',
+        tagline: 'Organize and track your to-dos and task lists.',
         capabilities: ['List Tasks', 'Create Tasks', 'Mark Complete'],
+        accent: 'text-amber-600 dark:text-amber-400',
+        accentBg: 'bg-amber-500/8 dark:bg-amber-500/10',
+        accentBorder: 'border-amber-500/20 dark:border-amber-400/20',
+        btnClass: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border-amber-500/20',
+        tagClass: 'bg-amber-500/8 text-amber-600/70 dark:text-amber-400/70 border-amber-500/15',
     },
 };
 
@@ -291,7 +316,7 @@ export function NavigationDock() {
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.2 }}
-                                className="fixed inset-0 z-[9998] bg-black/50 dark:bg-black/60 backdrop-blur-md"
+                                className="fixed inset-0 z-[9998] bg-black/60 dark:bg-black/70"
                                 onClick={() => setShowServicesPanel(false)}
                             />
                             {/* Centering wrapper */}
@@ -302,55 +327,76 @@ export function NavigationDock() {
                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                     exit={{ opacity: 0, scale: 0.92, y: 30 }}
                                     transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-                                    className="pointer-events-auto w-[92vw] max-w-4xl bg-background border border-border rounded-2xl shadow-2xl dark:shadow-[0_25px_80px_rgba(0,0,0,0.7)] overflow-hidden"
+                                    className="pointer-events-auto w-[92vw] max-w-4xl bg-background border border-border rounded-2xl shadow-2xl dark:shadow-[0_25px_80px_rgba(0,0,0,0.8)] overflow-hidden"
                                 >
                                     {/* Panel Header */}
-                                    <div className="flex items-center justify-between px-6 py-5 border-b border-border bg-muted/30 dark:bg-white/[0.02]">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-electric-purple/10 dark:from-electric-purple/20 dark:to-primary/10 flex items-center justify-center border border-primary/10 dark:border-electric-purple/20">
-                                                <Cpu size={20} className="text-primary dark:text-electric-purple" />
+                                    <div className="relative px-6 py-5 border-b border-border overflow-hidden">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-violet-500/5 via-fuchsia-500/5 to-orange-500/5 dark:from-violet-500/10 dark:via-fuchsia-500/8 dark:to-orange-500/5" />
+                                        <div className="relative flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
+                                                    <Cpu size={20} className="text-white" />
+                                                </div>
+                                                <div>
+                                                    <h2 className="text-base font-bold text-foreground tracking-tight">Neural Services</h2>
+                                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                                        <span className={cn(connectedCount > 0 ? "text-emerald-600 dark:text-emerald-400 font-semibold" : "")}>
+                                                            {connectedCount}
+                                                        </span>
+                                                        {' '}of {totalCount} MCP nodes active
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h2 className="text-base font-semibold text-foreground">Neural Services</h2>
-                                                <p className="text-xs text-muted-foreground mt-0.5">
-                                                    {connectedCount} of {totalCount} MCP nodes active
-                                                </p>
-                                            </div>
+                                            <button
+                                                onClick={() => setShowServicesPanel(false)}
+                                                className="h-9 w-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                            >
+                                                <X size={18} />
+                                            </button>
                                         </div>
-                                        <button
-                                            onClick={() => setShowServicesPanel(false)}
-                                            className="h-9 w-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                                        >
-                                            <X size={18} />
-                                        </button>
                                     </div>
 
                                     {/* Panel Body — Grid */}
-                                    <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[65vh] overflow-y-auto no-scrollbar">
+                                    <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[65vh] overflow-y-auto no-scrollbar bg-muted/20 dark:bg-transparent">
                                         {Object.values(servers).map(server => {
                                             const ServerIcon = getServerIcon(server.id);
                                             const isActive = activeServerId === server.id && server.connected;
-                                            const desc = serviceDescriptions[server.id] || { tagline: 'MCP Service', capabilities: [] };
+                                            const info = serviceInfo[server.id] || { tagline: 'MCP Service', capabilities: [], accent: 'text-primary', accentBg: 'bg-primary/8', accentBorder: 'border-primary/20', btnClass: 'bg-primary/10 text-primary hover:bg-primary/20 border-primary/20', tagClass: 'bg-primary/8 text-primary/70 border-primary/15' };
 
                                             return (
                                                 <div
                                                     key={server.id}
                                                     className={cn(
-                                                        "rounded-xl border p-4 transition-all duration-200 flex flex-col gap-3 group",
+                                                        "rounded-xl border p-4 transition-all duration-250 flex flex-col gap-3 group relative overflow-hidden",
                                                         server.connected
                                                             ? isActive
-                                                                ? "border-primary/30 dark:border-electric-purple/30 bg-primary/5 dark:bg-electric-purple/8"
-                                                                : "border-border bg-background hover:border-primary/20 dark:hover:border-electric-purple/20 hover:shadow-sm"
-                                                            : "border-border bg-muted/30 dark:bg-white/[0.015] hover:bg-muted/50 dark:hover:bg-white/[0.03]"
+                                                                ? cn("bg-background dark:bg-white/[0.03]", info.accentBorder, "shadow-sm")
+                                                                : cn("bg-background dark:bg-white/[0.02] border-border hover:shadow-md", `hover:${info.accentBorder}`)
+                                                            : "border-border/60 bg-background/60 dark:bg-white/[0.01] hover:bg-background dark:hover:bg-white/[0.025]"
                                                     )}
                                                 >
+                                                    {/* Colored top accent line */}
+                                                    <div className={cn(
+                                                        "absolute top-0 left-0 right-0 h-[2px] transition-opacity",
+                                                        server.connected ? "opacity-100" : "opacity-0 group-hover:opacity-40",
+                                                        info.accentBg.replace('/8', '').replace('/10', '')
+                                                    )}
+                                                        style={{
+                                                            background: server.id === 'gdrive' ? '#4285F4' :
+                                                                server.id === 'gforms' ? '#7C3AED' :
+                                                                server.id === 'gmail' ? '#EA4335' :
+                                                                server.id === 'gcalendar' ? '#0D9488' :
+                                                                server.id === 'gtask' ? '#D97706' : '#7C3AED'
+                                                        }}
+                                                    />
+
                                                     {/* Icon + Name + Status */}
                                                     <div className="flex items-center gap-3">
                                                         <div className={cn(
-                                                            "w-11 h-11 rounded-xl flex items-center justify-center shrink-0 overflow-hidden transition-all border",
+                                                            "w-11 h-11 rounded-xl flex items-center justify-center shrink-0 overflow-hidden transition-all",
                                                             server.connected
-                                                                ? "bg-background dark:bg-white/[0.06] border-border shadow-sm"
-                                                                : "bg-muted/50 dark:bg-white/[0.03] border-transparent opacity-60 group-hover:opacity-80"
+                                                                ? cn(info.accentBg, "border", info.accentBorder)
+                                                                : "bg-muted/60 dark:bg-white/[0.04] border border-border/50 opacity-50 group-hover:opacity-75"
                                                         )}>
                                                             <ServerIcon size={24} />
                                                         </div>
@@ -358,28 +404,28 @@ export function NavigationDock() {
                                                             <div className="text-sm font-semibold text-foreground truncate">{server.name}</div>
                                                             <div className="flex items-center gap-1.5 mt-0.5">
                                                                 <span className={cn(
-                                                                    "w-2 h-2 rounded-full shrink-0 transition-colors",
-                                                                    server.connected ? "bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]" : "bg-muted-foreground/20"
+                                                                    "w-2 h-2 rounded-full shrink-0 transition-all",
+                                                                    server.connected ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" : "bg-muted-foreground/20"
                                                                 )} />
                                                                 <span className={cn(
                                                                     "text-[11px] font-medium",
-                                                                    server.connected ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground/50"
+                                                                    server.connected ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground/40"
                                                                 )}>
                                                                     {server.connected ? 'Online' : 'Offline'}
                                                                 </span>
                                                                 {server.connected && server.tools && (
-                                                                    <span className="text-[10px] text-muted-foreground/40 ml-auto">{server.tools.length} tools</span>
+                                                                    <span className={cn("text-[10px] ml-auto font-medium", info.accent, "opacity-60")}>{server.tools.length} tools</span>
                                                                 )}
                                                             </div>
                                                         </div>
                                                     </div>
 
                                                     {/* Description */}
-                                                    <div className="space-y-1.5">
-                                                        <p className="text-[11px] text-muted-foreground leading-relaxed">{desc.tagline}</p>
+                                                    <div className="space-y-2">
+                                                        <p className="text-[11px] text-muted-foreground/80 leading-relaxed">{info.tagline}</p>
                                                         <div className="flex flex-wrap gap-1">
-                                                            {desc.capabilities.map((cap, i) => (
-                                                                <span key={i} className="text-[9px] font-medium px-1.5 py-0.5 rounded-md bg-muted/60 dark:bg-white/[0.05] text-muted-foreground/70 border border-border/50">
+                                                            {info.capabilities.map((cap, i) => (
+                                                                <span key={i} className={cn("text-[9px] font-semibold px-1.5 py-0.5 rounded-md border", info.tagClass)}>
                                                                     {cap}
                                                                 </span>
                                                             ))}
@@ -393,17 +439,17 @@ export function NavigationDock() {
                                                                 <button
                                                                     onClick={() => { setActiveServerId(server.id); setShowServicesPanel(false); }}
                                                                     className={cn(
-                                                                        "flex-1 h-8 rounded-lg text-xs font-medium transition-colors",
+                                                                        "flex-1 h-8 rounded-lg text-xs font-semibold transition-colors border",
                                                                         isActive
-                                                                            ? "bg-primary/15 dark:bg-electric-purple/20 text-primary dark:text-electric-purple"
-                                                                            : "bg-muted dark:bg-white/[0.06] text-muted-foreground hover:text-foreground hover:bg-muted/80 dark:hover:bg-white/[0.1]"
+                                                                            ? cn(info.btnClass, "opacity-80")
+                                                                            : cn(info.btnClass)
                                                                     )}
                                                                 >
                                                                     {isActive ? 'Active' : 'Open'}
                                                                 </button>
                                                                 <button
                                                                     onClick={() => disconnectServer(server.id)}
-                                                                    className="h-8 w-8 rounded-lg flex items-center justify-center bg-muted dark:bg-white/[0.06] text-muted-foreground hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                                                                    className="h-8 w-8 rounded-lg flex items-center justify-center bg-red-500/8 text-red-500/60 hover:text-red-500 hover:bg-red-500/15 border border-red-500/10 hover:border-red-500/20 transition-colors"
                                                                     title="Disconnect"
                                                                 >
                                                                     <WifiOff size={13} />
@@ -412,10 +458,10 @@ export function NavigationDock() {
                                                         ) : (
                                                             <button
                                                                 onClick={() => connectServer(server.id)}
-                                                                className="flex-1 h-8 rounded-lg text-xs font-medium bg-primary/10 dark:bg-electric-purple/15 text-primary dark:text-electric-purple hover:bg-primary/20 dark:hover:bg-electric-purple/25 transition-colors flex items-center justify-center gap-1.5 border border-primary/15 dark:border-electric-purple/20"
+                                                                className={cn("flex-1 h-8 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 border", info.btnClass)}
                                                             >
                                                                 <Wifi size={12} />
-                                                                Initialize Connection
+                                                                Connect
                                                             </button>
                                                         )}
                                                     </div>

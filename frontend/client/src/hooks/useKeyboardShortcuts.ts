@@ -5,8 +5,6 @@ import { useChat } from '../context/ChatContext';
 export function useKeyboardShortcuts() {
     const {
         setShowSettingsDialog,
-        setIsToolsPanelOpen,
-        isToolsPanelOpen,
         isMobileMenuOpen,
         setIsMobileMenuOpen,
         showSettingsDialog,
@@ -63,10 +61,6 @@ export function useKeyboardShortcuts() {
                     e.preventDefault();
                     setShowSettingsDialog(true);
                     break;
-                case '.':
-                    e.preventDefault();
-                    setIsToolsPanelOpen(!isToolsPanelOpen);
-                    break;
                 case 'b':
                 case 'B':
                     e.preventDefault();
@@ -78,8 +72,8 @@ export function useKeyboardShortcuts() {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [
-        showSettingsDialog, showProfileDialog, isMobileMenuOpen, isToolsPanelOpen,
-        setShowSettingsDialog, setShowProfileDialog, setIsMobileMenuOpen, setIsToolsPanelOpen,
+        showSettingsDialog, showProfileDialog, isMobileMenuOpen,
+        setShowSettingsDialog, setShowProfileDialog, setIsMobileMenuOpen,
         createSession,
     ]);
 }

@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
-import { cn } from '../../lib/utils';
+
 import { useUI } from '../../context/UIContext';
 import { useServer } from '../../context/ServerContext';
 import { NavigationDock } from '../navigation/NavigationDock';
-import { ToolsHUD } from '../tools/ToolsHUD';
+
 import { BackgroundLayer } from './BackgroundLayer';
 import { Header } from '../Header';
 import { MobileTabBar } from '../navigation/MobileTabBar';
@@ -15,8 +15,6 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
     const {
         resolvedTheme,
-        isToolsPanelOpen,
-        setIsToolsPanelOpen,
         isMobileMenuOpen,
         setIsMobileMenuOpen,
         settings,
@@ -71,20 +69,11 @@ export function MainLayout({ children }: MainLayoutProps) {
                     )}
 
                     {/* Stage (Center) */}
-                    <main className={cn(
-                        "flex-1 relative flex flex-col h-full overflow-hidden transition-all duration-500 ease-out p-3 md:p-6 lg:p-8",
-                        isToolsPanelOpen && "mr-80 lg:mr-96"
-                    )}>
+                    <main className="flex-1 relative flex flex-col h-full overflow-hidden transition-all duration-500 ease-out p-3 md:p-6 lg:p-8">
                         <div className="flex-1 w-full max-w-5xl mx-auto h-full flex flex-col relative">
                             {children}
                         </div>
                     </main>
-
-                    {/* HUD (Right) */}
-                    <ToolsHUD
-                        isOpen={isToolsPanelOpen}
-                        onClose={() => setIsToolsPanelOpen(false)}
-                    />
                 </div>
 
                 {/* Mobile Tab Bar */}
