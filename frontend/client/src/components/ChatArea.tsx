@@ -6,12 +6,13 @@ import {
     Paperclip,
     Copy,
     Check,
-    RotateCcw,
     FileText,
     Mic, MicOff,
     Bot,
     User,
-    Sparkles
+    Sparkles,
+    X,
+    Image as ImageIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Message, McpServer, UserProfile } from '@/types';
@@ -20,17 +21,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-    Tooltip,
-    TooltipContent,
     TooltipProvider,
-    TooltipTrigger,
 } from '@/components/ui/tooltip';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { getServerIcon } from '@/lib/server-utils';
 
@@ -38,9 +30,44 @@ import { useChat } from '@/context/ChatContext';
 import { useServer } from '@/context/ServerContext';
 import { useUI } from '@/context/UIContext';
 
-// --- Nebula UI Components ---
+// --- File Attachment ---
+interface AttachedFile {
+    name: string;
+    type: string;
+    size: number;
+    content: string;
+}
 
-// --- Neurix AI Reference UI Components ---
+const SUPPORTED_TYPES = [
+    'text/plain', 'text/csv', 'text/html', 'text/markdown',
+    'application/json', 'application/xml', 'application/pdf',
+];
+const SUPPORTED_EXTENSIONS = ['.txt', '.csv', '.json', '.md', '.html', '.xml', '.pdf', '.doc', '.docx', '.log', '.yml', '.yaml'];
+const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+function formatFileSize(bytes: number): string {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+async function readFileContent(file: File): Promise<string> {
+    if (IMAGE_TYPES.includes(file.type)) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsText(file);
+    });
+}
 
 function TypingIndicator(): React.ReactElement {
     return (
@@ -65,8 +92,10 @@ export function ChatArea(): React.ReactElement {
     const [input, setInput] = useState('');
     const [copiedId, setCopiedId] = useState<string | null>(null);
     const [isListening, setIsListening] = useState(false);
+    const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const recognitionRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
 
     const scrollToBottom = (): void => {
@@ -159,11 +188,57 @@ export function ChatArea(): React.ReactElement {
         return () => { recognitionRef.current?.abort(); };
     }, []);
 
+    // File attachment handlers
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        for (const file of Array.from(files)) {
+            if (file.size > MAX_FILE_SIZE) {
+                toast.error(`${file.name} is too large (max 5MB)`);
+                continue;
+            }
+            const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+            const isImage = IMAGE_TYPES.includes(file.type);
+            const isText = SUPPORTED_TYPES.includes(file.type) || SUPPORTED_EXTENSIONS.includes(ext);
+            if (!isImage && !isText) {
+                toast.error(`${file.name}: unsupported file type`);
+                continue;
+            }
+            try {
+                const content = await readFileContent(file);
+                setAttachedFiles(prev => [...prev, { name: file.name, type: file.type, size: file.size, content }]);
+                toast.success(`Attached: ${file.name}`);
+            } catch {
+                toast.error(`Failed to read ${file.name}`);
+            }
+        }
+        e.target.value = '';
+    };
+
+    const removeFile = (index: number) => {
+        setAttachedFiles(prev => prev.filter((_, i) => i !== index));
+    };
+
     const handleSubmit = (e?: React.FormEvent): void => {
         e?.preventDefault();
-        if (!input.trim() || isLoading) return;
-        onSendMessage(input);
+        if ((!input.trim() && attachedFiles.length === 0) || isLoading) return;
+
+        let message = input.trim();
+        if (attachedFiles.length > 0) {
+            const fileContexts = attachedFiles.map(f => {
+                if (f.type.startsWith('image/')) return `[Attached image: ${f.name}]`;
+                const content = f.content.length > 10000
+                    ? f.content.slice(0, 10000) + '\n...(truncated)'
+                    : f.content;
+                return `--- Attached file: ${f.name} ---\n${content}\n--- End of ${f.name} ---`;
+            }).join('\n\n');
+            message = message ? `${message}\n\n${fileContexts}` : fileContexts;
+        }
+
+        onSendMessage(message);
         setInput('');
+        setAttachedFiles([]);
         if (inputRef.current) inputRef.current.style.height = 'auto';
     };
 
@@ -281,25 +356,50 @@ export function ChatArea(): React.ReactElement {
                 {/* Floating Input for Empty State */}
                 <div className="absolute bottom-0 left-0 right-0 p-6 z-20 bg-gradient-to-t from-background via-background/90 to-transparent pt-20">
                     <div className="max-w-3xl mx-auto w-full">
+                        {/* Hidden file input */}
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            multiple
+                            accept=".txt,.csv,.json,.md,.html,.xml,.pdf,.doc,.docx,.log,.yml,.yaml,.png,.jpg,.jpeg,.gif,.webp"
+                            onChange={handleFileSelect}
+                            className="hidden"
+                        />
+
                         <div className="backdrop-blur-3xl border rounded-[2.5rem] p-1.5 shadow-2xl ring-1 bg-background/80 border-border ring-black/5 dark:ring-white/5 transition-all focus-within:ring-electric-purple/50 focus-within:border-electric-purple/30 focus-within:shadow-[0_0_20px_rgba(139,92,246,0.1)]">
-                            <div className="flex items-end px-3 py-1 space-x-1">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <div className="p-3.5 text-slate-grey hover:text-electric-purple transition-all cursor-pointer group rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 active:scale-90">
-                                            <Paperclip className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                            {/* Attached files preview */}
+                            <AnimatePresence>
+                                {attachedFiles.length > 0 && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        className="overflow-hidden px-4 pt-3"
+                                    >
+                                        <div className="flex flex-wrap gap-2">
+                                            {attachedFiles.map((file, i) => (
+                                                <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-electric-purple/10 border border-electric-purple/20 text-sm">
+                                                    {file.type.startsWith('image/') ? (
+                                                        <ImageIcon className="w-3.5 h-3.5 text-electric-purple" />
+                                                    ) : (
+                                                        <FileText className="w-3.5 h-3.5 text-electric-purple" />
+                                                    )}
+                                                    <span className="text-xs font-medium text-foreground max-w-[120px] truncate">{file.name}</span>
+                                                    <span className="text-[10px] text-muted-foreground">{formatFileSize(file.size)}</span>
+                                                    <button onClick={() => removeFile(i)} className="ml-1 text-muted-foreground hover:text-red-500 transition-colors">
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                </div>
+                                            ))}
                                         </div>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="start" className="w-56 bg-background/95 backdrop-blur-3xl border-border text-foreground shadow-2xl">
-                                        <DropdownMenuItem className="focus:bg-black/5 dark:focus:bg-white/5 focus:text-foreground cursor-pointer">
-                                            <FileText className="mr-2 h-4 w-4" />
-                                            <span>Upload Document</span>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem className="focus:bg-black/5 dark:focus:bg-white/5 focus:text-foreground cursor-pointer">
-                                            <Terminal className="mr-2 h-4 w-4" />
-                                            <span>Run Script</span>
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            <div className="flex items-end px-3 py-1 space-x-1">
+                                <div className="p-3.5 text-slate-grey hover:text-electric-purple transition-all cursor-pointer group rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 active:scale-90" onClick={() => fileInputRef.current?.click()} title="Attach file">
+                                    <Paperclip className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                                </div>
 
                                 <Textarea
                                     ref={inputRef}
@@ -326,10 +426,10 @@ export function ChatArea(): React.ReactElement {
                                     </button>
                                     <Button
                                         onClick={() => handleSubmit()}
-                                        disabled={!input.trim() || isLoading || !activeServer}
+                                        disabled={(!input.trim() && attachedFiles.length === 0) || isLoading || !activeServer}
                                         className={cn(
                                             "w-12 h-12 rounded-[1.25rem] transition-all flex items-center justify-center border shadow-lg",
-                                            !input.trim() || isLoading || !activeServer
+                                            (!input.trim() && attachedFiles.length === 0) || isLoading || !activeServer
                                                 ? "bg-black/5 dark:bg-white/5 text-slate-500 cursor-not-allowed border-transparent"
                                                 : "bg-electric-purple text-white hover:bg-electric-purple/90 shadow-[0_0_15px_rgba(139,92,246,0.2)] active:scale-95 border-electric-purple/20"
                                         )}
@@ -508,25 +608,50 @@ export function ChatArea(): React.ReactElement {
                 {/* Floating Input Area - Unified Gradient */}
                 <div className="absolute bottom-0 left-0 right-0 p-6 z-20 bg-gradient-to-t from-background via-background/90 to-transparent pt-20 pointer-events-none">
                     <div className="max-w-3xl mx-auto w-full pointer-events-auto">
+                        {/* Hidden file input */}
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            multiple
+                            accept=".txt,.csv,.json,.md,.html,.xml,.pdf,.doc,.docx,.log,.yml,.yaml,.png,.jpg,.jpeg,.gif,.webp"
+                            onChange={handleFileSelect}
+                            className="hidden"
+                        />
+
                         <div className="backdrop-blur-3xl border rounded-[2.5rem] p-1.5 shadow-2xl ring-1 bg-background/80 border-border ring-black/5 dark:ring-white/5 transition-all focus-within:ring-electric-purple/50 focus-within:border-electric-purple/30 focus-within:shadow-[0_0_20px_rgba(139,92,246,0.15)]">
-                            <div className="flex items-end px-3 py-1 space-x-1">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <div className="p-3.5 text-slate-grey hover:text-electric-purple transition-all cursor-pointer group rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 active:scale-90">
-                                            <Paperclip className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                            {/* Attached files preview */}
+                            <AnimatePresence>
+                                {attachedFiles.length > 0 && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        className="overflow-hidden px-4 pt-3"
+                                    >
+                                        <div className="flex flex-wrap gap-2">
+                                            {attachedFiles.map((file, i) => (
+                                                <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-electric-purple/10 border border-electric-purple/20 text-sm">
+                                                    {file.type.startsWith('image/') ? (
+                                                        <ImageIcon className="w-3.5 h-3.5 text-electric-purple" />
+                                                    ) : (
+                                                        <FileText className="w-3.5 h-3.5 text-electric-purple" />
+                                                    )}
+                                                    <span className="text-xs font-medium text-foreground max-w-[120px] truncate">{file.name}</span>
+                                                    <span className="text-[10px] text-muted-foreground">{formatFileSize(file.size)}</span>
+                                                    <button onClick={() => removeFile(i)} className="ml-1 text-muted-foreground hover:text-red-500 transition-colors">
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                </div>
+                                            ))}
                                         </div>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="start" className="w-56 bg-background/95 backdrop-blur-3xl border-border text-foreground shadow-2xl">
-                                        <DropdownMenuItem className="focus:bg-black/10 dark:focus:bg-white/10 focus:text-foreground cursor-pointer transition-colors">
-                                            <FileText className="mr-2 h-4 w-4" />
-                                            <span>Upload Document</span>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem className="focus:bg-black/10 dark:focus:bg-white/10 focus:text-foreground cursor-pointer transition-colors">
-                                            <Terminal className="mr-2 h-4 w-4" />
-                                            <span>Run Script</span>
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            <div className="flex items-end px-3 py-1 space-x-1">
+                                <div className="p-3.5 text-slate-grey hover:text-electric-purple transition-all cursor-pointer group rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 active:scale-90" onClick={() => fileInputRef.current?.click()} title="Attach file">
+                                    <Paperclip className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                                </div>
 
                                 <Textarea
                                     ref={inputRef}
@@ -553,15 +678,15 @@ export function ChatArea(): React.ReactElement {
                                     </button>
                                     <Button
                                         onClick={() => handleSubmit()}
-                                        disabled={!input.trim() || isLoading || !activeServer}
+                                        disabled={(!input.trim() && attachedFiles.length === 0) || isLoading || !activeServer}
                                         className={cn(
                                             "w-12 h-12 rounded-[1.25rem] transition-all duration-300 flex items-center justify-center border shadow-lg relative overflow-hidden",
-                                            !input.trim() || isLoading || !activeServer
+                                            (!input.trim() && attachedFiles.length === 0) || isLoading || !activeServer
                                                 ? "bg-black/5 dark:bg-white/5 text-slate-500 cursor-not-allowed border-transparent opacity-50"
                                                 : "bg-background text-electric-purple hover:bg-electric-purple/10 active:scale-95 border-electric-purple/30 hover:border-electric-purple/50 shadow-[0_0_15px_rgba(139,92,246,0.15)] hover:shadow-[0_0_20px_rgba(139,92,246,0.25)]"
                                         )}
                                     >
-                                        {(!input.trim() || isLoading || !activeServer) ? null : <div className="absolute inset-0 bg-electric-purple/5 animate-pulse rounded-[1.25rem]"></div>}
+                                        {(!input.trim() && attachedFiles.length === 0) || isLoading || !activeServer ? null : <div className="absolute inset-0 bg-electric-purple/5 animate-pulse rounded-[1.25rem]"></div>}
                                         {isLoading ? (
                                             <Sparkles className="w-5 h-5 animate-spin" />
                                         ) : (
