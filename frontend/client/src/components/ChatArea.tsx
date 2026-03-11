@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import {
     Send,
@@ -8,7 +8,7 @@ import {
     Check,
     RotateCcw,
     FileText,
-    Mic,
+    Mic, MicOff,
     Bot,
     User,
     Sparkles
@@ -64,14 +64,100 @@ export function ChatArea(): React.ReactElement {
 
     const [input, setInput] = useState('');
     const [copiedId, setCopiedId] = useState<string | null>(null);
+    const [isListening, setIsListening] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
+    const recognitionRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
 
     const scrollToBottom = (): void => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
     useEffect(() => { scrollToBottom(); }, [messages, isLoading]);
+
+    // Speech-to-Text
+    const baseTextRef = useRef('');
+
+    const startListening = useCallback(() => {
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+            if (!SR) {
+                toast.error('Speech recognition not supported. Use Chrome or Edge.');
+                return;
+            }
+
+            // Save current input as base text
+            baseTextRef.current = input;
+
+            const recognition = new SR();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                setIsListening(true);
+                toast.success('Listening... Speak now', { duration: 2000 });
+            };
+
+            recognition.onresult = (e: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+                let finalText = '';
+                let interimText = '';
+                for (let i = 0; i < e.results.length; i++) {
+                    const transcript = e.results[i][0].transcript;
+                    if (e.results[i].isFinal) {
+                        finalText += transcript;
+                    } else {
+                        interimText += transcript;
+                    }
+                }
+                const base = baseTextRef.current;
+                const space = base && !base.endsWith(' ') ? ' ' : '';
+                setInput(base + space + finalText + interimText);
+            };
+
+            recognition.onerror = (e: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+                console.error('STT error:', e.error, e);
+                if (e.error === 'not-allowed') {
+                    toast.error('Microphone access denied. Allow mic in browser settings.');
+                } else if (e.error !== 'aborted' && e.error !== 'no-speech') {
+                    toast.error(`Mic error: ${e.error}`);
+                }
+                setIsListening(false);
+                recognitionRef.current = null;
+            };
+
+            recognition.onend = () => {
+                setIsListening(false);
+                recognitionRef.current = null;
+            };
+
+            recognitionRef.current = recognition;
+            recognition.start();
+        } catch (err) {
+            console.error('STT failed:', err);
+            toast.error('Failed to start speech recognition');
+            setIsListening(false);
+        }
+    }, [input]);
+
+    const stopListening = useCallback(() => {
+        if (recognitionRef.current) {
+            recognitionRef.current.stop();
+            recognitionRef.current = null;
+        }
+        setIsListening(false);
+    }, []);
+
+    const toggleListening = useCallback(() => {
+        if (isListening) stopListening();
+        else startListening();
+    }, [isListening, startListening, stopListening]);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => { recognitionRef.current?.abort(); };
+    }, []);
 
     const handleSubmit = (e?: React.FormEvent): void => {
         e?.preventDefault();
@@ -225,7 +311,19 @@ export function ChatArea(): React.ReactElement {
                                     className="flex-1 bg-transparent border-none focus-visible:ring-0 text-foreground py-4 text-[15px] resize-none max-h-[300px] overflow-y-auto placeholder:text-slate-grey/50 font-medium tracking-tight shadow-none selection:bg-electric-purple/30"
                                     rows={1}
                                 />
-                                <div className="flex items-center space-x-2 pb-2 pr-1">
+                                <div className="flex items-center space-x-1 pb-2 pr-1">
+                                    <button
+                                        onClick={toggleListening}
+                                        className={cn(
+                                            "w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-300",
+                                            isListening
+                                                ? "bg-red-500/15 text-red-500 border border-red-500/30 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.2)]"
+                                                : "text-slate-grey hover:text-electric-purple hover:bg-black/5 dark:hover:bg-white/5"
+                                        )}
+                                        title={isListening ? 'Stop listening' : 'Voice input'}
+                                    >
+                                        {isListening ? <MicOff className="w-[18px] h-[18px]" /> : <Mic className="w-[18px] h-[18px]" />}
+                                    </button>
                                     <Button
                                         onClick={() => handleSubmit()}
                                         disabled={!input.trim() || isLoading || !activeServer}
@@ -440,7 +538,19 @@ export function ChatArea(): React.ReactElement {
                                     className="flex-1 bg-transparent border-none focus-visible:ring-0 text-foreground py-4 text-[15px] resize-none max-h-[300px] overflow-y-auto placeholder:text-slate-grey/50 font-medium tracking-tight shadow-none selection:bg-electric-purple/30"
                                     rows={1}
                                 />
-                                <div className="flex items-center space-x-2 pb-2 pr-1">
+                                <div className="flex items-center space-x-1 pb-2 pr-1">
+                                    <button
+                                        onClick={toggleListening}
+                                        className={cn(
+                                            "w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-300",
+                                            isListening
+                                                ? "bg-red-500/15 text-red-500 border border-red-500/30 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.2)]"
+                                                : "text-slate-grey hover:text-electric-purple hover:bg-black/5 dark:hover:bg-white/5"
+                                        )}
+                                        title={isListening ? 'Stop listening' : 'Voice input'}
+                                    >
+                                        {isListening ? <MicOff className="w-[18px] h-[18px]" /> : <Mic className="w-[18px] h-[18px]" />}
+                                    </button>
                                     <Button
                                         onClick={() => handleSubmit()}
                                         disabled={!input.trim() || isLoading || !activeServer}

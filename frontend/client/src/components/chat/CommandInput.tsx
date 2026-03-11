@@ -1,5 +1,6 @@
-import { useRef, useState, useEffect } from 'react';
-import { Paperclip, Mic, Globe, ArrowUp, Command } from 'lucide-react';
+import { useRef, useState, useEffect, useCallback } from 'react';
+import { Paperclip, Mic, MicOff, Globe, ArrowUp, Command } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useChat } from '../../context/ChatContext';
@@ -22,12 +23,73 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
     const [input, setInput] = useState('');
     const [showPalette, setShowPalette] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
+    const [isListening, setIsListening] = useState(false);
     const inputRef = useRef<HTMLTextAreaElement>(null);
+    const recognitionRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
+    const baseTextRef = useRef('');
     const activeServer = activeServerId ? servers[activeServerId] : null;
 
     useEffect(() => {
         setShowPalette(input.startsWith('/'));
     }, [input]);
+
+    // Speech-to-Text
+    const startListening = useCallback(() => {
+        try {
+            const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition; // eslint-disable-line @typescript-eslint/no-explicit-any
+            if (!SR) {
+                toast.error('Speech recognition not supported. Use Chrome or Edge.');
+                return;
+            }
+            baseTextRef.current = input;
+            const recognition = new SR();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                setIsListening(true);
+                toast.success('Listening... Speak now', { duration: 2000 });
+            };
+            recognition.onresult = (e: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+                let finalText = '';
+                let interimText = '';
+                for (let i = 0; i < e.results.length; i++) {
+                    const t = e.results[i][0].transcript;
+                    if (e.results[i].isFinal) finalText += t;
+                    else interimText += t;
+                }
+                const base = baseTextRef.current;
+                const space = base && !base.endsWith(' ') ? ' ' : '';
+                setInput(base + space + finalText + interimText);
+            };
+            recognition.onerror = (e: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+                if (e.error === 'not-allowed') toast.error('Microphone access denied.');
+                else if (e.error !== 'aborted' && e.error !== 'no-speech') toast.error(`Mic error: ${e.error}`);
+                setIsListening(false);
+                recognitionRef.current = null;
+            };
+            recognition.onend = () => { setIsListening(false); recognitionRef.current = null; };
+
+            recognitionRef.current = recognition;
+            recognition.start();
+        } catch (err) {
+            toast.error('Failed to start speech recognition');
+            setIsListening(false);
+        }
+    }, [input]);
+
+    const stopListening = useCallback(() => {
+        recognitionRef.current?.stop();
+        recognitionRef.current = null;
+        setIsListening(false);
+    }, []);
+
+    const toggleListening = useCallback(() => {
+        if (isListening) stopListening(); else startListening();
+    }, [isListening, startListening, stopListening]);
+
+    useEffect(() => { return () => { recognitionRef.current?.abort(); }; }, []);
 
     const handleSubmit = () => {
         if (!input.trim() || isLoading) return;
@@ -102,7 +164,7 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
                         {/* Right actions */}
                         <div className="p-1 flex items-center gap-1.5">
                             <AnimatePresence mode="wait">
-                                {!hasInput && (
+                                {(!hasInput || isListening) && (
                                     <motion.div
                                         key="mic"
                                         initial={{ opacity: 0, scale: 0.8 }}
@@ -112,9 +174,16 @@ export function CommandInput({ onSend, isLoading, placeholder }: CommandInputPro
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-10 w-10 rounded-full text-muted-foreground hover:text-neurix-orange hover:bg-black/5 dark:hover:bg-white/10 transition-all"
+                                            onClick={toggleListening}
+                                            className={cn(
+                                                "h-10 w-10 rounded-full transition-all",
+                                                isListening
+                                                    ? "text-red-500 bg-red-500/10 hover:bg-red-500/20 animate-pulse"
+                                                    : "text-muted-foreground hover:text-neurix-orange hover:bg-black/5 dark:hover:bg-white/10"
+                                            )}
+                                            title={isListening ? 'Stop listening' : 'Voice input'}
                                         >
-                                            <Mic className="h-5 w-5" strokeWidth={1.5} />
+                                            {isListening ? <MicOff className="h-5 w-5" strokeWidth={1.5} /> : <Mic className="h-5 w-5" strokeWidth={1.5} />}
                                         </Button>
                                     </motion.div>
                                 )}
