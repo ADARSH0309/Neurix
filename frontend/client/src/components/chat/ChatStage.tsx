@@ -413,15 +413,15 @@ const ConnectedEmptyState = ({
     const prompts = SERVER_PROMPTS[serverId]?.prompts || defaultPrompts;
 
     return (
-        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center overflow-y-auto">
+        <div className="flex-1 flex flex-col items-center justify-center p-4 text-center overflow-y-auto">
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="relative mb-4"
+                className="relative mb-2"
             >
-                <div className="w-16 h-16 rounded-2xl bg-muted/50 dark:bg-white/[0.08] border border-border dark:border-white/10 flex items-center justify-center shadow-lg backdrop-blur-sm">
-                    <Icon size={36} />
+                <div className="w-11 h-11 rounded-xl bg-muted/50 dark:bg-white/[0.08] border border-border dark:border-white/10 flex items-center justify-center shadow-lg backdrop-blur-sm">
+                    <Icon size={24} />
                 </div>
             </motion.div>
 
@@ -430,11 +430,11 @@ const ConnectedEmptyState = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, duration: 0.4 }}
             >
-                <h2 className="text-2xl font-heading font-bold text-foreground mb-1.5 tracking-tight">
+                <h2 className="text-lg font-heading font-bold text-foreground mb-0.5 tracking-tight">
                     Connected to <span className="text-neurix-orange">{serverName}</span>
                 </h2>
-                <p className="text-muted-foreground max-w-lg mb-6 text-sm leading-relaxed mx-auto">
-                    Try one of these actions to get started or type your own request below.
+                <p className="text-muted-foreground max-w-lg mb-4 text-xs leading-relaxed mx-auto">
+                    Try one of these actions or type your own request below.
                 </p>
             </motion.div>
 
@@ -442,9 +442,9 @@ const ConnectedEmptyState = ({
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.4 }}
-                className="w-full max-w-2xl"
+                className="w-full max-w-xl"
             >
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                     {prompts.slice(0, 4).map((prompt, i) => {
                         const PromptIcon = prompt.icon;
                         return (
@@ -456,15 +456,15 @@ const ConnectedEmptyState = ({
                                 whileTap={{ scale: 0.98 }}
                                 whileHover={{ scale: 1.02 }}
                                 onClick={() => onSend(prompt.text)}
-                                className="group text-left p-3.5 rounded-xl border border-border hover:border-primary/30 dark:hover:border-electric-purple/30 bg-card hover:shadow-md transition-all duration-300"
+                                className="group text-left px-3 py-2.5 rounded-xl border border-border hover:border-primary/30 dark:hover:border-electric-purple/30 bg-card hover:shadow-md transition-all duration-300"
                             >
-                                <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 rounded-lg bg-primary/8 dark:bg-electric-purple/10 flex items-center justify-center shrink-0 group-hover:bg-primary/15 dark:group-hover:bg-electric-purple/20 transition-colors">
-                                        <PromptIcon className="w-4 h-4 text-primary dark:text-electric-purple" />
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-lg bg-primary/8 dark:bg-electric-purple/10 flex items-center justify-center shrink-0 group-hover:bg-primary/15 dark:group-hover:bg-electric-purple/20 transition-colors">
+                                        <PromptIcon className="w-3.5 h-3.5 text-primary dark:text-electric-purple" />
                                     </div>
                                     <div className="min-w-0">
-                                        <h3 className="text-[13px] font-semibold text-foreground leading-tight">{prompt.text}</h3>
-                                        <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{prompt.desc}</p>
+                                        <h3 className="text-xs font-semibold text-foreground leading-tight">{prompt.text}</h3>
+                                        <p className="text-[10px] text-muted-foreground leading-tight mt-0.5 line-clamp-1">{prompt.desc}</p>
                                     </div>
                                 </div>
                             </motion.button>
