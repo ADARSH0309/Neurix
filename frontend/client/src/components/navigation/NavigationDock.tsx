@@ -117,6 +117,35 @@ export function NavigationDock() {
     const connectedCount = Object.values(servers).filter(s => s.connected).length;
     const totalCount = Object.values(servers).length;
 
+    // Group unpinned sessions by date
+    const groupSessionsByDate = (items: typeof sessions) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const weekAgo = new Date(today);
+        weekAgo.setDate(weekAgo.getDate() - 7);
+
+        const groups: { label: string; sessions: typeof sessions }[] = [
+            { label: 'Today', sessions: [] },
+            { label: 'Yesterday', sessions: [] },
+            { label: 'This Week', sessions: [] },
+            { label: 'Earlier', sessions: [] },
+        ];
+
+        for (const s of items) {
+            const d = new Date(s.updatedAt || s.createdAt);
+            if (d >= today) groups[0].sessions.push(s);
+            else if (d >= yesterday) groups[1].sessions.push(s);
+            else if (d >= weekAgo) groups[2].sessions.push(s);
+            else groups[3].sessions.push(s);
+        }
+
+        return groups.filter(g => g.sessions.length > 0);
+    };
+
+    const dateGroups = groupSessionsByDate(unpinnedSessions.slice(0, 30));
+
     const renderSessionItem = (session: typeof sessions[0]) => {
         const isActive = activeSessionId === session.id;
         const isEditing = editingId === session.id;
@@ -280,11 +309,22 @@ export function NavigationDock() {
 
                 {/* Chat Sessions */}
                 <div className="flex-1 overflow-y-auto no-scrollbar py-2 space-y-3">
+                    {/* Empty state */}
+                    {!isCollapsed && sessions.length === 0 && (
+                        <div className="px-4 py-8 text-center">
+                            <div className="w-10 h-10 mx-auto mb-3 rounded-xl bg-muted/60 dark:bg-white/[0.04] flex items-center justify-center border border-border">
+                                <MessageSquare size={18} className="text-muted-foreground/50" />
+                            </div>
+                            <p className="text-sm font-medium text-muted-foreground/70 mb-1">No conversations yet</p>
+                            <p className="text-xs text-muted-foreground/50">Start a new chat to get going</p>
+                        </div>
+                    )}
+
                     {/* Pinned */}
                     {pinnedSessions.length > 0 && (
                         <div className="px-3">
                             {!isCollapsed && (
-                                <h3 className="text-[10px] font-semibold text-muted-foreground/70 mb-2 px-1 uppercase tracking-widest flex items-center gap-1.5">
+                                <h3 className="text-[10px] font-semibold text-muted-foreground/60 mb-2 px-1 uppercase tracking-wider flex items-center gap-1.5">
                                     <Pin size={9} className="text-primary dark:text-neurix-orange" /> Pinned
                                 </h3>
                             )}
@@ -292,15 +332,17 @@ export function NavigationDock() {
                         </div>
                     )}
 
-                    {/* Recent */}
-                    <div className="px-3">
-                        {!isCollapsed && (
-                            <h3 className="text-[10px] font-semibold text-muted-foreground/70 mb-2 px-1 uppercase tracking-widest">Recent</h3>
-                        )}
-                        <div className="space-y-0.5">
-                            {unpinnedSessions.slice(0, 20).map(s => renderSessionItem(s))}
+                    {/* Date-grouped sessions */}
+                    {dateGroups.map(group => (
+                        <div key={group.label} className="px-3">
+                            {!isCollapsed && (
+                                <h3 className="text-[10px] font-semibold text-muted-foreground/60 mb-2 px-1 uppercase tracking-wider">{group.label}</h3>
+                            )}
+                            <div className="space-y-0.5">
+                                {group.sessions.map(s => renderSessionItem(s))}
+                            </div>
                         </div>
-                    </div>
+                    ))}
                 </div>
             </motion.div>
 

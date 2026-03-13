@@ -61,8 +61,6 @@ export function Header({
     const [searchFocused, setSearchFocused] = useState(false);
     const [notifOpen, setNotifOpen] = useState(false);
 
-    const neuralIntegrity = Math.round((connectedServers / 4) * 100);
-
     return (
         <header className="h-16 border-b border-border bg-background/80 backdrop-blur-3xl sticky top-0 z-40">
             <div className="h-full px-6 flex items-center justify-between gap-6">
@@ -96,55 +94,36 @@ export function Header({
                     <div className="hidden md:block w-px h-8 bg-border" />
 
                     {/* Connection Status */}
-                    <div className="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border border-border shadow-sm backdrop-blur-md">
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-mono font-medium text-slate-grey/80 uppercase tracking-widest drop-shadow-sm">Sys.Status</span>
-                            <div className="relative w-20 h-1.5 bg-black/10 dark:bg-black/50 rounded-full overflow-hidden border border-border">
-                                <div
-                                    className={cn(
-                                        "absolute inset-y-0 left-0 rounded-full transition-all duration-1000 ease-out",
-                                        neuralIntegrity >= 100
-                                            ? "bg-mint-green shadow-[0_0_10px_rgba(16,185,129,0.8)]"
-                                            : neuralIntegrity >= 50
-                                                ? "bg-electric-purple shadow-[0_0_10px_rgba(139,92,246,0.8)]"
-                                                : "bg-neurix-orange shadow-[0_0_10px_rgba(255,85,0,0.8)]"
-                                    )}
-                                    style={{ width: `${neuralIntegrity}%` }}
-                                />
-                            </div>
-                            <span className={cn(
-                                "text-[10px] font-mono font-bold tabular-nums drop-shadow-md",
-                                neuralIntegrity >= 100 ? "text-mint-green"
-                                    : neuralIntegrity >= 50 ? "text-electric-purple"
-                                        : "text-neurix-orange"
-                            )}>
-                                {neuralIntegrity}%
-                            </span>
-                        </div>
+                    <div className="hidden md:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border border-border shadow-sm backdrop-blur-md">
+                        <span className={cn(
+                            "w-2 h-2 rounded-full shrink-0",
+                            connectedServers > 0
+                                ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pulse"
+                                : "bg-slate-400/50"
+                        )} />
+                        <span className={cn(
+                            "text-[11px] font-semibold",
+                            connectedServers > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"
+                        )}>
+                            {connectedServers > 0 ? `${connectedServers} Connected` : 'No Services'}
+                        </span>
                     </div>
                 </div>
 
                 {/* Center - Search */}
-                <div className="hidden md:flex flex-1 max-w-lg justify-center">
-                    <div className={cn("relative w-full transition-all duration-500 group", searchFocused && "scale-[1.02]")}>
-                        <Search className={cn(
-                            "absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors duration-300",
-                            searchFocused ? "text-electric-purple drop-shadow-[0_0_5px_rgba(139,92,246,0.5)]" : "text-slate-grey group-hover:text-foreground"
-                        )} />
+                <div className="hidden md:flex flex-1 max-w-md justify-center">
+                    <div className="relative w-full group">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
                         <input
                             type="text"
-                            placeholder="Query the central memory..."
+                            placeholder="Search..."
                             onFocus={() => setSearchFocused(true)}
                             onBlur={() => setSearchFocused(false)}
-                            className={cn(
-                                "w-full h-10 pl-11 pr-16 bg-black/[0.02] dark:bg-[#0F051D]/60 backdrop-blur-3xl border border-border rounded-xl text-sm text-foreground placeholder:text-slate-grey/50 focus:outline-none transition-all duration-500 shadow-inner dark:shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]",
-                                "focus:bg-background focus:border-electric-purple/40 focus:ring-1 focus:ring-electric-purple/20 focus:shadow-[0_0_20px_rgba(139,92,246,0.2)]",
-                                "hover:bg-black/5 dark:hover:bg-white/[0.03] hover:border-black/10 dark:hover:border-white/10"
-                            )}
+                            className="w-full h-9 pl-10 pr-14 bg-muted/50 dark:bg-white/[0.04] border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-all"
                         />
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 px-2 py-1 rounded-md bg-background border border-border text-slate-grey backdrop-blur-md">
+                        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-background border border-border text-muted-foreground">
                             <Command className="w-3 h-3" />
-                            <span className="text-[10px] font-mono font-medium tracking-widest text-foreground">K</span>
+                            <span className="text-[10px] font-mono">K</span>
                         </div>
                     </div>
                 </div>

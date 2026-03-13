@@ -12,7 +12,8 @@ import {
     User,
     Sparkles,
     X,
-    Image as ImageIcon
+    Image as ImageIcon,
+    ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Message, McpServer, UserProfile } from '@/types';
@@ -24,7 +25,7 @@ import {
     TooltipProvider,
 } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
-import { getServerIcon } from '@/lib/server-utils';
+import { getServerIcon, getServerVisual } from '@/lib/server-utils';
 
 import { useChat } from '@/context/ChatContext';
 import { useServer } from '@/context/ServerContext';
@@ -51,6 +52,22 @@ function formatFileSize(bytes: number): string {
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
+
+const serverDescriptions: Record<string, string> = {
+    gdrive: 'Manage files & folders',
+    gforms: 'Create & analyze forms',
+    gmail: 'Read & send emails',
+    gcalendar: 'View & manage events',
+    gtask: 'Organize your to-dos',
+};
+
+const serverAccentColors: Record<string, { border: string; bg: string; text: string; hover: string }> = {
+    gdrive: { border: 'border-blue-500/20', bg: 'bg-blue-500/5', text: 'text-blue-600 dark:text-blue-400', hover: 'hover:border-blue-500/40 hover:bg-blue-500/10' },
+    gforms: { border: 'border-purple-500/20', bg: 'bg-purple-500/5', text: 'text-purple-600 dark:text-purple-400', hover: 'hover:border-purple-500/40 hover:bg-purple-500/10' },
+    gmail: { border: 'border-red-500/20', bg: 'bg-red-500/5', text: 'text-red-600 dark:text-red-400', hover: 'hover:border-red-500/40 hover:bg-red-500/10' },
+    gcalendar: { border: 'border-teal-500/20', bg: 'bg-teal-500/5', text: 'text-teal-600 dark:text-teal-400', hover: 'hover:border-teal-500/40 hover:bg-teal-500/10' },
+    gtask: { border: 'border-amber-500/20', bg: 'bg-amber-500/5', text: 'text-amber-600 dark:text-amber-400', hover: 'hover:border-amber-500/40 hover:bg-amber-500/10' },
+};
 
 async function readFileContent(file: File): Promise<string> {
     if (IMAGE_TYPES.includes(file.type)) {
@@ -268,85 +285,98 @@ export function ChatArea(): React.ReactElement {
         adjustHeight();
     }, [input]);
 
-    // Empty State - Neurix AI Reference Style
+    // Empty State
     if (messages.length === 0) {
         return (
             <div className="flex-1 flex flex-col h-full bg-background relative overflow-hidden">
                 {/* Background Effect */}
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-electric-purple/10 via-background to-background opacity-60 pointer-events-none" />
 
-                <div className="flex-1 flex flex-col items-center justify-center text-center max-w-xl mx-auto py-10 px-6 relative z-10 animate-in fade-in zoom-in duration-700">
-                    <div className="relative mb-10 group cursor-default">
-                        <div className="absolute inset-0 bg-electric-purple/20 blur-[50px] rounded-full animate-pulse-slow"></div>
-                        <div className="relative w-28 h-28 rounded-[2rem] bg-gradient-to-b from-white/[0.08] dark:from-white/[0.08] to-transparent p-px shadow-2xl transition-transform group-hover:scale-105 duration-700">
-                            <div className="w-full h-full rounded-[2rem] bg-background/80 backdrop-blur-xl flex items-center justify-center">
+                <div className="flex-1 flex flex-col items-center justify-center text-center max-w-2xl mx-auto px-6 pb-40 relative z-10 animate-in fade-in zoom-in duration-700">
+                    {/* Icon */}
+                    <div className="relative mb-6 group cursor-default">
+                        <div className="absolute inset-0 bg-electric-purple/20 blur-[40px] rounded-full animate-pulse-slow"></div>
+                        <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-b from-white/[0.08] dark:from-white/[0.08] to-transparent p-px shadow-2xl transition-transform group-hover:scale-105 duration-700">
+                            <div className="w-full h-full rounded-2xl bg-background/80 backdrop-blur-xl flex items-center justify-center">
                                 {activeServer ? (
                                     (() => {
                                         const Icon = getServerIcon(activeServer.id);
-                                        return <Icon className="w-12 h-12 text-electric-purple drop-shadow-[0_0_20px_rgba(139,92,246,0.8)]" />;
+                                        return <Icon className="w-9 h-9 text-electric-purple drop-shadow-[0_0_20px_rgba(139,92,246,0.8)]" />;
                                     })()
                                 ) : (
-                                    <Terminal className="w-12 h-12 text-slate-grey drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]" />
+                                    <Terminal className="w-9 h-9 text-slate-grey drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]" />
                                 )}
                             </div>
                         </div>
                     </div>
 
-                    <h1 className="text-4xl font-black tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-br from-foreground via-foreground/90 to-foreground/50 drop-shadow-sm">
-                        {activeServer ? 'Enclave Assigned' : 'Neurix Workstation'}
+                    {/* Title & Subtitle */}
+                    <h1 className="text-3xl font-black tracking-tight mb-2 text-transparent bg-clip-text bg-gradient-to-br from-foreground via-foreground/90 to-foreground/50">
+                        {activeServer ? activeServer.name : 'Neurix Workstation'}
                     </h1>
-                    <p className="text-slate-grey/80 text-base font-medium leading-relaxed tracking-wide mb-12 max-w-sm">
+                    <p className="text-slate-grey/70 text-sm font-medium leading-relaxed mb-8 max-w-sm">
                         {activeServer ? (
-                            <>Current bridge established to the <span className="text-electric-purple font-bold uppercase drop-shadow-[0_0_8px_rgba(139,92,246,0.6)]">{activeServer.name}</span> MCP. Operational parameters are synchronized.</>
+                            <>Connected to <span className="text-electric-purple font-semibold">{activeServer.name}</span>. Ask a question or try a suggestion below.</>
                         ) : (
-                            'Select a neural node to initialize uplink operations.'
+                            'Connect a service below to get started, or type a message to begin a conversation.'
                         )}
                     </p>
 
+                    {/* Service Cards or Suggestions */}
                     {!activeServer ? (
-                        <div className="grid grid-cols-2 gap-4 w-full">
+                        <div className="grid grid-cols-2 gap-3 w-full max-w-lg">
                             {Object.values(servers).filter(s => s.status === 'available').slice(0, 4).map((server, i) => {
                                 const Icon = getServerIcon(server.id);
+                                const colors = serverAccentColors[server.id] || { border: 'border-border', bg: 'bg-muted/50', text: 'text-foreground', hover: 'hover:border-electric-purple/40' };
+                                const desc = serverDescriptions[server.id] || 'MCP Service';
                                 return (
                                     <motion.button
                                         key={server.id}
-                                        initial={{ opacity: 0, y: 20 }}
+                                        initial={{ opacity: 0, y: 15 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: i * 0.1, duration: 0.5 }}
+                                        transition={{ delay: i * 0.08, duration: 0.4 }}
                                         onClick={() => onSelectServer(server.id)}
-                                        className="flex items-center gap-4 p-4 rounded-2xl bg-black/[0.02] border border-black/5 hover:border-electric-purple/40 hover:bg-black/[0.04] hover:shadow-[0_8px_30px_rgba(139,92,246,0.12)] transition-all group text-left backdrop-blur-xl"
+                                        className={cn(
+                                            "flex items-center gap-3 p-3.5 rounded-xl border transition-all group text-left backdrop-blur-xl relative overflow-hidden",
+                                            colors.border, colors.hover,
+                                            "bg-background/60 hover:shadow-lg"
+                                        )}
                                     >
-                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-background border border-border text-slate-grey group-hover:text-electric-purple group-hover:border-electric-purple/30 group-hover:shadow-[0_0_15px_rgba(139,92,246,0.3)] transition-all duration-300">
+                                        <div className={cn(
+                                            "w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-all duration-300",
+                                            colors.bg, "border", colors.border
+                                        )}>
                                             <Icon className="w-5 h-5" />
                                         </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-bold text-foreground group-hover:text-foreground transition-colors">{server.name}</span>
-                                            <span className="text-[10px] font-mono font-medium tracking-widest text-slate-grey/60 group-hover:text-electric-purple/80 transition-colors uppercase mt-0.5">Initialize</span>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-sm font-semibold text-foreground truncate">{server.name}</span>
+                                            <span className="text-[11px] text-muted-foreground mt-0.5 truncate">{desc}</span>
                                         </div>
+                                        <ChevronRight className={cn("w-4 h-4 shrink-0 opacity-0 group-hover:opacity-100 transition-all -translate-x-1 group-hover:translate-x-0", colors.text)} />
                                     </motion.button>
                                 )
                             })}
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg">
+                        <div className="grid grid-cols-2 gap-3 w-full max-w-lg">
                             {[
-                                `Status inquiry: ${activeServer.name}`,
-                                `Execute protocol audit`,
-                                `List active directory`,
-                                `Initialize optimized workflow`
+                                { text: `What can you do?`, icon: Sparkles },
+                                { text: `Show me everything`, icon: Terminal },
+                                { text: `List all items`, icon: FileText },
+                                { text: `Help me get started`, icon: Send },
                             ].map((p, i) => (
                                 <motion.button
-                                    key={p}
+                                    key={p.text}
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: i * 0.1 }}
-                                    onClick={() => onSendMessage(p)}
-                                    className="p-4 rounded-2xl text-left transition-all duration-300 text-[11px] font-black uppercase tracking-widest flex items-center justify-between group bg-black/[0.02] border border-black/5 text-slate-grey hover:border-electric-purple/40 hover:text-foreground hover:bg-electric-purple/10 hover:shadow-[0_0_20px_rgba(139,92,246,0.15)] backdrop-blur-xl"
+                                    transition={{ delay: i * 0.08 }}
+                                    onClick={() => onSendMessage(p.text)}
+                                    className="flex items-center gap-3 p-3.5 rounded-xl text-left transition-all duration-200 group bg-background/60 border border-border hover:border-electric-purple/30 hover:bg-electric-purple/5 hover:shadow-md"
                                 >
-                                    <span className="truncate pr-4 leading-tight">{p}</span>
-                                    <div className="w-6 h-6 rounded-full flex items-center justify-center bg-background border border-border group-hover:border-electric-purple/30 group-hover:bg-electric-purple/20 transition-all opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0">
-                                        <Send className="w-3 h-3 text-electric-purple" />
+                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-electric-purple/10 border border-electric-purple/20 text-electric-purple shrink-0 group-hover:bg-electric-purple/15 transition-colors">
+                                        <p.icon className="w-4 h-4" />
                                     </div>
+                                    <span className="text-sm font-medium text-foreground/80 group-hover:text-foreground transition-colors">{p.text}</span>
                                 </motion.button>
                             ))}
                         </div>
@@ -443,8 +473,8 @@ export function ChatArea(): React.ReactElement {
                                 </div>
                             </div>
                         </div>
-                        <p className="text-[10px] text-center text-muted-foreground/30 font-black uppercase tracking-[0.3em] mt-4">
-                            UPLINK SECURED • {activeServer?.id.toUpperCase() || 'NULL'} DOMAIN • NEURIX 2.0
+                        <p className="text-xs text-center text-muted-foreground/40 mt-3">
+                            Neurix can make mistakes. Verify important information.
                         </p>
                     </div>
                 </div>
@@ -452,111 +482,100 @@ export function ChatArea(): React.ReactElement {
         );
     }
 
-    // Main Chat View - Neurix AI Reference Style
+    // Main Chat View
     return (
         <TooltipProvider>
             <div className="flex-1 flex flex-col h-full bg-transparent relative z-10">
-                {/* Header - Transparent/Glass */}
-                <header className="h-16 flex items-center justify-between px-6 border-b border-border backdrop-blur-2xl sticky top-0 z-[50] bg-background/60">
-                    <div className="flex items-center space-x-4 min-w-0">
-                        <div className="flex items-center space-x-3 overflow-hidden">
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg bg-electric-purple/10 border border-electric-purple/20 shadow-[0_0_10px_rgba(139,92,246,0.1)] flex-shrink-0 text-electric-purple">
-                                {activeServer ? (
-                                    (() => {
-                                        const Icon = getServerIcon(activeServer.id);
-                                        return <Icon className="w-4 h-4 shadow-[0_0_15px_rgba(139,92,246,0.3)]" />;
-                                    })()
-                                ) : (
-                                    <Terminal className="w-4 h-4 shadow-[0_0_15px_rgba(139,92,246,0.3)]" />
-                                )}
-                            </div>
-                            <div className="flex flex-col min-w-0">
-                                <div className="flex items-center space-x-1.5">
-                                    <span className="text-[9px] font-black uppercase tracking-widest leading-none text-electric-purple/80">UPLINK ACTIVE</span>
-                                    <span className={cn("w-1 h-1 rounded-full bg-mint-green flex-shrink-0 shadow-[0_0_5px_rgba(52,211,153,0.5)]", activeServer?.connected && "animate-pulse")}></span>
-                                </div>
-                                <h2 className="text-[11px] font-black uppercase tracking-wider leading-none mt-1 truncate text-foreground">
-                                    {activeServer?.name || 'Neural'} Protocol
-                                </h2>
-                            </div>
+                {/* Header */}
+                <header className="h-14 flex items-center justify-between px-6 border-b border-border backdrop-blur-2xl sticky top-0 z-[50] bg-background/80">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-electric-purple/10 border border-electric-purple/20 flex-shrink-0 text-electric-purple">
+                            {activeServer ? (
+                                (() => {
+                                    const Icon = getServerIcon(activeServer.id);
+                                    return <Icon className="w-4 h-4" />;
+                                })()
+                            ) : (
+                                <Terminal className="w-4 h-4" />
+                            )}
                         </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-mono text-slate-grey/60 border border-border px-2 py-1 rounded-md bg-black/[0.02] dark:bg-white/[0.02] shadow-inner">
-                            ID: {messages[0]?.id.substring(0, 8) || 'INIT'}
-                        </span>
+                        <div className="flex items-center gap-2 min-w-0">
+                            <h2 className="text-sm font-semibold truncate text-foreground">
+                                {activeServer?.name || 'Neurix'}
+                            </h2>
+                            <span className={cn(
+                                "w-2 h-2 rounded-full shrink-0",
+                                activeServer?.connected ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground/30"
+                            )} />
+                        </div>
                     </div>
                 </header>
 
-                <ScrollArea className="flex-1 px-6 py-8">
-                    <div className="max-w-3xl mx-auto space-y-10 pb-44">
+                <ScrollArea className="flex-1 px-4 md:px-6 py-6">
+                    <div className="max-w-3xl mx-auto space-y-6 pb-40">
                         {messages.map((msg, idx) => (
-                            <div
+                            <motion.div
                                 key={msg.id}
+                                initial={{ opacity: 0, y: 12 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, ease: 'easeOut' }}
                                 className={cn(
-                                    "flex w-full group animate-in fade-in slide-in-from-bottom-4 duration-500",
+                                    "flex w-full group",
                                     msg.role === 'user' ? 'justify-end' : 'justify-start'
                                 )}
                             >
                                 <div className={cn(
-                                    "flex max-w-[90%] md:max-w-[85%] space-x-4",
-                                    msg.role === 'user' ? "flex-row-reverse space-x-reverse" : "flex-row"
+                                    "flex max-w-[88%] md:max-w-[80%] gap-3",
+                                    msg.role === 'user' ? "flex-row-reverse" : "flex-row"
                                 )}>
-                                    {/* Profile */}
+                                    {/* Avatar */}
                                     <div className={cn(
-                                        "flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center font-black text-xs shadow-2xl backdrop-blur-xl relative overflow-hidden",
+                                        "flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center",
                                         msg.role === 'user'
-                                            ? "bg-electric-purple/10 text-electric-purple border border-electric-purple/20 shadow-[0_5px_15px_rgba(139,92,246,0.2)]"
-                                            : "bg-background/80 text-foreground border border-border hover:border-electric-purple/30 transition-colors shadow-[0_5px_15px_rgba(0,0,0,0.1)] dark:shadow-[0_5px_15px_rgba(0,0,0,0.5)]"
+                                            ? "bg-electric-purple/10 text-electric-purple border border-electric-purple/20"
+                                            : "bg-muted/80 dark:bg-white/[0.06] text-foreground border border-border"
                                     )}>
                                         {msg.role === 'user' ? (
-                                            <>
-                                                <div className="absolute inset-0 bg-gradient-to-br from-electric-purple/20 to-transparent mix-blend-overlay"></div>
-                                                <User className="w-4 h-4 z-10 drop-shadow-md" />
-                                            </>
+                                            <User className="w-4 h-4" />
                                         ) : (
-                                            <>
-                                                <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-electric-purple to-transparent pointer-events-none"></div>
-                                                <Bot className="w-5 h-5 drop-shadow-[0_0_8px_rgba(139,92,246,0.6)] text-foreground relative z-10" />
-                                            </>
+                                            <Bot className="w-4 h-4" />
                                         )}
                                     </div>
 
-                                    {/* Text Area */}
-                                    <div className={cn("flex flex-col space-y-2", msg.role === 'user' ? "items-end" : "items-start")}>
+                                    {/* Content */}
+                                    <div className={cn("flex flex-col gap-1.5", msg.role === 'user' ? "items-end" : "items-start")}>
                                         <div className={cn(
-                                            "relative px-6 py-4 text-[15px] leading-relaxed shadow-2xl transition-all border backdrop-blur-2xl",
+                                            "relative px-4 py-3 text-sm leading-relaxed transition-all border",
                                             msg.role === 'user'
-                                                ? "bg-electric-purple/10 border-electric-purple/20 text-foreground rounded-3xl rounded-tr-md shadow-[0_8px_30px_rgba(139,92,246,0.15)]"
-                                                : "bg-black/[0.02] dark:bg-white/[0.03] border-border text-slate-800 dark:text-slate-200 rounded-3xl rounded-tl-md hover:border-black/10 dark:hover:border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
+                                                ? "bg-electric-purple/10 border-electric-purple/20 text-foreground rounded-2xl rounded-tr-sm"
+                                                : "bg-muted/40 dark:bg-white/[0.04] border-border text-foreground rounded-2xl rounded-tl-sm"
                                         )}>
                                             <div className="whitespace-pre-wrap">
                                                 {msg.role === 'user' ? (
                                                     <p>{msg.content}</p>
                                                 ) : (
-                                                    <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-black/5 dark:prose-pre:bg-[#0F051D]/80 prose-pre:border prose-pre:border-border prose-pre:backdrop-blur-2xl prose-code:text-electric-purple/90 prose-headings:text-foreground">
+                                                    <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-muted dark:prose-pre:bg-black/40 prose-pre:border prose-pre:border-border prose-code:text-electric-purple/90 prose-headings:text-foreground">
                                                         <ReactMarkdown
                                                             components={{
                                                                 code(props) {
                                                                     const { className, children, ...rest } = props;
                                                                     const isInline = !String(children).includes('\n');
                                                                     if (isInline) {
-                                                                        return <code className="bg-black/5 dark:bg-black/50 text-electric-purple/90 px-1.5 py-0.5 rounded text-[13px] font-mono border border-border shadow-inner" {...rest}>{children}</code>;
+                                                                        return <code className="bg-muted dark:bg-white/[0.06] text-electric-purple/90 px-1.5 py-0.5 rounded text-xs font-mono border border-border" {...rest}>{children}</code>;
                                                                     }
                                                                     return (
-                                                                        <div className="my-4 rounded-xl border border-border bg-background/80 overflow-hidden shadow-2xl backdrop-blur-2xl ring-1 ring-black/5 dark:ring-white/5">
-                                                                            <div className="flex items-center justify-between px-4 py-2 bg-black/[0.03] dark:bg-white/[0.03] border-b border-border">
+                                                                        <div className="my-3 rounded-lg border border-border bg-background overflow-hidden">
+                                                                            <div className="flex items-center justify-between px-3 py-2 bg-muted/50 dark:bg-white/[0.03] border-b border-border">
                                                                                 <div className="flex items-center gap-2">
-                                                                                    <FileText className="w-3.5 h-3.5 text-electric-purple/80 drop-shadow-[0_0_5px_rgba(139,92,246,0.5)]" />
-                                                                                    <span className="text-xs font-mono text-slate-grey/80 uppercase tracking-widest">Code Block</span>
+                                                                                    <FileText className="w-3.5 h-3.5 text-muted-foreground" />
+                                                                                    <span className="text-xs text-muted-foreground">Code</span>
                                                                                 </div>
-                                                                                <Button variant="ghost" size="sm" className="h-6 text-[10px] uppercase font-mono text-slate-grey hover:text-foreground hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded-lg" onClick={() => handleCopy(String(children), msg.id)}>
-                                                                                    {copiedId === msg.id ? <Check className="w-3 h-3 mr-1 text-mint-green drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]" /> : <Copy className="w-3 h-3 mr-1" />} Copy
+                                                                                <Button variant="ghost" size="sm" className="h-6 text-xs text-muted-foreground hover:text-foreground rounded-md" onClick={() => handleCopy(String(children), msg.id)}>
+                                                                                    {copiedId === msg.id ? <Check className="w-3 h-3 mr-1 text-emerald-500" /> : <Copy className="w-3 h-3 mr-1" />} Copy
                                                                                 </Button>
                                                                             </div>
-                                                                            <div className="p-4 overflow-x-auto">
-                                                                                <code className={cn(className, "text-xs font-mono text-slate-700 dark:text-slate-300 drop-shadow-sm")} {...rest}>
+                                                                            <div className="p-3 overflow-x-auto">
+                                                                                <code className={cn(className, "text-xs font-mono text-foreground/80")} {...rest}>
                                                                                     {children}
                                                                                 </code>
                                                                             </div>
@@ -576,30 +595,34 @@ export function ChatArea(): React.ReactElement {
 
                                             {/* Copy Button */}
                                             {msg.role !== 'user' && !isLoading && msg.content && (
-                                                <div className="absolute top-4 -right-12 flex opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-grey hover:text-foreground hover:bg-black/10 dark:hover:bg-white/10 border border-transparent hover:border-border rounded-xl" onClick={() => handleCopy(msg.content, msg.id)}>
-                                                        <Copy className="w-4 h-4" />
+                                                <div className="absolute top-3 -right-10 flex opacity-0 group-hover:opacity-100 transition-all duration-200">
+                                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg" onClick={() => handleCopy(msg.content, msg.id)}>
+                                                        <Copy className="w-3.5 h-3.5" />
                                                     </Button>
                                                 </div>
                                             )}
                                         </div>
 
-                                        <span className="text-[9px] text-slate-grey/40 font-mono font-bold uppercase tracking-widest px-2 drop-shadow-sm">
-                                            SYNCED • {msg.timestamp}
+                                        <span className="text-xs text-muted-foreground/50 px-1">
+                                            {msg.timestamp}
                                         </span>
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         ))}
                         {isLoading && (
-                            <div className="flex gap-4 animate-in fade-in slide-in-from-bottom-2">
-                                <div className="w-10 h-10 rounded-2xl bg-background/60 flex items-center justify-center text-electric-purple border border-border shadow-xl backdrop-blur-md">
-                                    <Bot className="w-5 h-5 animate-pulse" />
+                            <motion.div
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="flex gap-3"
+                            >
+                                <div className="w-8 h-8 rounded-xl bg-muted/80 dark:bg-white/[0.06] flex items-center justify-center text-electric-purple border border-border">
+                                    <Bot className="w-4 h-4 animate-pulse" />
                                 </div>
-                                <div className="bg-background/60 border border-border px-6 py-4 rounded-3xl rounded-tl-sm backdrop-blur-md shadow-lg">
+                                <div className="bg-muted/40 dark:bg-white/[0.04] border border-border px-4 py-3 rounded-2xl rounded-tl-sm">
                                     <TypingIndicator />
                                 </div>
-                            </div>
+                            </motion.div>
                         )}
                         <div ref={messagesEndRef} />
                     </div>

@@ -1315,25 +1315,25 @@ h6 {
 
 /* Pulse Command Bar */
 .pulse-command-bar {
-  background: #fff3e6;
+  background: hsl(var(--background));
   border-radius: 9999px;
-  border: 2px solid #e8d5c0;
+  border: 2px solid hsl(var(--border));
   transition: all 0.3s ease;
 }
 
 .pulse-command-bar:focus-within {
-  border-color: #FF5500;
-  box-shadow: 0 0 0 4px rgba(255, 85, 0, 0.15);
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 4px hsl(var(--primary) / 0.15);
 }
 
 .dark .pulse-command-bar {
-  background: #1A0F2E;
-  border-color: #2A1E42;
+  background: hsl(var(--card));
+  border-color: hsl(var(--border));
 }
 
 .dark .pulse-command-bar:focus-within {
-  border-color: #FF5500;
-  box-shadow: 0 0 0 4px rgba(255, 85, 0, 0.2);
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 4px hsl(var(--primary) / 0.2);
 }
 
 /* Send Button */
@@ -1341,16 +1341,17 @@ h6 {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: #FF5500;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.15s ease, background 0.2s ease;
+  transition: transform 0.15s ease, background 0.2s ease, opacity 0.2s ease;
   cursor: pointer;
 }
 
 .send-button:hover {
-  background: #FF6B1A;
+  opacity: 0.9;
 }
 
 .send-button:active {
