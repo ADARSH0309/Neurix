@@ -292,29 +292,29 @@ export function ChatArea(): React.ReactElement {
                 {/* Background Effect */}
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-electric-purple/10 via-background to-background opacity-60 pointer-events-none" />
 
-                <div className="flex-1 flex flex-col items-center justify-center text-center max-w-2xl mx-auto px-6 pb-40 relative z-10 animate-in fade-in zoom-in duration-700">
+                <div className="flex-1 flex flex-col items-center justify-center text-center max-w-2xl mx-auto px-6 pb-32 relative z-10 animate-in fade-in zoom-in duration-700">
                     {/* Icon */}
-                    <div className="relative mb-6 group cursor-default">
+                    <div className="relative mb-5 group cursor-default">
                         <div className="absolute inset-0 bg-electric-purple/20 blur-[40px] rounded-full animate-pulse-slow"></div>
-                        <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-b from-white/[0.08] dark:from-white/[0.08] to-transparent p-px shadow-2xl transition-transform group-hover:scale-105 duration-700">
+                        <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-b from-white/[0.08] dark:from-white/[0.08] to-transparent p-px shadow-2xl transition-transform group-hover:scale-105 duration-700">
                             <div className="w-full h-full rounded-2xl bg-background/80 backdrop-blur-xl flex items-center justify-center">
                                 {activeServer ? (
                                     (() => {
                                         const Icon = getServerIcon(activeServer.id);
-                                        return <Icon className="w-9 h-9 text-electric-purple drop-shadow-[0_0_20px_rgba(139,92,246,0.8)]" />;
+                                        return <Icon className="w-7 h-7 text-electric-purple drop-shadow-[0_0_20px_rgba(139,92,246,0.8)]" />;
                                     })()
                                 ) : (
-                                    <Terminal className="w-9 h-9 text-slate-grey drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]" />
+                                    <Terminal className="w-7 h-7 text-slate-grey drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]" />
                                 )}
                             </div>
                         </div>
                     </div>
 
                     {/* Title & Subtitle */}
-                    <h1 className="text-3xl font-black tracking-tight mb-2 text-transparent bg-clip-text bg-gradient-to-br from-foreground via-foreground/90 to-foreground/50">
+                    <h1 className="text-2xl font-black tracking-tight mb-1.5 text-transparent bg-clip-text bg-gradient-to-br from-foreground via-foreground/90 to-foreground/50">
                         {activeServer ? activeServer.name : 'Neurix Workstation'}
                     </h1>
-                    <p className="text-slate-grey/70 text-sm font-medium leading-relaxed mb-8 max-w-sm">
+                    <p className="text-slate-grey/70 text-sm font-medium leading-relaxed mb-6 max-w-sm">
                         {activeServer ? (
                             <>Connected to <span className="text-electric-purple font-semibold">{activeServer.name}</span>. Ask a question or try a suggestion below.</>
                         ) : (
@@ -324,8 +324,8 @@ export function ChatArea(): React.ReactElement {
 
                     {/* Service Cards or Suggestions */}
                     {!activeServer ? (
-                        <div className="grid grid-cols-2 gap-3 w-full max-w-lg">
-                            {Object.values(servers).filter(s => s.status === 'available').slice(0, 4).map((server, i) => {
+                        <div className="flex flex-wrap justify-center gap-2.5 w-full max-w-2xl">
+                            {Object.values(servers).filter(s => s.status === 'available').map((server, i) => {
                                 const Icon = getServerIcon(server.id);
                                 const colors = serverAccentColors[server.id] || { border: 'border-border', bg: 'bg-muted/50', text: 'text-foreground', hover: 'hover:border-electric-purple/40' };
                                 const desc = serverDescriptions[server.id] || 'MCP Service';
@@ -334,31 +334,31 @@ export function ChatArea(): React.ReactElement {
                                         key={server.id}
                                         initial={{ opacity: 0, y: 15 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: i * 0.08, duration: 0.4 }}
+                                        transition={{ delay: i * 0.06, duration: 0.35 }}
                                         onClick={() => onSelectServer(server.id)}
                                         className={cn(
-                                            "flex items-center gap-3 p-3.5 rounded-xl border transition-all group text-left backdrop-blur-xl relative overflow-hidden",
+                                            "flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border transition-all group text-left backdrop-blur-xl",
                                             colors.border, colors.hover,
-                                            "bg-background/60 hover:shadow-lg"
+                                            "bg-background/60 hover:shadow-md active:scale-[0.98]"
                                         )}
                                     >
                                         <div className={cn(
-                                            "w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-all duration-300",
+                                            "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-300",
                                             colors.bg, "border", colors.border
                                         )}>
-                                            <Icon className="w-5 h-5" />
+                                            <Icon className="w-4 h-4" />
                                         </div>
                                         <div className="flex flex-col min-w-0">
-                                            <span className="text-sm font-semibold text-foreground truncate">{server.name}</span>
-                                            <span className="text-[11px] text-muted-foreground mt-0.5 truncate">{desc}</span>
+                                            <span className="text-[13px] font-semibold text-foreground leading-tight">{server.name}</span>
+                                            <span className="text-[11px] text-muted-foreground leading-tight">{desc}</span>
                                         </div>
-                                        <ChevronRight className={cn("w-4 h-4 shrink-0 opacity-0 group-hover:opacity-100 transition-all -translate-x-1 group-hover:translate-x-0", colors.text)} />
+                                        <ChevronRight className={cn("w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-all -translate-x-1 group-hover:translate-x-0 ml-1", colors.text)} />
                                     </motion.button>
                                 )
                             })}
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 gap-3 w-full max-w-lg">
+                        <div className="grid grid-cols-2 gap-2.5 w-full max-w-lg">
                             {[
                                 { text: `What can you do?`, icon: Sparkles },
                                 { text: `Show me everything`, icon: Terminal },
@@ -371,12 +371,12 @@ export function ChatArea(): React.ReactElement {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: i * 0.08 }}
                                     onClick={() => onSendMessage(p.text)}
-                                    className="flex items-center gap-3 p-3.5 rounded-xl text-left transition-all duration-200 group bg-background/60 border border-border hover:border-electric-purple/30 hover:bg-electric-purple/5 hover:shadow-md"
+                                    className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-left transition-all duration-200 group bg-background/60 border border-border hover:border-electric-purple/30 hover:bg-electric-purple/5 hover:shadow-md active:scale-[0.98]"
                                 >
                                     <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-electric-purple/10 border border-electric-purple/20 text-electric-purple shrink-0 group-hover:bg-electric-purple/15 transition-colors">
                                         <p.icon className="w-4 h-4" />
                                     </div>
-                                    <span className="text-sm font-medium text-foreground/80 group-hover:text-foreground transition-colors">{p.text}</span>
+                                    <span className="text-[13px] font-medium text-foreground/80 group-hover:text-foreground transition-colors">{p.text}</span>
                                 </motion.button>
                             ))}
                         </div>

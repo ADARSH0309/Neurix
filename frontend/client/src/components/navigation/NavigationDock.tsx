@@ -5,7 +5,7 @@ import { useChat } from '../../context/ChatContext';
 import {
     MessageSquare, Plus, Cpu,
     ChevronRight, ChevronLeft, Search, MoreHorizontal, Pin, PinOff,
-    Pencil, Trash2, Wifi, WifiOff, X,
+    Pencil, Trash2, Wifi, WifiOff, X, Sparkles,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -57,6 +57,15 @@ const serviceInfo: Record<string, { tagline: string; capabilities: string[]; acc
         btnClass: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border-amber-500/20',
         tagClass: 'bg-amber-500/8 text-amber-600/70 dark:text-amber-400/70 border-amber-500/15',
     },
+};
+
+// Service status dots for the sidebar button
+const serviceColors: Record<string, string> = {
+    gdrive: 'bg-blue-500',
+    gforms: 'bg-purple-500',
+    gmail: 'bg-red-500',
+    gcalendar: 'bg-teal-500',
+    gtask: 'bg-amber-500',
 };
 
 export function NavigationDock() {
@@ -154,33 +163,45 @@ export function NavigationDock() {
             <div key={session.id} className="group relative">
                 {isEditing ? (
                     <div className="flex items-center gap-2 p-2">
-                        <MessageSquare size={16} className="shrink-0 text-muted-foreground" />
+                        <MessageSquare size={15} className="shrink-0 text-muted-foreground" />
                         <input
                             ref={editInputRef} value={editTitle}
                             onChange={e => setEditTitle(e.target.value)}
                             onBlur={() => handleRenameSubmit(session.id)}
                             onKeyDown={e => { if (e.key === 'Enter') handleRenameSubmit(session.id); if (e.key === 'Escape') setEditingId(null); }}
-                            className="flex-1 bg-muted border border-primary/30 rounded px-2 py-1 text-sm text-foreground outline-none focus:border-primary/50 font-mono"
+                            className="flex-1 bg-muted border border-primary/30 rounded-lg px-2.5 py-1.5 text-sm text-foreground outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
                         />
                     </div>
                 ) : (
                     <button
                         onClick={() => setActiveSessionId(session.id)}
                         className={cn(
-                            "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-all text-[13px]",
+                            "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-200 text-[13px] relative",
                             isActive
-                                ? "bg-primary/10 dark:bg-electric-purple/15 text-foreground font-medium border border-primary/20 dark:border-electric-purple/25"
-                                : "text-muted-foreground hover:text-foreground hover:bg-muted/80 dark:hover:bg-white/[0.05] border border-transparent"
+                                ? "bg-primary/10 dark:bg-electric-purple/12 text-foreground font-medium shadow-sm shadow-primary/5 dark:shadow-electric-purple/5"
+                                : "text-muted-foreground hover:text-foreground hover:bg-muted/60 dark:hover:bg-white/[0.04] hover:shadow-sm"
                         )}
                     >
-                        <MessageSquare size={15} className="shrink-0" />
+                        {/* Active indicator bar */}
+                        {isActive && (
+                            <motion.div
+                                layoutId="activeChat"
+                                className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary dark:bg-electric-purple"
+                                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            />
+                        )}
+
+                        <MessageSquare size={15} className={cn(
+                            "shrink-0 transition-colors duration-200",
+                            isActive ? "text-primary dark:text-electric-purple" : ""
+                        )} />
                         {!isCollapsed && (
                             <>
                                 <span className="truncate flex-1 text-left">{session.title}</span>
-                                {session.pinned && <Pin size={11} className="shrink-0 text-primary dark:text-neurix-orange" />}
+                                {session.pinned && <Pin size={11} className="shrink-0 text-primary/60 dark:text-electric-purple/60" />}
                                 <button
                                     onClick={(e) => openContextMenu(e, session.id)}
-                                    className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted"
+                                    className="shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200 p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/10"
                                 >
                                     <MoreHorizontal size={14} />
                                 </button>
@@ -191,19 +212,22 @@ export function NavigationDock() {
 
                 {contextMenuId === session.id && !isCollapsed && contextMenuPos && createPortal(
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 0.1 }}
+                        initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                        transition={{ duration: 0.15, ease: 'easeOut' }}
                         style={{ position: 'fixed', top: contextMenuPos.top, left: contextMenuPos.left }}
-                        className="z-[9999] w-40 rounded-lg bg-popover border border-border shadow-xl py-1"
+                        className="z-[9999] w-40 rounded-xl bg-popover border border-border shadow-lg shadow-black/10 dark:shadow-black/40 py-1.5 backdrop-blur-xl"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <button onClick={() => handleRenameStart(session.id, session.title)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                        <button onClick={() => handleRenameStart(session.id, session.title)} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/80 dark:hover:bg-white/[0.06] transition-all duration-150 rounded-md mx-auto" style={{ width: 'calc(100% - 8px)', marginLeft: 4 }}>
                             <Pencil size={12} /> Rename
                         </button>
-                        <button onClick={() => handleTogglePin(session.id, session.pinned)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                        <button onClick={() => handleTogglePin(session.id, session.pinned)} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/80 dark:hover:bg-white/[0.06] transition-all duration-150 rounded-md mx-auto" style={{ width: 'calc(100% - 8px)', marginLeft: 4 }}>
                             {session.pinned ? <PinOff size={12} /> : <Pin size={12} />} {session.pinned ? 'Unpin' : 'Pin'}
                         </button>
-                        <button onClick={() => handleDelete(session.id)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/5 transition-colors">
+                        <div className="my-1 mx-3 border-t border-border/60" />
+                        <button onClick={() => handleDelete(session.id)} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-500/8 transition-all duration-150 rounded-md mx-auto" style={{ width: 'calc(100% - 8px)', marginLeft: 4 }}>
                             <Trash2 size={12} /> Delete
                         </button>
                     </motion.div>,
@@ -218,30 +242,30 @@ export function NavigationDock() {
             <motion.div
                 initial={{ width: 260 }} animate={{ width: isCollapsed ? 64 : 260 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                className="h-full relative z-20 flex flex-col bg-white dark:bg-[#0A0316]/95 text-foreground border-r border-border shadow-sm dark:shadow-[8px_0_30px_rgba(15,5,29,0.3)]"
+                className="h-full relative z-20 flex flex-col bg-white/80 dark:bg-[#0A0316]/90 backdrop-blur-xl text-foreground border-r border-border/80 shadow-[4px_0_24px_rgba(0,0,0,0.03)] dark:shadow-[4px_0_24px_rgba(0,0,0,0.3)]"
             >
                 {/* Header — New Chat + Collapse */}
-                <div className="px-3 py-3 flex items-center gap-2 border-b border-border shrink-0">
+                <div className="px-3 py-3 flex items-center gap-2 border-b border-border/60 shrink-0">
                     {!isCollapsed ? (
                         <>
                             <button
                                 onClick={createSession}
-                                className="flex-1 flex items-center justify-center gap-2 h-9 rounded-lg bg-muted dark:bg-white/[0.08] text-foreground hover:bg-muted/80 dark:hover:bg-white/[0.12] border border-border transition-colors text-sm font-medium"
+                                className="flex-1 flex items-center justify-center gap-2 h-10 rounded-xl bg-primary/10 dark:bg-electric-purple/12 text-primary dark:text-electric-purple hover:bg-primary/15 dark:hover:bg-electric-purple/18 border border-primary/15 dark:border-electric-purple/20 transition-all duration-200 text-sm font-semibold shadow-sm shadow-primary/5 hover:shadow-md hover:shadow-primary/10 active:scale-[0.98]"
                             >
-                                <Plus size={16} />
+                                <Plus size={16} strokeWidth={2.5} />
                                 New Chat
                             </button>
-                            <button onClick={toggleDock} className="h-9 w-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                            <button onClick={toggleDock} className="h-10 w-10 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 dark:hover:bg-white/[0.06] transition-all duration-200 active:scale-95">
                                 <ChevronLeft size={18} />
                             </button>
                         </>
                     ) : (
                         <div className="flex flex-col items-center gap-2 w-full">
-                            <button onClick={toggleDock} className="h-9 w-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                            <button onClick={toggleDock} className="h-9 w-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 dark:hover:bg-white/[0.06] transition-all duration-200">
                                 <ChevronRight size={18} />
                             </button>
-                            <button onClick={createSession} className="h-9 w-9 rounded-lg flex items-center justify-center bg-muted dark:bg-white/[0.08] text-foreground hover:bg-muted/80 dark:hover:bg-white/[0.12] border border-border transition-colors">
-                                <Plus size={16} />
+                            <button onClick={createSession} className="h-9 w-9 rounded-xl flex items-center justify-center bg-primary/10 dark:bg-electric-purple/12 text-primary dark:text-electric-purple hover:bg-primary/15 dark:hover:bg-electric-purple/18 border border-primary/15 dark:border-electric-purple/20 transition-all duration-200 shadow-sm active:scale-95">
+                                <Plus size={16} strokeWidth={2.5} />
                             </button>
                         </div>
                     )}
@@ -253,24 +277,25 @@ export function NavigationDock() {
                         <button
                             onClick={() => setShowServicesPanel(!showServicesPanel)}
                             className={cn(
-                                "w-full flex items-center justify-between h-8 px-3 rounded-lg text-xs font-medium transition-all border",
+                                "w-full flex items-center justify-between h-9 px-3 rounded-xl text-xs font-medium transition-all duration-200 border",
                                 showServicesPanel
-                                    ? "bg-primary/10 dark:bg-electric-purple/15 text-foreground border-primary/20 dark:border-electric-purple/25"
-                                    : "bg-muted/50 dark:bg-white/[0.04] text-muted-foreground hover:text-foreground border-border hover:border-primary/20"
+                                    ? "bg-primary/10 dark:bg-electric-purple/12 text-foreground border-primary/20 dark:border-electric-purple/20 shadow-sm shadow-primary/5"
+                                    : "bg-transparent text-muted-foreground hover:text-foreground border-transparent hover:bg-muted/50 dark:hover:bg-white/[0.04] hover:border-border/60"
                             )}
                         >
-                            <div className="flex items-center gap-1.5">
-                                <Cpu size={13} />
-                                Services
+                            <div className="flex items-center gap-2">
+                                <Cpu size={14} />
+                                <span>Services</span>
                             </div>
-                            <span className={cn(
-                                "text-[10px] font-medium px-1.5 py-0.5 rounded-full",
-                                connectedCount > 0
-                                    ? "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
-                                    : "text-muted-foreground/60 bg-muted"
-                            )}>
-                                {connectedCount}/{totalCount}
-                            </span>
+                            <div className="flex items-center gap-1">
+                                {/* Colored dots for each connected service */}
+                                {Object.values(servers).filter(s => s.connected).map(s => (
+                                    <span key={s.id} className={cn("w-1.5 h-1.5 rounded-full transition-all duration-300", serviceColors[s.id] || 'bg-emerald-500')} />
+                                ))}
+                                {connectedCount === 0 && (
+                                    <span className="text-[10px] text-muted-foreground/50">{connectedCount}/{totalCount}</span>
+                                )}
+                            </div>
                         </button>
                     </div>
                 )}
@@ -281,14 +306,14 @@ export function NavigationDock() {
                         <button
                             onClick={() => { setShowServicesPanel(!showServicesPanel); }}
                             className={cn(
-                                "h-9 w-9 rounded-lg flex items-center justify-center transition-colors relative",
-                                showServicesPanel ? "bg-muted dark:bg-white/[0.08] text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                                "h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-200 relative",
+                                showServicesPanel ? "bg-primary/10 dark:bg-electric-purple/12 text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/60 dark:hover:bg-white/[0.06]"
                             )}
                             title="Services"
                         >
                             <Cpu size={16} />
                             {connectedCount > 0 && (
-                                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
                             )}
                         </button>
                     </div>
@@ -298,35 +323,38 @@ export function NavigationDock() {
                 {!isCollapsed && (
                     <div className="px-3 pt-2 pb-1 shrink-0">
                         <div className="relative group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50 group-focus-within:text-primary transition-colors duration-200" />
                             <input
                                 type="text" placeholder="Search chats..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                                className="w-full h-8 pl-9 pr-3 rounded-lg bg-muted/50 dark:bg-white/[0.04] border border-border text-xs text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary/40 transition-all"
+                                className="w-full h-9 pl-9 pr-3 rounded-xl bg-muted/40 dark:bg-white/[0.03] border border-transparent text-xs text-foreground placeholder:text-muted-foreground/40 outline-none focus:bg-muted/60 dark:focus:bg-white/[0.05] focus:border-primary/30 focus:shadow-[0_0_0_3px] focus:shadow-primary/10 transition-all duration-200"
                             />
                         </div>
                     </div>
                 )}
 
                 {/* Chat Sessions */}
-                <div className="flex-1 overflow-y-auto no-scrollbar py-2 space-y-3">
+                <div className="flex-1 overflow-y-auto no-scrollbar py-2 space-y-4 px-2">
                     {/* Empty state */}
                     {!isCollapsed && sessions.length === 0 && (
-                        <div className="px-4 py-8 text-center">
-                            <div className="w-10 h-10 mx-auto mb-3 rounded-xl bg-muted/60 dark:bg-white/[0.04] flex items-center justify-center border border-border">
-                                <MessageSquare size={18} className="text-muted-foreground/50" />
+                        <div className="px-3 py-10 text-center">
+                            <div className="w-12 h-12 mx-auto mb-4 rounded-2xl bg-primary/8 dark:bg-electric-purple/10 flex items-center justify-center border border-primary/10 dark:border-electric-purple/15">
+                                <Sparkles size={20} className="text-primary/50 dark:text-electric-purple/50" />
                             </div>
-                            <p className="text-sm font-medium text-muted-foreground/70 mb-1">No conversations yet</p>
-                            <p className="text-xs text-muted-foreground/50">Start a new chat to get going</p>
+                            <p className="text-sm font-medium text-foreground/70 mb-1">Start a conversation</p>
+                            <p className="text-xs text-muted-foreground/50 leading-relaxed">Connect a service and ask<br />anything to get started</p>
                         </div>
                     )}
 
                     {/* Pinned */}
                     {pinnedSessions.length > 0 && (
-                        <div className="px-3">
+                        <div>
                             {!isCollapsed && (
-                                <h3 className="text-[10px] font-semibold text-muted-foreground/60 mb-2 px-1 uppercase tracking-wider flex items-center gap-1.5">
-                                    <Pin size={9} className="text-primary dark:text-neurix-orange" /> Pinned
-                                </h3>
+                                <div className="flex items-center gap-2 mb-1.5 px-2">
+                                    <h3 className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wider flex items-center gap-1.5">
+                                        <Pin size={9} className="text-primary/40 dark:text-electric-purple/40" /> Pinned
+                                    </h3>
+                                    <div className="flex-1 h-px bg-border/40" />
+                                </div>
                             )}
                             <div className="space-y-0.5">{pinnedSessions.map(s => renderSessionItem(s))}</div>
                         </div>
@@ -334,9 +362,12 @@ export function NavigationDock() {
 
                     {/* Date-grouped sessions */}
                     {dateGroups.map(group => (
-                        <div key={group.label} className="px-3">
+                        <div key={group.label}>
                             {!isCollapsed && (
-                                <h3 className="text-[10px] font-semibold text-muted-foreground/60 mb-2 px-1 uppercase tracking-wider">{group.label}</h3>
+                                <div className="flex items-center gap-2 mb-1.5 px-2">
+                                    <h3 className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wider whitespace-nowrap">{group.label}</h3>
+                                    <div className="flex-1 h-px bg-border/40" />
+                                </div>
                             )}
                             <div className="space-y-0.5">
                                 {group.sessions.map(s => renderSessionItem(s))}
@@ -380,18 +411,18 @@ export function NavigationDock() {
                                                     <Cpu size={20} className="text-white" />
                                                 </div>
                                                 <div>
-                                                    <h2 className="text-base font-bold text-foreground tracking-tight">Neural Services</h2>
+                                                    <h2 className="text-base font-bold text-foreground tracking-tight">Services</h2>
                                                     <p className="text-xs text-muted-foreground mt-0.5">
                                                         <span className={cn(connectedCount > 0 ? "text-emerald-600 dark:text-emerald-400 font-semibold" : "")}>
                                                             {connectedCount}
                                                         </span>
-                                                        {' '}of {totalCount} MCP nodes active
+                                                        {' '}of {totalCount} connected
                                                     </p>
                                                 </div>
                                             </div>
                                             <button
                                                 onClick={() => setShowServicesPanel(false)}
-                                                className="h-9 w-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                                className="h-9 w-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10 transition-all duration-200"
                                             >
                                                 <X size={18} />
                                             </button>
@@ -409,7 +440,7 @@ export function NavigationDock() {
                                                 <div
                                                     key={server.id}
                                                     className={cn(
-                                                        "rounded-xl border p-4 transition-all duration-250 flex flex-col gap-3 group relative overflow-hidden",
+                                                        "rounded-xl border p-4 transition-all duration-200 flex flex-col gap-3 group relative overflow-hidden hover:shadow-md",
                                                         server.connected
                                                             ? isActive
                                                                 ? cn("bg-background dark:bg-white/[0.03]", info.accentBorder, "shadow-sm")
@@ -419,9 +450,8 @@ export function NavigationDock() {
                                                 >
                                                     {/* Colored top accent line */}
                                                     <div className={cn(
-                                                        "absolute top-0 left-0 right-0 h-[2px] transition-opacity",
+                                                        "absolute top-0 left-0 right-0 h-[2px] transition-opacity duration-200",
                                                         server.connected ? "opacity-100" : "opacity-0 group-hover:opacity-40",
-                                                        info.accentBg.replace('/8', '').replace('/10', '')
                                                     )}
                                                         style={{
                                                             background: server.id === 'gdrive' ? '#4285F4' :
@@ -435,7 +465,7 @@ export function NavigationDock() {
                                                     {/* Icon + Name + Status */}
                                                     <div className="flex items-center gap-3">
                                                         <div className={cn(
-                                                            "w-11 h-11 rounded-xl flex items-center justify-center shrink-0 overflow-hidden transition-all",
+                                                            "w-11 h-11 rounded-xl flex items-center justify-center shrink-0 overflow-hidden transition-all duration-200",
                                                             server.connected
                                                                 ? cn(info.accentBg, "border", info.accentBorder)
                                                                 : "bg-muted/60 dark:bg-white/[0.04] border border-border/50 opacity-50 group-hover:opacity-75"
@@ -450,7 +480,7 @@ export function NavigationDock() {
                                                                     server.connected ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" : "bg-muted-foreground/20"
                                                                 )} />
                                                                 <span className={cn(
-                                                                    "text-[11px] font-medium",
+                                                                    "text-xs font-medium",
                                                                     server.connected ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground/40"
                                                                 )}>
                                                                     {server.connected ? 'Online' : 'Offline'}
@@ -464,7 +494,7 @@ export function NavigationDock() {
 
                                                     {/* Description */}
                                                     <div className="space-y-2">
-                                                        <p className="text-[11px] text-muted-foreground/80 leading-relaxed">{info.tagline}</p>
+                                                        <p className="text-xs text-muted-foreground/70 leading-relaxed">{info.tagline}</p>
                                                         <div className="flex flex-wrap gap-1">
                                                             {info.capabilities.map((cap, i) => (
                                                                 <span key={i} className={cn("text-[9px] font-semibold px-1.5 py-0.5 rounded-md border", info.tagClass)}>
@@ -481,7 +511,7 @@ export function NavigationDock() {
                                                                 <button
                                                                     onClick={() => { setActiveServerId(server.id); setShowServicesPanel(false); }}
                                                                     className={cn(
-                                                                        "flex-1 h-8 rounded-lg text-xs font-semibold transition-colors border",
+                                                                        "flex-1 h-8 rounded-lg text-xs font-semibold transition-all duration-200 border active:scale-[0.98]",
                                                                         isActive
                                                                             ? cn(info.btnClass, "opacity-80")
                                                                             : cn(info.btnClass)
@@ -491,7 +521,7 @@ export function NavigationDock() {
                                                                 </button>
                                                                 <button
                                                                     onClick={() => disconnectServer(server.id)}
-                                                                    className="h-8 w-8 rounded-lg flex items-center justify-center bg-red-500/8 text-red-500/60 hover:text-red-500 hover:bg-red-500/15 border border-red-500/10 hover:border-red-500/20 transition-colors"
+                                                                    className="h-8 w-8 rounded-lg flex items-center justify-center bg-red-500/8 text-red-500/60 hover:text-red-500 hover:bg-red-500/15 border border-red-500/10 hover:border-red-500/20 transition-all duration-200 active:scale-95"
                                                                     title="Disconnect"
                                                                 >
                                                                     <WifiOff size={13} />
@@ -500,7 +530,7 @@ export function NavigationDock() {
                                                         ) : (
                                                             <button
                                                                 onClick={() => connectServer(server.id)}
-                                                                className={cn("flex-1 h-8 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 border", info.btnClass)}
+                                                                className={cn("flex-1 h-8 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 border active:scale-[0.98]", info.btnClass)}
                                                             >
                                                                 <Wifi size={12} />
                                                                 Connect

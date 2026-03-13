@@ -413,15 +413,15 @@ const ConnectedEmptyState = ({
     const prompts = SERVER_PROMPTS[serverId]?.prompts || defaultPrompts;
 
     return (
-        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center overflow-y-auto">
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="relative mb-6"
+                className="relative mb-4"
             >
-                <div className="w-20 h-20 rounded-2xl bg-muted/50 dark:bg-white/[0.08] border border-border dark:border-white/10 flex items-center justify-center shadow-lg backdrop-blur-sm">
-                    <Icon size={44} />
+                <div className="w-16 h-16 rounded-2xl bg-muted/50 dark:bg-white/[0.08] border border-border dark:border-white/10 flex items-center justify-center shadow-lg backdrop-blur-sm">
+                    <Icon size={36} />
                 </div>
             </motion.div>
 
@@ -430,11 +430,11 @@ const ConnectedEmptyState = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, duration: 0.4 }}
             >
-                <h2 className="text-3xl font-heading font-bold text-foreground mb-2 tracking-tight">
+                <h2 className="text-2xl font-heading font-bold text-foreground mb-1.5 tracking-tight">
                     Connected to <span className="text-neurix-orange">{serverName}</span>
                 </h2>
-                <p className="text-muted-foreground max-w-lg mb-10 text-[15px] leading-relaxed mx-auto">
-                    Neurix has indexed your files. Try one of these actions to get started or type your own request below.
+                <p className="text-muted-foreground max-w-lg mb-6 text-sm leading-relaxed mx-auto">
+                    Try one of these actions to get started or type your own request below.
                 </p>
             </motion.div>
 
@@ -444,7 +444,7 @@ const ConnectedEmptyState = ({
                 transition={{ delay: 0.2, duration: 0.4 }}
                 className="w-full max-w-2xl"
             >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                     {prompts.slice(0, 4).map((prompt, i) => {
                         const PromptIcon = prompt.icon;
                         return (
@@ -456,13 +456,17 @@ const ConnectedEmptyState = ({
                                 whileTap={{ scale: 0.98 }}
                                 whileHover={{ scale: 1.02 }}
                                 onClick={() => onSend(prompt.text)}
-                                className="group text-left p-5 rounded-2xl border border-border hover:border-primary/30 dark:hover:border-electric-purple/30 bg-card hover:shadow-lg transition-all duration-300"
+                                className="group text-left p-3.5 rounded-xl border border-border hover:border-primary/30 dark:hover:border-electric-purple/30 bg-card hover:shadow-md transition-all duration-300"
                             >
-                                <div className="w-10 h-10 rounded-xl bg-primary/8 dark:bg-electric-purple/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 dark:group-hover:bg-electric-purple/20 transition-colors">
-                                    <PromptIcon className="w-5 h-5 text-primary dark:text-electric-purple" />
+                                <div className="flex items-center gap-3">
+                                    <div className="w-9 h-9 rounded-lg bg-primary/8 dark:bg-electric-purple/10 flex items-center justify-center shrink-0 group-hover:bg-primary/15 dark:group-hover:bg-electric-purple/20 transition-colors">
+                                        <PromptIcon className="w-4 h-4 text-primary dark:text-electric-purple" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <h3 className="text-[13px] font-semibold text-foreground leading-tight">{prompt.text}</h3>
+                                        <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{prompt.desc}</p>
+                                    </div>
                                 </div>
-                                <h3 className="text-[15px] font-semibold text-foreground mb-1.5">{prompt.text}</h3>
-                                <p className="text-[13px] text-muted-foreground leading-relaxed">{prompt.desc}</p>
                             </motion.button>
                         );
                     })}
@@ -481,17 +485,17 @@ const DisconnectedEmptyState = ({
     servers: any[];
 }) => {
     return (
-        <div className="flex-1 flex flex-col items-center p-6 pb-4 text-center my-auto">
+        <div className="flex-1 flex flex-col items-center p-6 pb-4 text-center justify-center overflow-y-auto">
             {/* Hero */}
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="relative mb-6 mt-auto"
+                className="relative mb-4"
             >
-                <div className="icon-circle w-20 h-20 shadow-[0_8px_30px_rgba(15,5,29,0.15)] relative overflow-hidden group">
+                <div className="icon-circle w-16 h-16 shadow-[0_8px_30px_rgba(15,5,29,0.15)] relative overflow-hidden group">
                     <div className="absolute inset-0 bg-neurix-gradient opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                    <Bot className="w-10 h-10 text-white relative z-10" />
+                    <Bot className="w-8 h-8 text-white relative z-10" />
                 </div>
             </motion.div>
 
@@ -500,10 +504,10 @@ const DisconnectedEmptyState = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, duration: 0.4 }}
             >
-                <h2 className="text-3xl font-serif-display font-medium text-foreground mb-2 tracking-tight">
+                <h2 className="text-2xl font-serif-display font-medium text-foreground mb-1.5 tracking-tight">
                     Neurix <span className="font-semibold text-neurix-orange">Workstation</span>
                 </h2>
-                <p className="text-muted-foreground max-w-md mb-10 text-[15px] font-sans-body leading-relaxed mx-auto">
+                <p className="text-muted-foreground max-w-md mb-6 text-sm font-sans-body leading-relaxed mx-auto">
                     Connect a service below to get started, or type a message to begin a conversation.
                 </p>
             </motion.div>
@@ -514,9 +518,9 @@ const DisconnectedEmptyState = ({
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2, duration: 0.4 }}
-                    className="w-full max-w-lg mb-auto"
+                    className="w-full max-w-2xl"
                 >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex flex-wrap justify-center gap-3">
                         {servers.slice(0, 6).map((server, i) => {
                             const Icon = getServerIcon(server.id);
                             return (
@@ -528,15 +532,17 @@ const DisconnectedEmptyState = ({
                                     whileTap={{ scale: 0.98 }}
                                     whileHover={{ scale: 1.02 }}
                                     onClick={() => onSelect(server.id)}
-                                    className="p-5 rounded-2xl border border-border hover:border-primary/30 dark:hover:border-electric-purple/30 bg-card text-left group hover:shadow-lg transition-all duration-300"
+                                    className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border border-border hover:border-primary/30 dark:hover:border-electric-purple/30 bg-card text-left group hover:shadow-md transition-all duration-300"
                                 >
-                                    <div className="w-10 h-10 rounded-xl bg-muted/50 dark:bg-white/[0.06] border border-border/50 dark:border-white/[0.1] flex items-center justify-center mb-3 group-hover:bg-primary/10 dark:group-hover:bg-white/[0.1] transition-colors duration-300">
-                                        <Icon size={22} />
+                                    <div className="w-9 h-9 rounded-lg bg-muted/50 dark:bg-white/[0.06] border border-border/50 dark:border-white/[0.1] flex items-center justify-center shrink-0 group-hover:bg-primary/10 dark:group-hover:bg-white/[0.1] transition-colors duration-300">
+                                        <Icon size={18} />
                                     </div>
-                                    <span className="block text-[15px] font-semibold text-foreground group-hover:text-neurix-orange transition-colors mb-1">{server.name}</span>
-                                    <span className="flex items-center gap-1 text-[11px] font-mono font-bold text-muted-foreground group-hover:text-neurix-orange/80 uppercase tracking-widest transition-colors">
-                                        Connect <ArrowRight className="w-3 h-3" />
-                                    </span>
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="text-[13px] font-semibold text-foreground group-hover:text-neurix-orange transition-colors leading-tight">{server.name}</span>
+                                        <span className="flex items-center gap-1 text-[10px] text-muted-foreground group-hover:text-neurix-orange/80 transition-colors leading-tight">
+                                            Connect <ArrowRight className="w-2.5 h-2.5" />
+                                        </span>
+                                    </div>
                                 </motion.button>
                             );
                         })}
