@@ -18,6 +18,7 @@ import {
     Mail, Inbox, MessageSquare as MailIcon,
     CalendarDays, CalendarClock, CalendarCheck,
     CheckSquare, ListTodo, PlusCircle, Share2, BrainCircuit,
+    Table, FileSpreadsheet, PenLine, Grid3X3,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -68,6 +69,15 @@ const SERVER_PROMPTS: Record<string, { label: string; prompts: { text: string; d
             { text: 'List task lists', desc: 'View all your task lists and counts.', icon: ListTodo },
             { text: 'Create a new task', desc: 'Add a task with title, notes, and due date.', icon: PlusCircle },
             { text: 'Complete tasks', desc: 'Mark tasks as done or review completed items.', icon: Check },
+        ],
+    },
+    gsheets: {
+        label: 'Google Sheets',
+        prompts: [
+            { text: 'List my spreadsheets', desc: 'View your recent Google Sheets files.', icon: FileSpreadsheet },
+            { text: 'Read a sheet', desc: 'Read cell values from a spreadsheet range.', icon: Table },
+            { text: 'Create a spreadsheet', desc: 'Create a new blank spreadsheet.', icon: PlusCircle },
+            { text: 'Write to cells', desc: 'Update cell values in a range.', icon: PenLine },
         ],
     },
 };

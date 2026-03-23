@@ -146,6 +146,22 @@ function formatToolResponse(text: string, _toolName: string): string {
     return convertUrlsToMarkdownLinks(text);
   }
 
+  // ── Google Sheets: Plain text action responses ──
+  if (text.includes('Spreadsheet created!') || text.includes('Sheet added!') ||
+      text.includes('Values written!') || text.includes('Rows appended!') ||
+      text.includes('Batch write complete!') || text.includes('Spreadsheet shared!') ||
+      text.includes('Formatting applied') || text.includes('Cells merged') ||
+      text.includes('Range sorted') || text.includes('Find & Replace complete') ||
+      text.includes('Sheet duplicated!') || text.includes('Spreadsheet copied!')) {
+    return convertUrlsToMarkdownLinks('**' + text.split('\n')[0] + '**\n\n' + text.split('\n').slice(1).filter(Boolean).map(l => `> ${l}`).join('\n'));
+  }
+  if (text === 'Spreadsheet moved to trash' || text === 'Sheet deleted successfully' ||
+      text === 'Permission removed successfully' || text === 'Cells unmerged successfully' ||
+      text.startsWith('Range cleared:') || text.startsWith('Spreadsheet renamed') ||
+      text.startsWith('Sheet renamed')) {
+    return `**${text}**`;
+  }
+
   // ── Google Tasks: Plain text action responses ──
   if (text.includes('Task created!') || text.includes('Task updated!') ||
       text.includes('Task completed!') || text.includes('Task uncompleted!') ||
@@ -296,6 +312,42 @@ function formatToolResponse(text: string, _toolName: string): string {
     // ── Google Tasks: Single task list ──
     if (data.taskList && data.taskList.title !== undefined) {
       return formatSingleTaskList(data.taskList);
+    }
+
+    // ── Google Sheets: Spreadsheets list ──
+    if (data.spreadsheets && Array.isArray(data.spreadsheets)) {
+      if (data.spreadsheets.length === 0) return 'No spreadsheets found.';
+      return formatSpreadsheetsList(data.spreadsheets);
+    }
+
+    // ── Google Sheets: Read range values ──
+    if (data.range && data.values && Array.isArray(data.values)) {
+      return formatSheetValues(data.range, data.values, data.rowCount);
+    }
+
+    // ── Google Sheets: Batch read ranges ──
+    if (data.ranges && Array.isArray(data.ranges) && data.ranges[0]?.values !== undefined) {
+      let output = `**📊 Batch Read — ${data.ranges.length} ranges**\n\n`;
+      for (const r of data.ranges) {
+        output += `### ${r.range}\n\n`;
+        output += formatSheetValues(r.range, r.values || [], (r.values || []).length) + '\n\n---\n\n';
+      }
+      return output.trim();
+    }
+
+    // ── Google Sheets: Sheet tabs list ──
+    if (data.sheets && Array.isArray(data.sheets) && data.sheets[0]?.sheetId !== undefined) {
+      return formatSheetTabs(data.sheets);
+    }
+
+    // ── Google Sheets: Spreadsheet metadata ──
+    if (data.spreadsheet && data.spreadsheet.spreadsheetId) {
+      return formatSpreadsheetDetail(data.spreadsheet);
+    }
+
+    // ── Google Sheets: Permissions list ──
+    if (data.permissions && Array.isArray(data.permissions) && data.permissions[0]?.role !== undefined) {
+      return formatSheetPermissions(data.permissions);
     }
 
     // Default: return formatted JSON in a code block
@@ -871,6 +923,89 @@ function stripHtmlTags(html: string): string {
     .replace(/&#39;/gi, "'")
     .replace(/\n{3,}/g, '\n\n')
     .trim();
+}
+
+// ── Google Sheets formatting helpers ──
+
+function formatSpreadsheetsList(spreadsheets: any[]): string {
+  let output = `**📊 Spreadsheets** — ${spreadsheets.length} found\n\n`;
+  output += '---\n\n';
+  for (const file of spreadsheets) {
+    const modified = file.modifiedTime ? formatSmartDate(file.modifiedTime) : '';
+    const owner = file.owners?.[0]?.displayName || file.owners?.[0]?.emailAddress || '';
+    const starred = file.starred ? ' ⭐' : '';
+    output += `**${file.name}**${starred}\n`;
+    output += `> ID: \`${file.id}\`\n`;
+    if (modified) output += `> Modified: ${modified}\n`;
+    if (owner) output += `> Owner: ${owner}\n`;
+    if (file.webViewLink) output += `> [Open in Sheets](${file.webViewLink})\n`;
+    output += '\n';
+  }
+  return output.trim();
+}
+
+function formatSheetValues(range: string, values: any[][], rowCount?: number): string {
+  if (!values || values.length === 0) return `**${range}** — Empty range (no data)`;
+
+  let output = `**📊 ${range}** — ${rowCount ?? values.length} rows\n\n`;
+
+  // If first row looks like headers (all strings, typically), render as a table
+  if (values.length > 1) {
+    const headers = values[0];
+    output += '| ' + headers.map((h: any) => String(h ?? '')).join(' | ') + ' |\n';
+    output += '| ' + headers.map(() => '---').join(' | ') + ' |\n';
+    for (let i = 1; i < values.length && i <= 50; i++) {
+      const row = values[i];
+      output += '| ' + headers.map((_: any, j: number) => String(row[j] ?? '')).join(' | ') + ' |\n';
+    }
+    if (values.length > 51) {
+      output += `\n*...and ${values.length - 51} more rows*\n`;
+    }
+  } else {
+    // Single row — just list the values
+    output += values[0].map((v: any, i: number) => `**Col ${i + 1}:** ${v ?? ''}`).join('  •  ');
+  }
+
+  return output;
+}
+
+function formatSheetTabs(sheets: any[]): string {
+  let output = `**📋 Sheet Tabs** — ${sheets.length} sheets\n\n`;
+  for (const s of sheets) {
+    const hidden = s.hidden ? ' 🙈 (hidden)' : '';
+    const size = s.rowCount && s.columnCount ? ` — ${s.rowCount} rows × ${s.columnCount} cols` : '';
+    output += `- **${s.title}**${hidden}${size} (ID: \`${s.sheetId}\`)\n`;
+  }
+  return output.trim();
+}
+
+function formatSpreadsheetDetail(ss: any): string {
+  const props = ss.properties || {};
+  let output = `**📊 ${props.title || 'Spreadsheet'}**\n\n`;
+  output += `> **ID:** \`${ss.spreadsheetId}\`\n`;
+  if (props.locale) output += `> **Locale:** ${props.locale}\n`;
+  if (props.timeZone) output += `> **Timezone:** ${props.timeZone}\n`;
+  if (ss.spreadsheetUrl) output += `> [Open in Sheets](${ss.spreadsheetUrl})\n`;
+  if (ss.sheets && ss.sheets.length > 0) {
+    output += `\n**Sheets (${ss.sheets.length}):**\n`;
+    for (const s of ss.sheets) {
+      const p = s.properties || {};
+      output += `- ${p.title || 'Untitled'}`;
+      if (p.gridProperties) output += ` (${p.gridProperties.rowCount}×${p.gridProperties.columnCount})`;
+      output += '\n';
+    }
+  }
+  return output.trim();
+}
+
+function formatSheetPermissions(permissions: any[]): string {
+  let output = `**🔐 Permissions** — ${permissions.length} entries\n\n`;
+  for (const p of permissions) {
+    const who = p.emailAddress || p.domain || p.displayName || p.type;
+    const icon = p.role === 'owner' ? '👑' : p.role === 'writer' ? '✏️' : p.role === 'commenter' ? '💬' : '👁️';
+    output += `${icon} **${who}** — ${p.role}\n`;
+  }
+  return output.trim();
 }
 
 /**

@@ -86,6 +86,16 @@ function generateSuggestions(serverName: string, responseContent: string, server
             suggestions.push('Show my tasks');
         }
         if (lower.includes('complete')) suggestions.push('List task lists');
+    } else if (serverId === 'gsheets') {
+        if (lower.includes('spreadsheet') || lower.includes('sheet') || lower.includes('cell')) {
+            suggestions.push('List my spreadsheets');
+            if (lower.includes('read') || lower.includes('values')) suggestions.push('Read a range');
+            else suggestions.push('Read a sheet');
+        }
+        if (lower.includes('created') || lower.includes('written') || lower.includes('updated')) {
+            suggestions.push('List my spreadsheets');
+        }
+        if (lower.includes('format')) suggestions.push('Read a sheet');
     }
 
     // General content-based fallbacks

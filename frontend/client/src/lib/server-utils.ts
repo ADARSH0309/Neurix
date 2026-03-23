@@ -65,6 +65,18 @@ const TasksIcon: React.FC<{ size?: number; className?: string }> = ({ size = 24,
         React.createElement('path', { d: 'M80 128L52 100l8.5-8.5L80 111l51.5-51.5L140 68z', fill: '#FFFFFF' }),
     );
 
+// Google Sheets icon
+const SheetsIcon: React.FC<{ size?: number; className?: string }> = ({ size = 24, className }) =>
+    React.createElement('svg', { width: size, height: size, viewBox: '0 0 48 66', xmlns: 'http://www.w3.org/2000/svg', className },
+        React.createElement('path', { d: 'M29.5 0H4.5C2 0 0 2 0 4.5V61.5C0 64 2 66 4.5 66H43.5C46 66 48 64 48 61.5V18.5L29.5 0Z', fill: '#0F9D58' }),
+        React.createElement('path', { d: 'M29.5 0V14C29.5 16.5 31.5 18.5 34 18.5H48L29.5 0Z', fill: '#87CEAC' }),
+        React.createElement('rect', { x: '10', y: '28', width: '28', height: '3', rx: '1', fill: '#F1F1F1' }),
+        React.createElement('rect', { x: '10', y: '35', width: '28', height: '3', rx: '1', fill: '#F1F1F1' }),
+        React.createElement('rect', { x: '10', y: '42', width: '28', height: '3', rx: '1', fill: '#F1F1F1' }),
+        React.createElement('rect', { x: '10', y: '49', width: '28', height: '3', rx: '1', fill: '#F1F1F1' }),
+        React.createElement('rect', { x: '22', y: '28', width: '2', height: '24', fill: '#0F9D58', opacity: '0.4' }),
+    );
+
 const serverVisuals: Record<string, ServerVisual> = {
     gdrive: {
         icon: DriveIcon,
@@ -105,6 +117,14 @@ const serverVisuals: Record<string, ServerVisual> = {
         accentColor: '#4285F4',
         lightBg: 'bg-blue-50',
         darkBg: 'bg-blue-500/15',
+    },
+    gsheets: {
+        icon: SheetsIcon,
+        gradient: 'from-green-500 to-emerald-600',
+        accent: 'green',
+        accentColor: '#0F9D58',
+        lightBg: 'bg-green-50',
+        darkBg: 'bg-green-500/15',
     },
 };
 

@@ -155,6 +155,7 @@ export async function createHttpServer(config: McpServerConfig): Promise<Express
   app.get('/oauth2callback', healthCheckCorsMiddleware, authLimiter, validateQuery(schemas.oauthCallback), handleOAuthCallback);
   app.get('/oauth/callback', healthCheckCorsMiddleware, authLimiter, validateQuery(schemas.oauthCallback), handleOAuthCallback);
   app.get('/auth/google/callback', healthCheckCorsMiddleware, authLimiter, validateQuery(schemas.oauthCallback), handleOAuthCallback);
+  app.get('/auth/g-sheet/callback', healthCheckCorsMiddleware, authLimiter, validateQuery(schemas.oauthCallback), handleOAuthCallback);
   app.get('/auth/g-sheets/callback', healthCheckCorsMiddleware, authLimiter, validateQuery(schemas.oauthCallback), handleOAuthCallback);
   app.get('/sheets/callback', healthCheckCorsMiddleware, authLimiter, validateQuery(schemas.oauthCallback), handleOAuthCallback);
   app.get('/auth/callback', healthCheckCorsMiddleware, authLimiter, validateQuery(schemas.oauthCallback), handleOAuthCallback);

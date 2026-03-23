@@ -57,6 +57,15 @@ const serviceInfo: Record<string, { tagline: string; capabilities: string[]; acc
         btnClass: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border-amber-500/20',
         tagClass: 'bg-amber-500/8 text-amber-600/70 dark:text-amber-400/70 border-amber-500/15',
     },
+    gsheets: {
+        tagline: 'Read, write, and manage Google Sheets spreadsheets.',
+        capabilities: ['Read Cells', 'Write Data', 'Format', 'Share'],
+        accent: 'text-green-600 dark:text-green-400',
+        accentBg: 'bg-green-500/8 dark:bg-green-500/10',
+        accentBorder: 'border-green-500/20 dark:border-green-400/20',
+        btnClass: 'bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-500/20 border-green-500/20',
+        tagClass: 'bg-green-500/8 text-green-600/70 dark:text-green-400/70 border-green-500/15',
+    },
 };
 
 // Service status dots for the sidebar button
@@ -66,6 +75,7 @@ const serviceColors: Record<string, string> = {
     gmail: 'bg-red-500',
     gcalendar: 'bg-teal-500',
     gtask: 'bg-amber-500',
+    gsheets: 'bg-green-500',
 };
 
 export function NavigationDock() {
@@ -458,7 +468,8 @@ export function NavigationDock() {
                                                                 server.id === 'gforms' ? '#7C3AED' :
                                                                 server.id === 'gmail' ? '#EA4335' :
                                                                 server.id === 'gcalendar' ? '#0D9488' :
-                                                                server.id === 'gtask' ? '#D97706' : '#7C3AED'
+                                                                server.id === 'gtask' ? '#D97706' :
+                                                                server.id === 'gsheets' ? '#0F9D58' : '#7C3AED'
                                                         }}
                                                     />
 

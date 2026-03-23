@@ -48,6 +48,7 @@ async function performOAuth(
         const pathsToMatch = [
           '/oauth/callback',
           '/oauth2callback',
+          '/auth/g-sheet/callback',
           '/auth/g-sheets/callback',
           '/auth/callback',
         ];
@@ -138,7 +139,7 @@ async function checkTokens(tokenPath: string): Promise<boolean> {
 async function main() {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:8085/auth/g-sheets/callback';
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:8085/auth/g-sheet/callback';
   const tokenPath = process.env.TOKEN_PATH || join(__dirname, '../token.json');
 
   if (!clientId || !clientSecret) {
