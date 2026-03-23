@@ -6,4 +6,5 @@ packages:
   - 'backend/gmail-server'
   - 'backend/gcalendar-server'
   - 'backend/gtask-server'
+  - 'backend/gsheets-server'
   - 'backend/shared/mcp-sdk'
