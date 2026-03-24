@@ -49,6 +49,7 @@ async function performOAuth(
         const pathsToMatch = [
           '/oauth/callback',
           '/oauth2callback',
+          '/auth/g-calendar/callback',
           '/auth/g-calender/callback',
           '/auth/callback',
         ];
@@ -139,7 +140,7 @@ async function checkTokens(tokenPath: string): Promise<boolean> {
 async function main() {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:8083/auth/g-calender/callback';
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:8083/auth/g-calendar/callback';
   const tokenPath = process.env.TOKEN_PATH || join(__dirname, '../token.json');
 
   if (!clientId || !clientSecret) {

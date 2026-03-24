@@ -155,6 +155,7 @@ export async function createHttpServer(config: McpServerConfig): Promise<Express
   app.get('/oauth2callback', healthCheckCorsMiddleware, authLimiter, validateQuery(schemas.oauthCallback), handleOAuthCallback);
   app.get('/oauth/callback', healthCheckCorsMiddleware, authLimiter, validateQuery(schemas.oauthCallback), handleOAuthCallback);
   app.get('/auth/google/callback', healthCheckCorsMiddleware, authLimiter, validateQuery(schemas.oauthCallback), handleOAuthCallback);
+  app.get('/auth/g-calendar/callback', healthCheckCorsMiddleware, authLimiter, validateQuery(schemas.oauthCallback), handleOAuthCallback);
   app.get('/auth/g-calender/callback', healthCheckCorsMiddleware, authLimiter, validateQuery(schemas.oauthCallback), handleOAuthCallback);
   app.get('/calendar/callback', healthCheckCorsMiddleware, authLimiter, validateQuery(schemas.oauthCallback), handleOAuthCallback);
   app.get('/auth/callback', healthCheckCorsMiddleware, authLimiter, validateQuery(schemas.oauthCallback), handleOAuthCallback);
