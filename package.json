@@ -32,9 +32,16 @@
   },
   "keywords": [
     "mcp",
+    "model-context-protocol",
     "google-drive",
     "google-forms",
-    "chat-interface"
+    "google-calendar",
+    "google-tasks",
+    "google-sheets",
+    "gmail",
+    "chat-interface",
+    "ai-assistant",
+    "google-workspace"
   ],
   "author": "",
   "license": "MIT"
