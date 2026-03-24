@@ -68,3 +68,8 @@ __tests__/
 *.spec.ts
 .jest/
 
+
+# Docker
+docker-compose.override.yml
+.docker/
+
