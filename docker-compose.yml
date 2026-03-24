@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+
+  gdrive:
+    build: ./backend/gdrive-server
+    ports: ["8080:8080"]
+    env_file: ./backend/gdrive-server/.env
+    depends_on: [redis]
+    environment:
+      REDIS_URL: redis://redis:6379
+
+  gforms:
+    build: ./backend/gforms-server
+    ports: ["8081:8081"]
+    env_file: ./backend/gforms-server/.env
+    depends_on: [redis]
+    environment:
+      REDIS_URL: redis://redis:6379
+
+  gmail:
+    build: ./backend/gmail-server
+    ports: ["8082:8082"]
+    env_file: ./backend/gmail-server/.env
+    depends_on: [redis]
+    environment:
+      REDIS_URL: redis://redis:6379
+
+  gcalendar:
+    build: ./backend/gcalendar-server
+    ports: ["8083:8083"]
+    env_file: ./backend/gcalendar-server/.env
+    depends_on: [redis]
+    environment:
+      REDIS_URL: redis://redis:6379
+
+  gtask:
+    build: ./backend/gtask-server
+    ports: ["8084:8084"]
+    env_file: ./backend/gtask-server/.env
+    depends_on: [redis]
+    environment:
+      REDIS_URL: redis://redis:6379
+
+  gsheets:
+    build: ./backend/gsheets-server
+    ports: ["8085:8085"]
+    env_file: ./backend/gsheets-server/.env
+    depends_on: [redis]
+    environment:
+      REDIS_URL: redis://redis:6379
+
+  frontend:
+    build: ./frontend
+    ports: ["9000:9000"]
+    depends_on: [gdrive, gforms, gmail, gcalendar, gtask, gsheets]
+
+volumes:
+  redis-data:
