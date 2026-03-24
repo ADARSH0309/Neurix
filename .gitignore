@@ -61,3 +61,10 @@ backend/nul
 *.key
 *.pem
 
+
+# Testing
+__tests__/
+*.test.ts
+*.spec.ts
+.jest/
+
