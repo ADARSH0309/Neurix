@@ -50,9 +50,9 @@ export function ServerProvider({ children }: { children: ReactNode }) {
                 }));
                 return result.tools as McpTool[];
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(`Failed to fetch tools for ${serverId}:`, error);
-            if (error.message && error.message.includes('401')) {
+            if (error instanceof Error && error.message.includes('401')) {
                 toast.error(`Session expired for ${servers[serverId]?.name || serverId}. Please reconnect.`);
                 disconnectServer(serverId);
             }
@@ -163,8 +163,8 @@ export function ServerProvider({ children }: { children: ReactNode }) {
         }
         try {
             return await callToolAndGetText(server.baseUrl, server.token, toolName, args);
-        } catch (error: any) {
-            if (error.message && error.message.includes('401')) {
+        } catch (error: unknown) {
+            if (error instanceof Error && error.message.includes('401')) {
                 toast.error(`Session expired for ${server.name}. Please reconnect.`);
                 disconnectServer(serverId);
                 throw new Error('Session expired. Please reconnect.');
