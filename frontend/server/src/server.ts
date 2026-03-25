@@ -123,7 +123,7 @@ async function fetchMcpTools(serverId: string, token?: string): Promise<any[]> {
     }
     return [];
   } catch (error) {
-    console.error(`Failed to fetch tools from ${serverId}:`, error);
+    console.error(`[${new Date().toISOString()}] Failed to fetch tools from ${serverId}:`, error instanceof Error ? error.message : error);
     return [];
   }
 }
@@ -190,7 +190,7 @@ app.get('/api/auth/status/:serverId', async (req, res) => {
     const data = await response.json() as any;
     res.json(data);
   } catch (error) {
-    console.error(`Auth status check failed for ${serverId}:`, error);
+    console.error(`[${new Date().toISOString()}] Auth status check failed for ${serverId}:`, error instanceof Error ? error.message : error);
     res.status(500).json({ authenticated: false, error: 'Failed to check auth status' });
   }
 });
@@ -204,7 +204,7 @@ app.get('/api/tools/:serverId', async (req, res) => {
     const tools = await fetchMcpTools(serverId, token);
     res.json({ tools });
   } catch (error) {
-    console.error(`Failed to fetch tools for ${serverId}:`, error);
+    console.error(`[${new Date().toISOString()}] Failed to fetch tools for ${serverId}:`, error instanceof Error ? error.message : error);
     res.status(500).json({ error: 'Failed to fetch tools' });
   }
 });
@@ -318,7 +318,7 @@ Always explain what you're doing and the results you get.`
       });
     }
   } catch (error) {
-    console.error('Chat error:', error);
+    console.error(`[${new Date().toISOString()}] Chat error:`, error instanceof Error ? error.message : error);
     res.status(500).json({
       error: 'Chat failed',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -352,7 +352,7 @@ app.post('/api/proxy/:serverId', async (req, res) => {
     const data = await response.json();
     res.status(response.status).json(data);
   } catch (error) {
-    console.error(`Proxy error for ${serverId}:`, error);
+    console.error(`[${new Date().toISOString()}] Proxy error for ${serverId}:`, error instanceof Error ? error.message : error);
     res.status(500).json({
       error: 'Proxy error',
       message: error instanceof Error ? error.message : 'Unknown error'
