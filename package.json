@@ -28,7 +28,9 @@
     "dev:gtask": "pnpm --filter @neurix/gtask-server start:http",
     "dev:gsheets": "pnpm --filter @neurix/gsheets-server start:http",
     "start:frontend": "pnpm --filter @neurix/mcp-chat-interface start",
-    "clean": "pnpm -r clean"
+    "clean": "pnpm -r clean",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test"
   },
   "keywords": [
     "mcp",
