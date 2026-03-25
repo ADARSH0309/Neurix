@@ -38,6 +38,14 @@ function getNextRequestId(): number {
   return ++requestId;
 }
 
+function safeJsonParse<T>(text: string, fallback: T): T {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return fallback;
+  }
+}
+
 /**
  * Send a JSON-RPC request to the MCP server
  */
@@ -137,7 +145,7 @@ export async function callToolAndGetText(
 /**
  * Format tool response for better readability
  */
-function formatToolResponse(text: string, _toolName: string): string {
+function formatToolResponse(text: string, toolName: string): string {
   // Check if text already contains readable format (from MCP server)
   if (text.includes('Form created successfully') ||
       text.includes('Found') && text.includes('forms:') ||
@@ -196,6 +204,11 @@ function formatToolResponse(text: string, _toolName: string): string {
         return `**${name}** has been deleted.\n\n[Open Google Tasks](https://tasks.google.com)`;
       }
       return `**Completed tasks cleared.**\n\n[Open Google Tasks](https://tasks.google.com)`;
+    }
+
+    // ── Google Sheets: JSON action responses ──
+    if (data.success && data.action && !isGmailAction(data.action)) {
+      return formatSheetsActionResponse(data);
     }
 
     // ── Gmail: Success action responses ──
@@ -420,6 +433,31 @@ function formatGmailSingleMessage(msg: any): string {
   output += body;
 
   if (msg.id) output += `\n\n---\n\n[Open in Gmail](https://mail.google.com/mail/u/0/#inbox/${msg.id})`;
+  return output;
+}
+
+const GMAIL_ACTIONS = new Set([
+  'send_message', 'reply_to_message', 'forward_message',
+  'trash_message', 'untrash_message', 'delete_message',
+  'mark_as_read', 'mark_as_unread', 'star_message', 'unstar_message',
+  'archive_message', 'modify_labels',
+  'trash_thread', 'delete_thread',
+  'create_label', 'update_label', 'delete_label',
+  'create_draft', 'delete_draft', 'send_draft',
+  'get_attachment', 'get_profile', 'list_labels', 'list_threads', 'list_drafts',
+]);
+
+function isGmailAction(action: string): boolean {
+  return GMAIL_ACTIONS.has(action);
+}
+
+function formatSheetsActionResponse(data: any): string {
+  const msg = data.message || 'Operation completed successfully.';
+  let output = `**${msg}**`;
+  if (data.spreadsheetId) output += `\n\n> **Spreadsheet ID:** \`${data.spreadsheetId}\``;
+  if (data.title) output += `\n> **Title:** ${data.title}`;
+  if (data.spreadsheetUrl) output += `\n\n[Open in Sheets](${data.spreadsheetUrl})`;
+  else output += `\n\n[Open Google Sheets](https://docs.google.com/spreadsheets)`;
   return output;
 }
 
@@ -1194,7 +1232,7 @@ export async function listDriveFiles(
     throw new Error(result.content?.[0]?.text || 'Failed to list files');
   }
 
-  const data = JSON.parse(result.content[0].text);
+  const data = safeJsonParse(result.content[0].text!, {});
   return data.files || [];
 }
 
@@ -1212,7 +1250,7 @@ export async function searchDriveFiles(
     throw new Error(result.content?.[0]?.text || 'Failed to search files');
   }
 
-  const data = JSON.parse(result.content[0].text);
+  const data = safeJsonParse(result.content[0].text!, {});
   return data.files || [];
 }
 
@@ -1230,7 +1268,7 @@ export async function getFileDetails(
     throw new Error(result.content?.[0]?.text || 'Failed to get file');
   }
 
-  return JSON.parse(result.content[0].text);
+  return safeJsonParse(result.content[0].text!, {});
 }
 
 /**
@@ -1527,7 +1565,7 @@ export async function listGmailMessages(
     throw new Error(result.content?.[0]?.text || 'Failed to list messages');
   }
 
-  const data = JSON.parse(result.content[0].text);
+  const data = safeJsonParse(result.content[0].text!, {});
   return Array.isArray(data) ? data : data.messages || [];
 }
 
@@ -1549,7 +1587,7 @@ export async function searchGmailMessages(
     throw new Error(result.content?.[0]?.text || 'Failed to search messages');
   }
 
-  const data = JSON.parse(result.content[0].text);
+  const data = safeJsonParse(result.content[0].text!, {});
   return Array.isArray(data) ? data : data.messages || [];
 }
 
@@ -1566,7 +1604,7 @@ export async function getGmailProfile(
     throw new Error(result.content?.[0]?.text || 'Failed to get profile');
   }
 
-  return JSON.parse(result.content[0].text);
+  return safeJsonParse(result.content[0].text!, {});
 }
 
 /**
@@ -1611,7 +1649,7 @@ export async function listGmailLabels(
     throw new Error(result.content?.[0]?.text || 'Failed to list labels');
   }
 
-  const data = JSON.parse(result.content[0].text);
+  const data = safeJsonParse(result.content[0].text!, {});
   return Array.isArray(data) ? data : data.labels || [];
 }
 
