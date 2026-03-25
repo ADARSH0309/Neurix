@@ -61,7 +61,12 @@ const MCP_SERVERS: Record<string, McpServerConfig> = {
 };
 
 // Store tools cache per server
-const toolsCache: Record<string, any[]> = {};
+interface McpToolDefinition {
+  name: string;
+  description?: string;
+  inputSchema?: Record<string, unknown>;
+}
+const toolsCache: Record<string, McpToolDefinition[]> = {};
 
 // Middleware
 app.use(cors({
