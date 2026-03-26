@@ -729,7 +729,26 @@ export function ChatStage() {
                                     )}
                                 </AnimatePresence>
                                 <AnimatePresence>
-                                    {isLoading && (
+                                    {isLoading && streamingContent !== null && streamingContent.length > 0 && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0 }}
+                                            className="flex justify-start"
+                                        >
+                                            <ChatMessage
+                                                msg={{
+                                                    id: '__streaming__',
+                                                    role: 'assistant',
+                                                    content: streamingContent,
+                                                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                                                }}
+                                            />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                                <AnimatePresence>
+                                    {isLoading && (streamingContent === null || streamingContent.length === 0) && (
                                         <TypingIndicator
                                             serverName={activeServer?.name}
                                             serverId={activeServerId || undefined}
