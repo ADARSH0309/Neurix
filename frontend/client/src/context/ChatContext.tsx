@@ -4,7 +4,7 @@ import { useServer } from './ServerContext';
 import { useUI } from './UIContext';
 import { toast } from 'sonner';
 import { generateToolsHelpMessage, matchUserInputToTool } from '../lib/mcp-api';
-import { isConfigured as isAIConfigured, chatWithAI, getAIFinalResponse } from '../lib/ai-service';
+import { isConfigured as isAIConfigured, streamChatWithAI, streamAIFinalResponse } from '../lib/ai-service';
 import type OpenAI from 'openai';
 
 interface ChatContextType {
