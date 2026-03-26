@@ -203,23 +203,31 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         setSessions(prev => prev.map(s => s.id === id ? { ...s, pinned: false } : s));
     };
 
-    // --- AI-powered sendMessage ---
+    // --- AI-powered sendMessage (streaming) ---
     const sendMessageWithAI = async (text: string, sessionId: string) => {
         const history = aiHistoryRef.current[sessionId] || [];
 
-        // Call OpenAI with all connected server tools
-        const aiResponse = await chatWithAI(text, servers, history);
+        // Start streaming — text chunks update UI progressively
+        setStreamingContent('');
+
+        const aiResponse = await streamChatWithAI(text, servers, history, (chunk) => {
+            setStreamingContent(prev => (prev || '') + chunk);
+        });
 
         // Track conversation: add user message
         history.push({ role: 'user', content: text });
 
         if (aiResponse.toolCalls.length === 0) {
-            // No tool calls — just a text response
+            // No tool calls — just a text response (already streamed to UI)
             const responseText = aiResponse.text || 'I\'m not sure how to help with that. Try connecting to a service first.';
             history.push({ role: 'assistant', content: responseText });
             aiHistoryRef.current[sessionId] = history;
+            setStreamingContent(null);
             return responseText;
         }
+
+        // Has tool calls — stop streaming text, show tool execution
+        setStreamingContent(null);
 
         // Build the assistant message with tool_calls for conversation history
         history.push({
