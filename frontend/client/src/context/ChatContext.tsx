@@ -129,6 +129,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     const [sessions, setSessions] = useState<ChatSession[]>(() => loadJson('neurix_sessions', []));
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [streamingContent, setStreamingContent] = useState<string | null>(null);
 
     // OpenAI conversation history per session (not persisted — resets on refresh)
     const aiHistoryRef = useRef<Record<string, ChatMessage[]>>({});
