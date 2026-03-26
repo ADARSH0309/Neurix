@@ -270,16 +270,19 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             }
         }
 
-        // Use the formatted tool result directly (preserves structured formatting from formatToolResponse).
-        // Only call AI for summarization when there are multiple tool calls or errors.
+        // Single successful tool call — use pre-formatted result directly
+        // Multiple tools or errors — stream AI summary
         let finalResponse: string;
         if (toolResults.length === 1 && !hasError) {
-            // Single successful tool call — use the pre-formatted result directly
             finalResponse = toolResults[0];
             history.push({ role: 'assistant', content: finalResponse });
         } else {
-            // Multiple tools or errors — let AI summarize
-            finalResponse = await getAIFinalResponse(history);
+            // Stream the summary response
+            setStreamingContent('');
+            finalResponse = await streamAIFinalResponse(history, (chunk) => {
+                setStreamingContent(prev => (prev || '') + chunk);
+            });
+            setStreamingContent(null);
             history.push({ role: 'assistant', content: finalResponse });
         }
 
