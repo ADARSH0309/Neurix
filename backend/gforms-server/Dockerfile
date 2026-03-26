@@ -19,25 +19,22 @@ COPY turbo.json ./
 COPY tsconfig.json ./
 
 # Copy package.json files
-COPY Backend/shared/mcp-sdk/package.json ./Backend/shared/mcp-sdk/
-COPY Backend/gforms-server/package.json ./Backend/gforms-server/
+COPY backend/shared/mcp-sdk/package.json ./backend/shared/mcp-sdk/
+COPY backend/gforms-server/package.json ./backend/gforms-server/
 
 # Install ONLY production dependencies
 # --ignore-scripts prevents husky (git hooks) from running
 RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
 # Copy built artifacts (built locally before Docker build)
-COPY Backend/shared/mcp-sdk/dist ./Backend/shared/mcp-sdk/dist
-COPY Backend/shared/mcp-sdk/package.json ./Backend/shared/mcp-sdk/
-COPY Backend/gforms-server/dist ./Backend/gforms-server/dist
-COPY Backend/gforms-server/src/http/public ./Backend/gforms-server/dist/http/public
-COPY Backend/gforms-server/package.json ./Backend/gforms-server/
+COPY backend/shared/mcp-sdk/dist ./backend/shared/mcp-sdk/dist
+COPY backend/shared/mcp-sdk/package.json ./backend/shared/mcp-sdk/
+COPY backend/gforms-server/dist ./backend/gforms-server/dist
+COPY backend/gforms-server/src/http/public ./backend/gforms-server/dist/http/public
+COPY backend/gforms-server/package.json ./backend/gforms-server/
 
 # Copy any necessary runtime files
-COPY Backend/gforms-server/docker-compose.yml ./Backend/gforms-server/
-
-# Copy TLS certificates for Redis connection
-COPY Backend/gforms-server/certs ./Backend/gforms-server/certs
+COPY backend/gforms-server/docker-compose.yml ./backend/gforms-server/
 
 # Change ownership to non-root user
 RUN chown -R neurix:neurix /app
@@ -57,5 +54,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); })"
 
 # Start the HTTP server
-WORKDIR /app/Backend/gforms-server
+WORKDIR /app/backend/gforms-server
 CMD ["node", "dist/http/index.js"]

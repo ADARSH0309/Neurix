@@ -20,7 +20,7 @@ COPY tsconfig.json ./
 
 # Copy package.json files
 COPY backend/shared/mcp-sdk/package.json ./backend/shared/mcp-sdk/
-COPY backend/gdrive-server/package.json ./backend/gdrive-server/
+COPY backend/gmail-server/package.json ./backend/gmail-server/
 
 # Install ONLY production dependencies
 # --ignore-scripts prevents husky (git hooks) from running
@@ -29,12 +29,12 @@ RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 # Copy built artifacts (built locally before Docker build)
 COPY backend/shared/mcp-sdk/dist ./backend/shared/mcp-sdk/dist
 COPY backend/shared/mcp-sdk/package.json ./backend/shared/mcp-sdk/
-COPY backend/gdrive-server/dist ./backend/gdrive-server/dist
-COPY backend/gdrive-server/src/http/public ./backend/gdrive-server/dist/http/public
-COPY backend/gdrive-server/package.json ./backend/gdrive-server/
+COPY backend/gmail-server/dist ./backend/gmail-server/dist
+COPY backend/gmail-server/src/http/public ./backend/gmail-server/dist/http/public
+COPY backend/gmail-server/package.json ./backend/gmail-server/
 
 # Copy any necessary runtime files
-COPY backend/gdrive-server/docker-compose.yml ./backend/gdrive-server/
+COPY backend/gmail-server/docker-compose.yml ./backend/gmail-server/
 
 # Change ownership to non-root user
 RUN chown -R neurix:neurix /app
@@ -54,5 +54,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); })"
 
 # Start the HTTP server
-WORKDIR /app/backend/gdrive-server
+WORKDIR /app/backend/gmail-server
 CMD ["node", "dist/http/index.js"]

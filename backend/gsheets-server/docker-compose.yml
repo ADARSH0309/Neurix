@@ -3,7 +3,7 @@ version: '3.8'
 services:
   redis:
     image: redis:7-alpine
-    container_name: gdrive-mcp-redis
+    container_name: gsheets-mcp-redis
     ports:
       - "6379:6379"
     command: redis-server --appendonly yes
@@ -16,25 +16,20 @@ services:
       retries: 3
     restart: unless-stopped
     networks:
-      - gdrive-mcp-network
+      - gsheets-mcp-network
 
-  gdrive-server:
+  gsheets-server:
     build:
       context: ../../
-      dockerfile: backend/gdrive-server/Dockerfile
-    container_name: gdrive-mcp-server
+      dockerfile: backend/gsheets-server/Dockerfile
+    container_name: gsheets-mcp-server
     ports:
       - "3000:3000"
     environment:
-      # Server configuration
       NODE_ENV: production
       PORT: 3000
-
-      # Redis configuration
       REDIS_HOST: redis
       REDIS_PORT: 6379
-
-      # OAuth configuration (must be provided via .env file or environment)
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:3000/oauth2callback}
@@ -49,10 +44,10 @@ services:
       retries: 3
     restart: unless-stopped
     networks:
-      - gdrive-mcp-network
+      - gsheets-mcp-network
 
 networks:
-  gdrive-mcp-network:
+  gsheets-mcp-network:
     driver: bridge
 
 volumes:
