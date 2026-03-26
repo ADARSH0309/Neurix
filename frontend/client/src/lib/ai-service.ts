@@ -236,6 +236,15 @@ export async function streamChatWithAI(
         }
     }
 
+    // Parse accumulated tool calls
+    const apiToolCalls: AIToolCall[] = Object.values(toolCallChunks).map(tc => {
+        const { serverId, toolName } = parsePrefixedToolName(tc.name);
+        let args: Record<string, any> = {};
+        try { args = JSON.parse(tc.arguments); } catch { args = {}; }
+        return { id: tc.id, serverId, toolName, args };
+    });
+
+    // Also check for text-embedded function calls (Llama fallback)
     let text: string | null = fullText || null;
     let textToolCalls: AIToolCall[] = [];
 
@@ -247,6 +256,6 @@ export async function streamChatWithAI(
 
     return {
         text: text || null,
-        toolCalls: [...textToolCalls],
+        toolCalls: [...apiToolCalls, ...textToolCalls],
     };
 }
