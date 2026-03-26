@@ -612,7 +612,7 @@ function ChatSearchBar({
 }
 
 export function ChatStage() {
-    const { isLoading, sendMessage, currentSession } = useChat();
+    const { isLoading, sendMessage, currentSession, streamingContent } = useChat();
     const { servers, activeServerId, setActiveServerId, connectServer } = useServer();
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const scrollAreaRef = useRef<HTMLDivElement>(null);
