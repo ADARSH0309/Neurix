@@ -22,6 +22,7 @@ interface ChatContextType {
     unpinSession: (id: string) => void;
     sendMessage: (text: string, targetSessionId?: string) => Promise<void>;
     isLoading: boolean;
+    streamingContent: string | null;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
