@@ -259,3 +259,34 @@ export async function streamChatWithAI(
         toolCalls: [...apiToolCalls, ...textToolCalls],
     };
 }
+
+/** Streaming version of getAIFinalResponse — yields text chunks */
+export async function streamAIFinalResponse(
+    history: ChatMessage[],
+    onTextChunk: (chunk: string) => void,
+): Promise<string> {
+    const client = getClient();
+
+    const messages: ChatMessage[] = [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...history,
+    ];
+
+    const stream = await client.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages,
+        temperature: 0.2,
+        stream: true,
+    });
+
+    let fullText = '';
+    for await (const chunk of stream) {
+        const delta = chunk.choices[0]?.delta;
+        if (delta?.content) {
+            fullText += delta.content;
+            onTextChunk(delta.content);
+        }
+    }
+
+    return fullText || '';
+}
