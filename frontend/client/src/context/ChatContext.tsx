@@ -258,7 +258,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             try {
                 addActivity('info', `Executing ${tc.toolName}`, tc.serverId, server.name);
                 const result = await executeTool(tc.serverId, tc.toolName, tc.args);
-                // Truncate very large results to avoid blowing up the context
                 const truncated = result.length > 4000 ? result.slice(0, 4000) + '\n...(truncated)' : result;
                 toolResults.push(truncated);
                 history.push({ role: 'tool', tool_call_id: tc.id, content: truncated } as ChatMessage);
