@@ -221,6 +221,19 @@ export async function streamChatWithAI(
             fullText += delta.content;
             onTextChunk(delta.content);
         }
+
+        // Accumulate tool calls (they arrive in fragments)
+        if (delta.tool_calls) {
+            for (const tc of delta.tool_calls) {
+                const idx = tc.index;
+                if (!toolCallChunks[idx]) {
+                    toolCallChunks[idx] = { id: '', name: '', arguments: '' };
+                }
+                if (tc.id) toolCallChunks[idx].id = tc.id;
+                if (tc.function?.name) toolCallChunks[idx].name += tc.function.name;
+                if (tc.function?.arguments) toolCallChunks[idx].arguments += tc.function.arguments;
+            }
+        }
     }
 
     let text: string | null = fullText || null;
