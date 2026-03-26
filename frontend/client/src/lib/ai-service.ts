@@ -184,3 +184,56 @@ export async function getAIFinalResponse(
 
     return response.choices[0].message.content || '';
 }
+
+/** Streaming version of chatWithAI — yields text chunks, then returns tool calls at the end */
+export async function streamChatWithAI(
+    message: string,
+    servers: Record<string, McpServer>,
+    history: ChatMessage[],
+    onTextChunk: (chunk: string) => void,
+): Promise<AIResponse> {
+    const client = getClient();
+    const tools = mcpToolsToOpenAI(servers);
+
+    const messages: ChatMessage[] = [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...history,
+        { role: 'user', content: message },
+    ];
+
+    const stream = await client.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages,
+        tools: tools.length > 0 ? tools : undefined,
+        tool_choice: tools.length > 0 ? 'auto' : undefined,
+        temperature: 0.2,
+        stream: true,
+    });
+
+    let fullText = '';
+    const toolCallChunks: Record<number, { id: string; name: string; arguments: string }> = {};
+
+    for await (const chunk of stream) {
+        const delta = chunk.choices[0]?.delta;
+        if (!delta) continue;
+
+        if (delta.content) {
+            fullText += delta.content;
+            onTextChunk(delta.content);
+        }
+    }
+
+    let text: string | null = fullText || null;
+    let textToolCalls: AIToolCall[] = [];
+
+    if (text && /<function=/.test(text)) {
+        const parsed = parseTextFunctionCalls(text);
+        text = parsed.cleanText;
+        textToolCalls = parsed.toolCalls;
+    }
+
+    return {
+        text: text || null,
+        toolCalls: [...textToolCalls],
+    };
+}
