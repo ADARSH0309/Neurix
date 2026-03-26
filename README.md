@@ -4,7 +4,7 @@
 
 **AI-Powered MCP Workstation**
 
-A universal chat interface that connects to Google Drive, Forms, Gmail, Calendar & Tasks using Model Context Protocol (MCP). Manage files, send emails, create events, track tasks, and build surveys — all through natural language.
+A universal chat interface that connects to Google Drive, Forms, Gmail, Calendar, Tasks & Sheets using Model Context Protocol (MCP). Manage files, send emails, create events, track tasks, build surveys, and edit spreadsheets — all through natural language.
 
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
@@ -22,6 +22,7 @@ A universal chat interface that connects to Google Drive, Forms, Gmail, Calendar
 - **Gmail** — Send, reply, search emails, manage labels and drafts
 - **Google Calendar** — Create events, manage calendars, check availability
 - **Google Tasks** — Create task lists, add/complete/delete tasks by name
+- **Google Sheets** — Create, read, update spreadsheets and manage cells
 - **Smart Routing** — Auto-routes commands to the correct server across all connected services
 - **Chat Interface** — Multi-server chat with persistent sessions, command palette, and suggestions
 - **OAuth 2.0** — Secure Google authentication with automatic token refresh
@@ -35,7 +36,10 @@ A universal chat interface that connects to Google Drive, Forms, Gmail, Calendar
 | **Frontend** | React 19, TypeScript, Vite, Tailwind CSS, Shadcn UI, Framer Motion |
 | **Backend** | Node.js, Express, TypeScript, JSON-RPC 2.0 |
 | **Protocol** | Model Context Protocol (MCP) |
-| **Auth** | Google OAuth 2.0 |
+| **Sessions** | Redis, encrypted token storage |
+| **Auth** | Google OAuth 2.0 with PKCE |
+| **Observability** | Prometheus metrics, structured logging, circuit breakers |
+| **Deployment** | Docker, docker-compose per service |
 | **Architecture** | pnpm monorepo |
 
 ---
@@ -49,11 +53,36 @@ Neurix/
 │   ├── gdrive-server/      # Google Drive MCP server     (port 8080)
 │   ├── gforms-server/      # Google Forms MCP server     (port 8081)
 │   ├── gmail-server/       # Gmail MCP server            (port 8082)
+│   ├── gsheets-server/     # Google Sheets MCP server    (port 8085)
 │   ├── gtask-server/       # Google Tasks MCP server     (port 8084)
 │   └── shared/mcp-sdk/     # Shared MCP utilities
 ├── frontend/
-│   └── client/             # React chat interface         (port 9000)
+│   ├── client/             # React chat interface         (port 9000)
+│   └── server/             # Express proxy server
 └── pnpm-workspace.yaml
+```
+
+Each MCP server follows an identical structure:
+
+```
+<service>-server/
+├── src/
+│   ├── index.ts            # STDIO entry point
+│   ├── server.ts           # MCP server class
+│   ├── <service>-client.ts # Google API client
+│   ├── types.ts            # TypeScript interfaces
+│   ├── exchange-token.ts   # Token exchange
+│   ├── oauth-setup.ts      # Manual OAuth setup
+│   ├── http/               # HTTP transport (SSE, routes, middleware, OAuth, metrics)
+│   ├── session/            # Redis session management
+│   ├── lib/                # Errors, logger, metrics, retry logic
+│   └── utils/              # Circuit breaker, encryption, sanitization
+├── tests/                  # Encryption, session, integration tests
+├── Dockerfile
+├── docker-compose.yml
+├── env.example
+├── tsconfig.json
+└── package.json
 ```
 
 ---
@@ -75,6 +104,7 @@ pnpm dev:gforms       # Google Forms    → localhost:8081
 pnpm dev:gmail        # Gmail           → localhost:8082
 pnpm dev:gcalendar    # Google Calendar → localhost:8083
 pnpm dev:gtask        # Google Tasks    → localhost:8084
+pnpm dev:gsheets      # Google Sheets   → localhost:8085
 
 # Start frontend
 cd frontend/client && pnpm dev   # → localhost:9000
@@ -84,7 +114,7 @@ cd frontend/client && pnpm dev   # → localhost:9000
 
 ### How It Works
 
-1. Connect to one or more MCP servers (Drive, Forms, Gmail, Calendar, Tasks)
+1. Connect to one or more MCP servers (Drive, Forms, Gmail, Calendar, Tasks, Sheets)
 2. Authenticate with Google OAuth
 3. Use natural language to interact with your Google services
 4. Smart routing automatically sends commands to the correct server
@@ -101,6 +131,7 @@ cd frontend/client && pnpm dev   # → localhost:9000
 | **Forms** | `list my forms`, `create form Project Feedback` |
 | **Calendar** | `show today's events`, `create event Team Meeting` |
 | **Tasks** | `list task lists`, `create task Buy groceries in Shopping` |
+| **Sheets** | `list spreadsheets`, `read cells A1:D10 from Budget` |
 
 ---
 
