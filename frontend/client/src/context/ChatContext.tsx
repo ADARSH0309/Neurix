@@ -463,7 +463,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             pinSession,
             unpinSession,
             sendMessage,
-            isLoading
+            isLoading,
+            streamingContent
         }}>
             {children}
         </ChatContext.Provider>
