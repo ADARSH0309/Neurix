@@ -62,10 +62,7 @@ backend/nul
 *.pem
 
 
-# Testing
-__tests__/
-*.test.ts
-*.spec.ts
+# Testing artifacts
 .jest/
 
 
