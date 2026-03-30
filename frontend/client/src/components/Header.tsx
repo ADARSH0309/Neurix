@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Search,
@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { ActivityItem } from '@/types';
 import { Logo } from '@/components/Logo';
+import { useChat } from '@/context/ChatContext';
 
 interface HeaderProps {
     theme: 'light' | 'dark';
@@ -37,6 +38,14 @@ interface HeaderProps {
     onBackToLanding?: () => void;
 }
 
+interface SearchResult {
+    sessionId: string;
+    sessionTitle: string;
+    messageContent: string;
+    messageRole: string;
+    timestamp: string;
+}
+
 const getActivityIcon = (type: string): React.ElementType => {
     switch (type) {
         case 'list': return FolderOpen;
@@ -46,6 +55,17 @@ const getActivityIcon = (type: string): React.ElementType => {
         default: return Activity;
     }
 };
+
+function highlightMatch(text: string, query: string): React.ReactNode {
+    if (!query.trim()) return text;
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const parts = text.split(new RegExp(`(${escaped})`, 'gi'));
+    return parts.map((part, i) =>
+        part.toLowerCase() === query.toLowerCase()
+            ? <mark key={i} className="bg-electric-purple/30 text-foreground rounded-sm px-0.5">{part}</mark>
+            : part
+    );
+}
 
 export function Header({
     theme: _theme,
@@ -58,8 +78,81 @@ export function Header({
     onToggleTheme,
     onBackToLanding,
 }: HeaderProps): React.ReactElement {
-    const [searchFocused, setSearchFocused] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchOpen, setSearchOpen] = useState(false);
     const [notifOpen, setNotifOpen] = useState(false);
+    const searchRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const { sessions, setActiveSessionId } = useChat();
+
+    // Search across all sessions
+    const searchResults = useMemo((): SearchResult[] => {
+        const q = searchQuery.toLowerCase().trim();
+        if (!q || q.length < 2) return [];
+
+        const results: SearchResult[] = [];
+        for (const session of sessions) {
+            for (const msg of session.messages) {
+                if (msg.content.toLowerCase().includes(q)) {
+                    results.push({
+                        sessionId: session.id,
+                        sessionTitle: session.title,
+                        messageContent: msg.content,
+                        messageRole: msg.role,
+                        timestamp: msg.timestamp,
+                    });
+                    if (results.length >= 20) return results;
+                }
+            }
+        }
+        return results;
+    }, [searchQuery, sessions]);
+
+    // Close dropdown on outside click
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+                setSearchOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Cmd+K shortcut
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                inputRef.current?.focus();
+                setSearchOpen(true);
+            }
+            if (e.key === 'Escape') {
+                setSearchOpen(false);
+                setSearchQuery('');
+                inputRef.current?.blur();
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
+    const handleResultClick = useCallback((sessionId: string) => {
+        setActiveSessionId(sessionId);
+        setSearchOpen(false);
+        setSearchQuery('');
+    }, [setActiveSessionId]);
+
+    const getSnippet = (content: string, query: string): string => {
+        const idx = content.toLowerCase().indexOf(query.toLowerCase());
+        const start = Math.max(0, idx - 40);
+        const end = Math.min(content.length, idx + query.length + 60);
+        let snippet = content.slice(start, end).replace(/\n/g, ' ');
+        if (start > 0) snippet = '...' + snippet;
+        if (end < content.length) snippet += '...';
+        return snippet;
+    };
 
     return (
         <header className="h-16 border-b border-border bg-background/80 backdrop-blur-3xl sticky top-0 z-40">
@@ -111,20 +204,68 @@ export function Header({
                 </div>
 
                 {/* Center - Search */}
-                <div className="hidden md:flex flex-1 max-w-md justify-center">
+                <div className="hidden md:flex flex-1 max-w-md justify-center" ref={searchRef}>
                     <div className="relative w-full group">
                         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
                         <input
+                            ref={inputRef}
                             type="text"
-                            placeholder="Search..."
-                            onFocus={() => setSearchFocused(true)}
-                            onBlur={() => setSearchFocused(false)}
+                            value={searchQuery}
+                            onChange={(e) => { setSearchQuery(e.target.value); setSearchOpen(true); }}
+                            onFocus={() => setSearchOpen(true)}
+                            placeholder="Search chats..."
                             className="w-full h-9 pl-10 pr-14 bg-muted/50 dark:bg-white/[0.04] border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-all"
                         />
                         <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-background border border-border text-muted-foreground">
                             <Command className="w-3 h-3" />
                             <span className="text-[10px] font-mono">K</span>
                         </div>
+
+                        {/* Search Results Dropdown */}
+                        <AnimatePresence>
+                            {searchOpen && searchQuery.trim().length >= 2 && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -4 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -4 }}
+                                    transition={{ duration: 0.15 }}
+                                    className="absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-3xl border border-border rounded-xl shadow-2xl overflow-hidden z-50"
+                                >
+                                    <ScrollArea className="max-h-[320px]">
+                                        {searchResults.length === 0 ? (
+                                            <div className="py-8 text-center">
+                                                <Search className="w-5 h-5 mx-auto mb-2 text-muted-foreground/40" />
+                                                <p className="text-sm text-muted-foreground">No results for "{searchQuery}"</p>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <div className="px-3 py-2 border-b border-border">
+                                                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+                                                        {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+                                                    </span>
+                                                </div>
+                                                {searchResults.map((result, i) => (
+                                                    <button
+                                                        key={`${result.sessionId}-${i}`}
+                                                        onClick={() => handleResultClick(result.sessionId)}
+                                                        className="w-full text-left px-3 py-2.5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors border-b border-border/50 last:border-0"
+                                                    >
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <MessageSquare className="w-3 h-3 text-electric-purple shrink-0" />
+                                                            <span className="text-xs font-semibold text-foreground truncate">{result.sessionTitle}</span>
+                                                            <span className="text-[10px] text-muted-foreground ml-auto shrink-0">{result.timestamp}</span>
+                                                        </div>
+                                                        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 pl-5">
+                                                            {highlightMatch(getSnippet(result.messageContent, searchQuery), searchQuery)}
+                                                        </p>
+                                                    </button>
+                                                ))}
+                                            </>
+                                        )}
+                                    </ScrollArea>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
 
