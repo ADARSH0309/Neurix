@@ -82,7 +82,7 @@ const SERVER_PROMPTS: Record<string, { label: string; prompts: { text: string; d
     },
 };
 
-// Typing Indicator with server context
+// Loading skeleton — mimics an incoming assistant message
 function TypingIndicator({ serverName, serverId }: { serverName?: string; serverId?: string }) {
     const Icon = serverId ? getServerIcon(serverId) : Sparkles;
     const visual = serverId ? getServerVisual(serverId) : null;
@@ -92,32 +92,41 @@ function TypingIndicator({ serverName, serverId }: { serverName?: string; server
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
-            className="flex items-center gap-3.5 px-4 py-3 max-w-3xl mx-auto"
+            className="flex gap-3.5 px-4 py-3 max-w-3xl mx-auto"
         >
             <div className={cn(
-                "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border",
+                "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border mt-0.5",
                 visual ? `${visual.darkBg} border-current/20` : "bg-neurix-orange/10 dark:bg-neurix-orange/15 border-neurix-orange/20"
             )}>
                 <Icon className={cn("w-4 h-4", visual ? "" : "text-neurix-orange")} />
             </div>
-            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-muted/50 dark:bg-white/[0.04] border border-border/50">
-                <div className="flex items-center gap-1">
-                    {[0, 1, 2].map((i) => (
-                        <motion.div
-                            key={i}
-                            className="w-1.5 h-1.5 rounded-full bg-neurix-orange"
-                            animate={{
-                                scale: [1, 1.4, 1],
-                                opacity: [0.4, 1, 0.4],
-                                y: [0, -3, 0],
-                            }}
-                            transition={{ duration: 1, repeat: Infinity, delay: i * 0.15 }}
-                        />
-                    ))}
+            <div className="flex-1 space-y-3 max-w-md">
+                {/* Thinking label with animated dots */}
+                <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-1">
+                        {[0, 1, 2].map((i) => (
+                            <motion.div
+                                key={i}
+                                className="w-1.5 h-1.5 rounded-full bg-neurix-orange"
+                                animate={{
+                                    scale: [1, 1.4, 1],
+                                    opacity: [0.4, 1, 0.4],
+                                    y: [0, -3, 0],
+                                }}
+                                transition={{ duration: 1, repeat: Infinity, delay: i * 0.15 }}
+                            />
+                        ))}
+                    </div>
+                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
+                        {serverName ? `${serverName} is thinking` : 'Thinking'}
+                    </span>
                 </div>
-                <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest ml-1">
-                    {serverName ? `${serverName} is thinking` : 'Thinking'}
-                </span>
+                {/* Skeleton lines mimicking a response */}
+                <div className="space-y-2.5 animate-pulse">
+                    <div className="h-3 bg-muted/60 dark:bg-white/[0.06] rounded-md w-[90%]" />
+                    <div className="h-3 bg-muted/60 dark:bg-white/[0.06] rounded-md w-[75%]" />
+                    <div className="h-3 bg-muted/60 dark:bg-white/[0.06] rounded-md w-[60%]" />
+                </div>
             </div>
         </motion.div>
     );
