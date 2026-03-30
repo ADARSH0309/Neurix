@@ -27,8 +27,8 @@
 - [x] Create working docker-compose for full stack (all 6 MCP + frontend)
 - [x] Document deployment steps
 
-## Phase 5: Central Memory Search
-- [ ] Wire up header search bar to search chat history
+## Phase 5: Central Memory Search (DONE)
+- [x] Wire up header search bar to search chat history
 
 ## Phase 6: CI/CD
 - [ ] GitHub Actions: lint, type-check, test, build on push
