@@ -30,8 +30,8 @@
 ## Phase 5: Central Memory Search (DONE)
 - [x] Wire up header search bar to search chat history
 
-## Phase 6: CI/CD
-- [ ] GitHub Actions: lint, type-check, test, build on push
+## Phase 6: CI/CD (DONE)
+- [x] GitHub Actions: lint, type-check, test, build on push
 
 ## Completed
 - [x] Integrate OpenAI into frontend (GPT-4o-mini function calling with MCP tool routing)
