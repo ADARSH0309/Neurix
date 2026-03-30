@@ -46,8 +46,23 @@ function safeJsonParse<T>(text: string, fallback: T): T {
   }
 }
 
+const MAX_RETRIES = 3;
+const RETRY_BASE_DELAY = 1000; // 1 second
+
+function isRetryable(status: number): boolean {
+  return status === 429 || status >= 500;
+}
+
+function getRetryDelay(attempt: number, retryAfter?: string): number {
+  if (retryAfter) {
+    const seconds = parseInt(retryAfter, 10);
+    if (!isNaN(seconds)) return seconds * 1000;
+  }
+  return RETRY_BASE_DELAY * Math.pow(2, attempt); // exponential backoff
+}
+
 /**
- * Send a JSON-RPC request to the MCP server
+ * Send a JSON-RPC request to the MCP server with automatic retry
  */
 async function sendJsonRpcRequest<T>(
   baseUrl: string,
@@ -56,32 +71,69 @@ async function sendJsonRpcRequest<T>(
   params?: Record<string, any>,
   path: string = '/'
 ): Promise<T> {
-  const response = await fetch(`${baseUrl}${path}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: getNextRequestId(),
-      method,
-      params,
-    }),
-  });
+  let lastError: Error | null = null;
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`HTTP ${response.status}: ${errorText}`);
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const response = await fetch(`${baseUrl}${path}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: getNextRequestId(),
+          method,
+          params,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+
+        if (response.status === 429) {
+          const retryAfter = response.headers.get('Retry-After') || undefined;
+          if (attempt < MAX_RETRIES) {
+            const delay = getRetryDelay(attempt, retryAfter);
+            await new Promise(r => setTimeout(r, delay));
+            continue;
+          }
+          throw new Error(`Rate limited — too many requests. Please wait a moment and try again.`);
+        }
+
+        if (isRetryable(response.status) && attempt < MAX_RETRIES) {
+          await new Promise(r => setTimeout(r, getRetryDelay(attempt)));
+          continue;
+        }
+
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error.message || 'Unknown RPC error');
+      }
+
+      return data.result;
+    } catch (err: unknown) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+
+      // Don't retry rate limit or non-network errors that we already threw
+      if (lastError.message.startsWith('Rate limited') || lastError.message.startsWith('HTTP ')) {
+        throw lastError;
+      }
+
+      // Retry network errors (fetch failures)
+      if (attempt < MAX_RETRIES) {
+        await new Promise(r => setTimeout(r, getRetryDelay(attempt)));
+        continue;
+      }
+    }
   }
 
-  const data = await response.json();
-
-  if (data.error) {
-    throw new Error(data.error.message || 'Unknown RPC error');
-  }
-
-  return data.result;
+  throw lastError || new Error('Request failed after retries');
 }
 
 /**

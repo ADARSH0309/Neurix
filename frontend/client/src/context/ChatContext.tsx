@@ -428,8 +428,17 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             const error = err instanceof Error ? err : new Error(String(err));
             console.error('Error sending message:', error);
 
-            let errorMessage = 'Failed to process your request. ';
-            errorMessage += error.message || 'Please try again.';
+            let errorMessage: string;
+            if (error.message.includes('Rate limited') || error.message.includes('429')) {
+                errorMessage = 'You\'re sending requests too fast. Please wait a moment and try again.';
+                toast.warning('Rate limit reached — slow down a bit');
+            } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                errorMessage = 'Network error — could not reach the server. Check your connection and try again.';
+            } else if (error.message.includes('500') || error.message.includes('502') || error.message.includes('503')) {
+                errorMessage = 'The server is temporarily unavailable. Please try again in a moment.';
+            } else {
+                errorMessage = 'Failed to process your request. ' + (error.message || 'Please try again.');
+            }
 
             setSessions(prev => prev.map(s => {
                 if (s.id !== sessionId) return s;
