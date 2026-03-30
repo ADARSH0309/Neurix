@@ -23,9 +23,9 @@
 - [x] Add loading skeletons for slow connections
 - [x] Implement session cleanup TODO in gforms-server (already implemented)
 
-## Phase 4: Docker Compose Deployment
-- [ ] Create working docker-compose for full stack (all 6 MCP + frontend)
-- [ ] Document deployment steps
+## Phase 4: Docker Compose Deployment (DONE)
+- [x] Create working docker-compose for full stack (all 6 MCP + frontend)
+- [x] Document deployment steps
 
 ## Phase 5: Central Memory Search
 - [ ] Wire up header search bar to search chat history
