@@ -1,58 +1,34 @@
-# Production Runtime Image
-# NOTE: This Dockerfile expects the project to be built locally first.
-# Run: pnpm build (from monorepo root) before building this image.
-FROM node:20-alpine
-
-# Install pnpm
+FROM node:20-alpine AS builder
 RUN npm install -g pnpm@9.15.0
-
-# Create non-root user for security
-RUN addgroup -g 1001 -S neurix && \
-    adduser -S neurix -u 1001
-
-# Set working directory
 WORKDIR /app
 
-# Copy workspace configuration
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY turbo.json ./
-COPY tsconfig.json ./
-
-# Copy package.json files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY backend/shared/mcp-sdk/package.json ./backend/shared/mcp-sdk/
 COPY backend/gforms-server/package.json ./backend/gforms-server/
+RUN pnpm install --frozen-lockfile
 
-# Install ONLY production dependencies
-# --ignore-scripts prevents husky (git hooks) from running
+COPY backend/shared/mcp-sdk/ ./backend/shared/mcp-sdk/
+COPY backend/gforms-server/ ./backend/gforms-server/
+RUN pnpm --filter @neurix/mcp-sdk build && pnpm --filter @neurix/gforms-server build
+
+FROM node:20-alpine
+RUN npm install -g pnpm@9.15.0 && addgroup -g 1001 -S neurix && adduser -S neurix -u 1001
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY backend/shared/mcp-sdk/package.json ./backend/shared/mcp-sdk/
+COPY backend/gforms-server/package.json ./backend/gforms-server/
 RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
-# Copy built artifacts (built locally before Docker build)
-COPY backend/shared/mcp-sdk/dist ./backend/shared/mcp-sdk/dist
-COPY backend/shared/mcp-sdk/package.json ./backend/shared/mcp-sdk/
-COPY backend/gforms-server/dist ./backend/gforms-server/dist
-COPY backend/gforms-server/src/http/public ./backend/gforms-server/dist/http/public
-COPY backend/gforms-server/package.json ./backend/gforms-server/
+COPY --from=builder /app/backend/shared/mcp-sdk/dist ./backend/shared/mcp-sdk/dist
+COPY --from=builder /app/backend/gforms-server/dist ./backend/gforms-server/dist
+COPY backend/gforms-server/src/http/public ./backend/gforms-server/dist/http/public 2>/dev/null || true
 
-# Copy any necessary runtime files
-COPY backend/gforms-server/docker-compose.yml ./backend/gforms-server/
-
-# Change ownership to non-root user
 RUN chown -R neurix:neurix /app
-
-# Switch to non-root user
 USER neurix
-
-# Expose port
-EXPOSE 3000
-
-# Set environment variables
 ENV NODE_ENV=production
-ENV PORT=3000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); })"
-
-# Start the HTTP server
+EXPOSE 8081
+HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:'+process.env.PORT+'/health',(r)=>{process.exit(r.statusCode===200?0:1)})"
 WORKDIR /app/backend/gforms-server
 CMD ["node", "dist/http/index.js"]

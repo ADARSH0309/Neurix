@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   redis:
     image: redis:7-alpine
@@ -8,59 +6,115 @@ services:
     volumes:
       - redis-data:/data
     command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
   gdrive:
-    build: ./backend/gdrive-server
+    build:
+      context: .
+      dockerfile: backend/gdrive-server/Dockerfile
     ports: ["8080:8080"]
     env_file: ./backend/gdrive-server/.env
-    depends_on: [redis]
+    depends_on:
+      redis:
+        condition: service_healthy
     environment:
       REDIS_URL: redis://redis:6379
+      PORT: 8080
 
   gforms:
-    build: ./backend/gforms-server
+    build:
+      context: .
+      dockerfile: backend/gforms-server/Dockerfile
     ports: ["8081:8081"]
     env_file: ./backend/gforms-server/.env
-    depends_on: [redis]
+    depends_on:
+      redis:
+        condition: service_healthy
     environment:
       REDIS_URL: redis://redis:6379
+      PORT: 8081
 
   gmail:
-    build: ./backend/gmail-server
+    build:
+      context: .
+      dockerfile: backend/gmail-server/Dockerfile
     ports: ["8082:8082"]
     env_file: ./backend/gmail-server/.env
-    depends_on: [redis]
+    depends_on:
+      redis:
+        condition: service_healthy
     environment:
       REDIS_URL: redis://redis:6379
+      PORT: 8082
 
   gcalendar:
-    build: ./backend/gcalendar-server
+    build:
+      context: .
+      dockerfile: backend/gcalendar-server/Dockerfile
     ports: ["8083:8083"]
     env_file: ./backend/gcalendar-server/.env
-    depends_on: [redis]
+    depends_on:
+      redis:
+        condition: service_healthy
     environment:
       REDIS_URL: redis://redis:6379
+      PORT: 8083
 
   gtask:
-    build: ./backend/gtask-server
+    build:
+      context: .
+      dockerfile: backend/gtask-server/Dockerfile
     ports: ["8084:8084"]
     env_file: ./backend/gtask-server/.env
-    depends_on: [redis]
+    depends_on:
+      redis:
+        condition: service_healthy
     environment:
       REDIS_URL: redis://redis:6379
+      PORT: 8084
 
   gsheets:
-    build: ./backend/gsheets-server
+    build:
+      context: .
+      dockerfile: backend/gsheets-server/Dockerfile
     ports: ["8085:8085"]
     env_file: ./backend/gsheets-server/.env
-    depends_on: [redis]
+    depends_on:
+      redis:
+        condition: service_healthy
     environment:
       REDIS_URL: redis://redis:6379
+      PORT: 8085
 
   frontend:
-    build: ./frontend
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
     ports: ["9000:9000"]
-    depends_on: [gdrive, gforms, gmail, gcalendar, gtask, gsheets]
+    environment:
+      PORT: 9000
+      GDRIVE_SERVER_URL: http://gdrive:8080
+      GFORMS_SERVER_URL: http://gforms:8081
+      GMAIL_SERVER_URL: http://gmail:8082
+      GCALENDAR_SERVER_URL: http://gcalendar:8083
+      GTASK_SERVER_URL: http://gtask:8084
+      GSHEETS_SERVER_URL: http://gsheets:8085
+    depends_on:
+      - gdrive
+      - gforms
+      - gmail
+      - gcalendar
+      - gtask
+      - gsheets
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:9000/health',(r)=>{process.exit(r.statusCode===200?0:1)})"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
 
 volumes:
   redis-data:
