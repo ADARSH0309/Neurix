@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { useUI } from '../../context/UIContext';
 import { useServer } from '../../context/ServerContext';
 import { NavigationDock } from '../navigation/NavigationDock';
+import { ErrorBoundary } from '../ErrorBoundary';
 
 import { BackgroundLayer } from './BackgroundLayer';
 import { Header } from '../Header';
@@ -52,7 +53,9 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <div className="flex flex-1 overflow-hidden">
                     {/* Navigation Dock (Left) - hidden on mobile unless toggled */}
                     <div className="hidden md:flex">
-                        <NavigationDock />
+                        <ErrorBoundary>
+                            <NavigationDock />
+                        </ErrorBoundary>
                     </div>
 
                     {/* Mobile Navigation Overlay */}
