@@ -6,6 +6,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY backend/package.json ./backend/
 COPY backend/packages/mcp-sdk/package.json ./backend/packages/mcp-sdk/
 COPY backend/packages/server-core/package.json ./backend/packages/server-core/
+COPY frontend/package.json ./frontend/
 RUN pnpm install --frozen-lockfile
 
 COPY backend/ ./backend/
