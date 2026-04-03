@@ -1,0 +1,51 @@
+{
+  "name": "@neurix/server-core",
+  "version": "0.1.0",
+  "description": "Shared HTTP/OAuth/session infrastructure for Neurix MCP servers",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "node -e \"const fs=require('fs');fs.rmSync('dist',{recursive:true,force:true});\""
+  },
+  "dependencies": {
+    "@neurix/mcp-sdk": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.20.2",
+    "@aws-sdk/client-secrets-manager": "^3.922.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "ioredis": "^5.8.2",
+    "isomorphic-dompurify": "^2.31.0",
+    "jsdom": "^27.1.0",
+    "node-cron": "^4.2.1",
+    "opossum": "^9.0.0",
+    "prom-client": "^15.1.3",
+    "googleapis": "^128.0.0",
+    "open": "^10.1.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/connect": "^3.4.38",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
+    "@types/ioredis": "^5.0.0",
+    "@types/jsdom": "^27.0.0",
+    "@types/node": "^20.10.5",
+    "@types/node-cron": "^3.0.11",
+    "@types/opossum": "^8.1.9",
+    "typescript": "^5.3.3"
+  }
+}

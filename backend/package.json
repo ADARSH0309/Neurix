@@ -1,0 +1,29 @@
+{
+  "name": "@neurix/gateway",
+  "version": "0.1.0",
+  "description": "Neurix MCP Gateway — unified backend for all Google services",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "clean": "node -e \"const fs=require('fs');fs.rmSync('dist',{recursive:true,force:true});\""
+  },
+  "dependencies": {
+    "@neurix/server-core": "workspace:*",
+    "@neurix/mcp-sdk": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.20.2",
+    "googleapis": "^128.0.0",
+    "opossum": "^9.0.0",
+    "zod": "^3.25.76",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "@types/express": "^5.0.5",
+    "@types/opossum": "^8.1.9",
+    "typescript": "^5.3.3"
+  }
+}
