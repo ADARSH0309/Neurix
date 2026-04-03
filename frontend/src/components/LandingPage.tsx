@@ -532,9 +532,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps): React.ReactElem
                     <div className="flex items-center justify-between h-20">
                         {/* Logo - Serif Typography */}
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-[#FF5500] flex items-center justify-center">
-                                <Brain className="w-5 h-5 text-white" aria-hidden="true" />
-                            </div>
+                            <img src="/neurix.svg" alt="Neurix" className="w-10 h-10 rounded-xl" />
                             <span className={cn(
                                 "text-2xl font-serif-display font-bold tracking-tight",
                                 isDark ? "text-white" : "text-[#0F051D]"
