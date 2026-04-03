@@ -4,7 +4,7 @@
  * All services are accessed through a single gateway at port 8080.
  */
 
-export const GATEWAY_URL = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:8080';
+export const GATEWAY_URL = import.meta.env.VITE_MCP_SERVER_URL || 'http://localhost:8080';
 
 export interface McpServerDef {
   id: string;
