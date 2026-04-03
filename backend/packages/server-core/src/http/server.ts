@@ -261,9 +261,10 @@ export async function createHttpServer(config: OAuthConfig, serverDef: ServerDef
   // OAuth Token Exchange
   app.post('/api/generate-token', oauthTokenCorsMiddleware, ...authBodyParser, tokenGenerationLimiter, securityCheck, handleGenerateToken);
 
-  // Global CORS (skip for token endpoint which has its own)
+  // Global CORS (skip for endpoints that have their own CORS middleware)
   app.use((req, res, next) => {
     if (req.path === '/api/generate-token') return next();
+    if (req.path.startsWith('/auth/')) return next(); // auth routes use healthCheckCorsMiddleware
     corsMiddleware(req, res, next);
   });
 
