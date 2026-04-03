@@ -10,7 +10,9 @@ COPY frontend/package.json ./frontend/
 RUN pnpm install --frozen-lockfile
 
 COPY backend/ ./backend/
-RUN pnpm build:backend
+RUN pnpm --filter @neurix/mcp-sdk build
+RUN pnpm --filter @neurix/server-core build
+RUN pnpm --filter @neurix/gateway build
 
 FROM node:20-alpine
 RUN addgroup -g 1001 -S neurix && adduser -S neurix -u 1001
