@@ -22,7 +22,7 @@ interface ServerContextType {
 
 const ServerContext = createContext<ServerContextType | undefined>(undefined);
 
-const GATEWAY_URL = 'http://localhost:8080';
+const GATEWAY_URL = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:8080';
 
 function buildDefaultServers(): Record<string, McpServer> {
     return {
