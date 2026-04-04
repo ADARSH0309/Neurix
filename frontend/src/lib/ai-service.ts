@@ -169,7 +169,7 @@ export async function chatWithAI(
         model: 'llama-3.3-70b-versatile',
         messages,
         tools: tools.length > 0 ? tools : undefined,
-        tool_choice: tools.length > 0 ? 'auto' : undefined,
+        tool_choice: tools.length > 0 ? 'required' : undefined,
         temperature: 0.2,
     });
 
@@ -248,7 +248,7 @@ export async function streamChatWithAI(
         model: 'llama-3.3-70b-versatile',
         messages,
         tools: tools.length > 0 ? tools : undefined,
-        tool_choice: tools.length > 0 ? 'auto' : undefined,
+        tool_choice: tools.length > 0 ? 'required' : undefined,
         temperature: 0.2,
         stream: true,
     });
