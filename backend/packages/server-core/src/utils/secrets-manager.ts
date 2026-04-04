@@ -82,28 +82,17 @@ export async function getSecret(secretName: string): Promise<string> {
  * Get the encryption key from AWS Secrets Manager
  */
 export async function getEncryptionKey(): Promise<string> {
-  const secretName = process.env.AWS_SECRET_NAME || 'gdrive-mcp/encryption-key';
-
-  // Fallback to environment variable if not in production
-  if (process.env.NODE_ENV !== 'production' && process.env.ENCRYPTION_KEY) {
-    console.log(
-      JSON.stringify({
-        timestamp: new Date().toISOString(),
-        level: 'warn',
-        message: 'Using ENCRYPTION_KEY from environment (development mode)',
-      })
-    );
-
+  // If ENCRYPTION_KEY is set directly, always use it (works in any environment)
+  if (process.env.ENCRYPTION_KEY) {
     console.log(JSON.stringify({
       timestamp: new Date().toISOString(),
-      level: 'security',
-      event: 'encryption_key_accessed',
-      source: 'environment_variable',
-      success: true,
+      level: 'info',
+      message: 'Using ENCRYPTION_KEY from environment variable',
     }));
-
     return process.env.ENCRYPTION_KEY;
   }
+
+  const secretName = process.env.AWS_SECRET_NAME || 'gdrive-mcp/encryption-key';
 
   try {
     const secretString = await getSecret(secretName);
@@ -133,27 +122,6 @@ export async function getEncryptionKey(): Promise<string> {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
     }));
-
-    if (process.env.NODE_ENV !== 'production' && process.env.ENCRYPTION_KEY) {
-      console.log(
-        JSON.stringify({
-          timestamp: new Date().toISOString(),
-          level: 'warn',
-          message: 'AWS Secrets Manager unavailable, falling back to ENCRYPTION_KEY',
-          error: error instanceof Error ? error.message : 'Unknown error',
-        })
-      );
-
-      console.log(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        level: 'security',
-        event: 'encryption_key_accessed',
-        source: 'environment_variable_fallback',
-        success: true,
-      }));
-
-      return process.env.ENCRYPTION_KEY;
-    }
 
     throw error;
   }
