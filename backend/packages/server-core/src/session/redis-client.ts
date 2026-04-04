@@ -42,6 +42,7 @@ export function initializeRedis(config?: RedisConfig): Redis {
       lazyConnect: false, // Connect immediately so connection is ready for first request
       enableOfflineQueue: true,
       offlineQueue: true,
+      family: 4, // Force IPv4 — Railway proxy may not support IPv6
       tls: isTls ? { rejectUnauthorized: false } : undefined,
       retryStrategy: (times: number): number => {
         // Never give up — Railway internal DNS can take time to propagate

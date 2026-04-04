@@ -19,6 +19,17 @@ export async function handleHealthCheck(req: Request, res: Response): Promise<vo
   const rawUrl = process.env.REDIS_URL || process.env.REDIS_PRIVATE_URL || '';
   const maskedUrl = rawUrl ? rawUrl.replace(/\/\/[^@]*@/, '//***@') : 'not set';
 
+  // Try a live Redis ping for diagnostics
+  let pingResult = 'skipped';
+  if (!redisConnected) {
+    try {
+      await redis.ping();
+      pingResult = 'OK';
+    } catch (e) {
+      pingResult = e instanceof Error ? e.message : String(e);
+    }
+  }
+
   const health = {
     status: redisConnected ? 'healthy' : 'degraded',
     timestamp: new Date().toISOString(),
@@ -30,6 +41,7 @@ export async function handleHealthCheck(req: Request, res: Response): Promise<vo
         connected: redisHealth.connected,
         clientStatus: redisStatus,
         url: maskedUrl,
+        pingError: pingResult,
         lastError: redisHealth.lastError,
         features: redisHealth.features,
       },
