@@ -13,6 +13,24 @@ import { MemoryStore } from './memory-store.js';
 let redisClient: any = null;
 let usingMemoryStore = false;
 
+/**
+ * A proxy that always delegates to the CURRENT redisClient.
+ * This means even if we switch from Redis to MemoryStore after initialization,
+ * all managers that captured getRedisClient() will automatically use the new store.
+ */
+const redisProxy = new Proxy({} as any, {
+  get(_target, prop) {
+    const client = redisClient;
+    if (!client) throw new Error('Redis client not initialized');
+    const val = client[prop];
+    return typeof val === 'function' ? val.bind(client) : val;
+  },
+  set(_target, prop, value) {
+    if (redisClient) redisClient[prop] = value;
+    return true;
+  },
+});
+
 export interface RedisConfig {
   url?: string;
   host?: string;
@@ -128,13 +146,14 @@ export function initializeRedis(config?: RedisConfig): any {
 }
 
 /**
- * Get the Redis/memory client instance
+ * Get the Redis/memory client proxy.
+ * Always delegates to the current active client (Redis or MemoryStore).
  */
 export function getRedisClient(): any {
   if (!redisClient) {
-    return initializeRedis();
+    initializeRedis();
   }
-  return redisClient;
+  return redisProxy;
 }
 
 /**
