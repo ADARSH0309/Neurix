@@ -25,10 +25,23 @@ export class OAuthClientManager {
     return this.oauth2Client.generateAuthUrl({
       access_type: 'offline',
       scope: [
+        'https://www.googleapis.com/auth/userinfo.email',
+        // Drive
         'https://www.googleapis.com/auth/drive',
         'https://www.googleapis.com/auth/drive.file',
         'https://www.googleapis.com/auth/drive.metadata.readonly',
-        'https://www.googleapis.com/auth/userinfo.email',
+        // Gmail
+        'https://www.googleapis.com/auth/gmail.modify',
+        // Calendar
+        'https://www.googleapis.com/auth/calendar',
+        'https://www.googleapis.com/auth/calendar.events',
+        // Tasks
+        'https://www.googleapis.com/auth/tasks',
+        // Forms
+        'https://www.googleapis.com/auth/forms.body',
+        'https://www.googleapis.com/auth/forms.responses.readonly',
+        // Sheets
+        'https://www.googleapis.com/auth/spreadsheets',
       ],
       state,
       prompt: 'consent',
