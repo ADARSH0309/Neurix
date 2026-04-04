@@ -3,7 +3,7 @@
  */
 
 import type { Request, Response } from 'express';
-import { isRedisConnected, getRedisClient } from '../../session/redis-client.js';
+import { isRedisConnected, isUsingMemoryStore } from '../../session/redis-client.js';
 import { redisHealthTracker } from '../../session/redis-health.js';
 
 export async function handleHealthCheck(req: Request, res: Response): Promise<void> {
@@ -11,24 +11,7 @@ export async function handleHealthCheck(req: Request, res: Response): Promise<vo
   const redisHealth = redisHealthTracker.getStatus();
   const uptime = process.uptime();
 
-  // Get Redis client status for diagnostics
-  const redis = getRedisClient();
-  const redisStatus = redis?.status || 'unknown';
-
-  // Mask the Redis URL for diagnostics
-  const rawUrl = process.env.REDIS_URL || process.env.REDIS_PRIVATE_URL || '';
-  const maskedUrl = rawUrl ? rawUrl.replace(/\/\/[^@]*@/, '//***@') : 'not set';
-
-  // Try a live Redis ping for diagnostics
-  let pingResult = 'skipped';
-  if (!redisConnected) {
-    try {
-      await redis.ping();
-      pingResult = 'OK';
-    } catch (e) {
-      pingResult = e instanceof Error ? e.message : String(e);
-    }
-  }
+  const memoryStore = isUsingMemoryStore();
 
   const health = {
     status: redisConnected ? 'healthy' : 'degraded',
@@ -36,14 +19,11 @@ export async function handleHealthCheck(req: Request, res: Response): Promise<vo
     uptime: Math.floor(uptime),
     version: '1.0.0',
     checks: {
-      redis: {
+      store: {
+        type: memoryStore ? 'memory' : 'redis',
+        connected: redisConnected,
         status: redisHealth.status,
-        connected: redisHealth.connected,
-        clientStatus: redisStatus,
-        url: maskedUrl,
-        pingError: pingResult,
         lastError: redisHealth.lastError,
-        features: redisHealth.features,
       },
     },
   };

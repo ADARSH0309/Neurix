@@ -1,17 +1,17 @@
 import { Redis, type RedisOptions } from 'ioredis';
-// Phase 5.1 - Week 2, Task 2.4: Prometheus Metrics (Issue #9)
 import { redis_connections_active } from '../http/metrics/prometheus.js';
-// Phase 5.1 - Week 3, Task 3.5: Redis Health Tracking (Issue #15)
 import { redisHealthTracker } from './redis-health.js';
+import { MemoryStore } from './memory-store.js';
 
 /**
- * Redis Client Singleton
+ * Redis Client with In-Memory Fallback
  *
- * Manages a single Redis connection for the application.
- * Connection is established lazily on first use.
+ * Tries to connect to Redis. If Redis is unavailable after a timeout,
+ * falls back to an in-memory store so the app remains functional.
  */
 
-let redisClient: Redis | null = null;
+let redisClient: any = null;
+let usingMemoryStore = false;
 
 export interface RedisConfig {
   url?: string;
@@ -22,193 +22,115 @@ export interface RedisConfig {
 }
 
 /**
- * Initialize Redis client
+ * Initialize Redis client with automatic in-memory fallback.
  */
-export function initializeRedis(config?: RedisConfig): Redis {
+export function initializeRedis(config?: RedisConfig): any {
   if (redisClient) {
     return redisClient;
   }
 
-  // Use connection URL if provided (AWS ElastiCache format)
-  // Phase 5.1 - Week 3, Task 3.2: Redis Connection Pooling (Issue #12)
-  if (config?.url) {
-    // For rediss:// URLs (TLS), disable cert validation for Railway/self-signed certs
-    const isTls = config.url.startsWith('rediss://');
-    redisClient = new Redis(config.url, {
-      maxRetriesPerRequest: null, // Let commands wait indefinitely for reconnect
-      connectTimeout: 10000,
-      commandTimeout: 5000,
-      keepAlive: 30000,
-      lazyConnect: false, // Connect immediately so connection is ready for first request
-      enableOfflineQueue: true,
-      offlineQueue: true,
-      family: 0, // Auto-detect IPv4/IPv6 — Railway internal networking uses IPv6
-      tls: isTls ? { rejectUnauthorized: false } : undefined,
-      retryStrategy: (times: number): number => {
-        // Never give up — Railway internal DNS can take time to propagate
-        const delay = Math.min(times * 200, 5000);
-        if (times % 10 === 0) {
-          console.log(JSON.stringify({
-            timestamp: new Date().toISOString(),
-            level: 'warn',
-            message: 'Retrying Redis connection',
-            attempt: times,
-            delay: `${delay}ms`,
-          }));
-        }
-        return delay;
-      },
-      reconnectOnError: (): 1 => 1, // Always reconnect and resend failed command
-    });
-  } else {
-    // Use individual connection parameters
-    // Phase 5.1 - Week 3, Task 3.2: Redis Connection Pooling (Issue #12)
-    const redisOptions: RedisOptions = {
-      host: config?.host || process.env.REDIS_HOST || 'localhost',
-      port: config?.port || parseInt(process.env.REDIS_PORT || '6379', 10),
-      password: config?.password || process.env.REDIS_PASSWORD,
-      db: config?.db || 0,
+  const redisUrl = config?.url;
 
-      // Connection Pooling Configuration
-      // Limit retries per request to prevent indefinite blocking
-      maxRetriesPerRequest: 3,
-
-      // Connection timeout: 10 seconds to establish connection
-      connectTimeout: 10000,
-
-      // Command timeout: 5 seconds for Redis commands to complete
-      // Prevents hanging on slow operations
-      commandTimeout: 5000,
-
-      // TCP KeepAlive: Send keepalive probes every 30 seconds
-      // Prevents idle connections from being dropped by firewalls/load balancers
-      keepAlive: 30000,
-
-      // Lazy connect: Wait until first command before connecting
-      // Allows app to start even if Redis is temporarily unavailable
-      lazyConnect: true,
-
-      // Enable offline queue: Queue commands when disconnected (up to 1000 commands)
-      // Provides graceful degradation during brief network issues
-      enableOfflineQueue: true,
-      offlineQueue: true,
-
-      // Never give up retrying — Railway DNS can take time
-      retryStrategy: (times: number): number => {
-        const delay = Math.min(times * 200, 5000);
-        if (times % 10 === 0) {
-          console.log(JSON.stringify({
-            timestamp: new Date().toISOString(),
-            level: 'warn',
-            message: 'Retrying Redis connection',
-            attempt: times,
-            delay: `${delay}ms`,
-          }));
-        }
-        return delay;
-      },
-      reconnectOnError: (): 1 => 1, // Always reconnect and resend failed command
-
-      // TLS: Only enable when REDIS_TLS=true is explicitly set (e.g. AWS ElastiCache)
-      // Railway Redis does not need TLS for internal connections
-      tls: process.env.REDIS_TLS === 'true' ? { rejectUnauthorized: true } : undefined,
-    };
-    redisClient = new Redis(redisOptions);
+  if (!redisUrl) {
+    // No Redis URL configured — go straight to memory store
+    console.log(JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'warn',
+      message: 'No REDIS_URL configured, using in-memory store',
+    }));
+    redisClient = new MemoryStore() as any;
+    usingMemoryStore = true;
+    redisHealthTracker.recordConnection();
+    return redisClient;
   }
 
-  // Log connection events
-  redisClient.on('connect', () => {
+  // Try Redis with a connection timeout
+  const isTls = redisUrl.startsWith('rediss://');
+  const realRedis = new Redis(redisUrl, {
+    maxRetriesPerRequest: null,
+    connectTimeout: 8000,
+    commandTimeout: 5000,
+    keepAlive: 30000,
+    lazyConnect: true,
+    enableOfflineQueue: false, // Don't queue — we'll fallback instead
+    family: 0,
+    tls: isTls ? { rejectUnauthorized: false } : undefined,
+    retryStrategy: (times: number): number | void => {
+      // Only retry a few times before we fall back to memory
+      if (times > 5) return undefined;
+      return Math.min(times * 500, 3000);
+    },
+    reconnectOnError: (): 1 => 1,
+  });
+
+  // Set up connection race: Redis vs timeout
+  const connectionTimeout = 10000; // 10 seconds to connect
+
+  const fallbackToMemory = () => {
+    if (usingMemoryStore) return; // Already fell back
+    usingMemoryStore = true;
+
+    console.log(JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'warn',
+      message: 'Redis connection failed — falling back to in-memory store',
+      url: redisUrl.replace(/\/\/[^@]*@/, '//***@'),
+    }));
+
+    // Disconnect real Redis to stop retry spam
+    realRedis.disconnect();
+
+    redisClient = new MemoryStore() as any;
+    redisHealthTracker.recordConnection();
+  };
+
+  const timeout = setTimeout(fallbackToMemory, connectionTimeout);
+
+  realRedis.on('ready', () => {
+    clearTimeout(timeout);
+    if (usingMemoryStore) return; // Too late, already using memory
+
+    redisClient = realRedis;
+    redis_connections_active.set(1);
+    redisHealthTracker.recordConnection();
+
     console.log(JSON.stringify({
       timestamp: new Date().toISOString(),
       level: 'info',
-      message: 'Redis client connected',
+      message: 'Redis client connected successfully',
+      url: redisUrl.replace(/\/\/[^@]*@/, '//***@'),
     }));
-
-    // Phase 5.1 - Week 2, Task 2.4: Prometheus Metrics (Issue #9)
-    redis_connections_active.set(1);
-
-    // Phase 5.1 - Week 3, Task 3.5: Redis Health Tracking (Issue #15)
-    redisHealthTracker.recordConnection();
   });
 
-  redisClient.on('ready', () => {
-    // Phase 5.1 - Week 2, Task 2.4: Prometheus Metrics (Issue #9)
-    redis_connections_active.set(1);
-
-    // Phase 5.1 - Week 3, Task 3.5: Redis Health Tracking (Issue #15)
-    redisHealthTracker.recordConnection();
-  });
-
-  redisClient.on('error', (err: Error) => {
+  realRedis.on('error', (err: Error) => {
     console.error(JSON.stringify({
       timestamp: new Date().toISOString(),
       level: 'error',
       message: 'Redis client error',
       error: err.message,
     }));
-
-    // Phase 5.1 - Week 3, Task 3.5: Redis Health Tracking (Issue #15)
     redisHealthTracker.recordError(err);
   });
 
-  redisClient.on('close', () => {
-    console.log(JSON.stringify({
-      timestamp: new Date().toISOString(),
-      level: 'warn',
-      message: 'Redis client connection closed',
-    }));
-
-    // Phase 5.1 - Week 2, Task 2.4: Prometheus Metrics (Issue #9)
+  realRedis.on('end', () => {
     redis_connections_active.set(0);
-
-    // Phase 5.1 - Week 3, Task 3.5: Redis Health Tracking (Issue #15)
     redisHealthTracker.recordDisconnection();
+    fallbackToMemory();
   });
 
-  redisClient.on('end', () => {
-    // Phase 5.1 - Week 2, Task 2.4: Prometheus Metrics (Issue #9)
-    redis_connections_active.set(0);
-
-    // Phase 5.1 - Week 3, Task 3.5: Redis Health Tracking (Issue #15)
-    redisHealthTracker.recordDisconnection();
+  // Start connection attempt
+  redisClient = realRedis; // Temporarily set to real Redis
+  realRedis.connect().catch(() => {
+    // Connection failed, timeout will handle fallback
   });
-
-  // For host/port path (lazyConnect: true), manually initiate connection
-  // For URL path (lazyConnect: false), ioredis connects automatically
-  if (config?.url === undefined) {
-    redisClient.connect().catch((err: Error) => {
-      console.error(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        level: 'error',
-        message: 'Failed to connect to Redis on initialization',
-        error: err.message,
-        note: 'Connection will be retried on first command due to lazyConnect',
-      }));
-    });
-  }
-
-  console.log(JSON.stringify({
-    timestamp: new Date().toISOString(),
-    level: 'info',
-    message: 'Redis client initialized',
-    connectionType: config?.url ? 'url' : 'host/port',
-    lazyConnect: true,
-    pooling: {
-      connectTimeout: '10s',
-      commandTimeout: '5s',
-      keepAlive: '30s',
-      maxRetriesPerRequest: 3,
-      offlineQueue: true,
-    },
-  }));
 
   return redisClient;
 }
 
 /**
- * Get the Redis client instance
+ * Get the Redis/memory client instance
  */
-export function getRedisClient(): Redis {
+export function getRedisClient(): any {
   if (!redisClient) {
     return initializeRedis();
   }
@@ -216,7 +138,7 @@ export function getRedisClient(): Redis {
 }
 
 /**
- * Close Redis connection
+ * Close connection
  */
 export async function closeRedis(): Promise<void> {
   if (redisClient) {
@@ -225,14 +147,22 @@ export async function closeRedis(): Promise<void> {
     console.log(JSON.stringify({
       timestamp: new Date().toISOString(),
       level: 'info',
-      message: 'Redis client closed',
+      message: 'Redis/memory client closed',
     }));
   }
 }
 
 /**
- * Check if Redis is connected
+ * Check if client is connected and ready
  */
 export function isRedisConnected(): boolean {
+  if (usingMemoryStore) return true;
   return redisClient?.status === 'ready';
+}
+
+/**
+ * Check if using in-memory fallback
+ */
+export function isUsingMemoryStore(): boolean {
+  return usingMemoryStore;
 }

@@ -118,7 +118,7 @@ export class IORedisStore implements Store {
 
     return new Promise((resolve, reject) => {
       stream.on('end', () => resolve());
-      stream.on('error', (err) => reject(err));
+      stream.on('error', (err: Error) => reject(err));
     });
   }
 
