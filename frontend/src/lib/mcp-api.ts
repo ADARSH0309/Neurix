@@ -1177,8 +1177,8 @@ export function generateToolsHelpMessage(tools: McpTool[], serverName: string): 
 // Natural language patterns → tool name mapping
 const NATURAL_LANGUAGE_ALIASES: Record<string, string[]> = {
   // Gmail
-  'list_messages': ['show mail', 'show mails', 'show email', 'show emails', 'list mail', 'list mails', 'list email', 'list emails', 'recent mail', 'recent mails', 'recent email', 'recent emails', 'my mail', 'my mails', 'my email', 'my emails', 'inbox', 'top mail', 'top mails', 'top email', 'top emails', 'last mail', 'last mails', 'latest mail', 'latest mails'],
-  'get_unread_messages': ['unread mail', 'unread mails', 'unread email', 'unread emails', 'show unread', 'list unread', 'new mail', 'new mails', 'new email', 'new emails'],
+  'list_messages': ['show mail', 'show mails', 'show email', 'show emails', 'list mail', 'list mails', 'list email', 'list emails', 'recent mail', 'recent mails', 'recent email', 'recent emails', 'recent message', 'recent messages', 'list message', 'list messages', 'list recent', 'my mail', 'my mails', 'my email', 'my emails', 'my messages', 'inbox', 'top mail', 'top mails', 'top email', 'top emails', 'last mail', 'last mails', 'latest mail', 'latest mails', 'latest messages'],
+  'get_unread_messages': ['unread mail', 'unread mails', 'unread email', 'unread emails', 'unread message', 'unread messages', 'show unread', 'list unread', 'new mail', 'new mails', 'new email', 'new emails'],
   'search_messages': ['search mail', 'search mails', 'search email', 'search emails', 'find mail', 'find mails', 'find email', 'find emails', 'search inbox'],
   'send_message': ['send mail', 'send email', 'compose mail', 'compose email', 'write mail', 'write email', 'new message'],
   'get_message': ['read mail', 'read email', 'open mail', 'open email', 'view mail', 'view email'],
@@ -1256,7 +1256,9 @@ export function matchUserInputToTool(
           if (propType === 'string') {
             // Find the alias that matched and extract text after it
             const lower = lowerInput;
-            for (const alias of NATURAL_LANGUAGE_ALIASES[nlTool.name] || []) {
+            // Look up aliases by unprefixed tool name
+            const unprefixedName = nlTool.name.includes('__') ? nlTool.name.slice(nlTool.name.indexOf('__') + 2) : nlTool.name;
+            for (const alias of NATURAL_LANGUAGE_ALIASES[unprefixedName] || NATURAL_LANGUAGE_ALIASES[nlTool.name] || []) {
               const idx = lower.indexOf(alias);
               if (idx !== -1) {
                 const rest = originalInput.slice(idx + alias.length).trim();
@@ -1279,23 +1281,30 @@ export function matchUserInputToTool(
   // Then: try to match tool name (with underscores replaced by spaces)
   for (const tool of tools) {
     const toolNameLower = tool.name.toLowerCase();
-    const toolNameSpaces = toolNameLower.replace(/_/g, ' ');
+    // Handle gateway-prefixed names: "gmail__list_messages" → "gmail list messages"
+    const toolNameSpaces = toolNameLower.replace(/__/g, ' ').replace(/_/g, ' ');
+    // Also try without the service prefix: "gmail__list_messages" → "list messages"
+    const unprefixed = toolNameLower.includes('__')
+      ? toolNameLower.slice(toolNameLower.indexOf('__') + 2).replace(/_/g, ' ')
+      : toolNameSpaces;
 
-    // Exact match or starts with
-    if (lowerInput === toolNameSpaces ||
-        lowerInput === toolNameLower ||
-        lowerInput.startsWith(toolNameSpaces + ' ') ||
-        lowerInput.startsWith(toolNameLower + ' ')) {
+    // Exact match or starts with (both full name and unprefixed)
+    const matchesFullName = lowerInput === toolNameSpaces || lowerInput === toolNameLower ||
+        lowerInput.startsWith(toolNameSpaces + ' ') || lowerInput.startsWith(toolNameLower + ' ');
+    const matchesUnprefixed = lowerInput === unprefixed ||
+        lowerInput.startsWith(unprefixed + ' ');
 
+    if (matchesFullName || matchesUnprefixed) {
       // Extract potential arguments from the rest of the input
       const args: Record<string, unknown> = {};
       let restOfInput = originalInput;
 
       // Remove the tool name from input to get arguments
-      if (lowerInput.startsWith(toolNameSpaces + ' ')) {
-        restOfInput = originalInput.slice(toolNameSpaces.length).trim();
-      } else if (lowerInput.startsWith(toolNameLower + ' ')) {
-        restOfInput = originalInput.slice(toolNameLower.length).trim();
+      const matchedName = matchesFullName
+        ? (lowerInput.startsWith(toolNameSpaces + ' ') ? toolNameSpaces : toolNameLower)
+        : unprefixed;
+      if (lowerInput.startsWith(matchedName + ' ')) {
+        restOfInput = originalInput.slice(matchedName.length).trim();
       } else {
         restOfInput = '';
       }
@@ -1347,8 +1356,8 @@ export function matchUserInputToTool(
       return { tool, args, missingRequired };
     }
 
-    // Check if input contains key words from tool name
-    const toolWords = toolNameSpaces.split(' ');
+    // Check if input contains key words from tool name (use unprefixed)
+    const toolWords = unprefixed.split(' ').filter(w => w.length > 0);
     const inputWords = lowerInput.split(' ');
     const matchedWords = toolWords.filter(w => inputWords.includes(w));
 
