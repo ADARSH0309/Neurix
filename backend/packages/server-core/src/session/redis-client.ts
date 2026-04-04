@@ -32,17 +32,19 @@ export function initializeRedis(config?: RedisConfig): Redis {
   // Use connection URL if provided (AWS ElastiCache format)
   // Phase 5.1 - Week 3, Task 3.2: Redis Connection Pooling (Issue #12)
   if (config?.url) {
+    // For rediss:// URLs (TLS), disable cert validation for Railway/self-signed certs
+    const isTls = config.url.startsWith('rediss://');
     redisClient = new Redis(config.url, {
-      // Connection Pooling Configuration (same as host/port config)
-      maxRetriesPerRequest: 3,
+      maxRetriesPerRequest: null, // Let commands wait indefinitely for reconnect
       connectTimeout: 10000,
       commandTimeout: 5000,
       keepAlive: 30000,
-      lazyConnect: true,
+      lazyConnect: false, // Connect immediately so connection is ready for first request
       enableOfflineQueue: true,
       offlineQueue: true,
+      tls: isTls ? { rejectUnauthorized: false } : undefined,
       retryStrategy: (times: number): number | void => {
-        if (times > 10) {
+        if (times > 20) {
           console.error(JSON.stringify({
             timestamp: new Date().toISOString(),
             level: 'error',
@@ -51,7 +53,7 @@ export function initializeRedis(config?: RedisConfig): Redis {
           }));
           return undefined;
         }
-        const delay = Math.min(times * 50, 2000);
+        const delay = Math.min(times * 100, 3000);
         console.log(JSON.stringify({
           timestamp: new Date().toISOString(),
           level: 'warn',
@@ -216,18 +218,19 @@ export function initializeRedis(config?: RedisConfig): Redis {
     redisHealthTracker.recordDisconnection();
   });
 
-  // Phase 5.1 - Week 3, Task 3.2: Lazy connection handling (Issue #12)
-  // Since lazyConnect is enabled, manually initiate connection
-  // This allows the app to start even if Redis is temporarily unavailable
-  redisClient.connect().catch((err: Error) => {
-    console.error(JSON.stringify({
-      timestamp: new Date().toISOString(),
-      level: 'error',
-      message: 'Failed to connect to Redis on initialization',
-      error: err.message,
-      note: 'Connection will be retried on first command due to lazyConnect',
-    }));
-  });
+  // For host/port path (lazyConnect: true), manually initiate connection
+  // For URL path (lazyConnect: false), ioredis connects automatically
+  if (config?.url === undefined) {
+    redisClient.connect().catch((err: Error) => {
+      console.error(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'error',
+        message: 'Failed to connect to Redis on initialization',
+        error: err.message,
+        note: 'Connection will be retried on first command due to lazyConnect',
+      }));
+    });
+  }
 
   console.log(JSON.stringify({
     timestamp: new Date().toISOString(),
