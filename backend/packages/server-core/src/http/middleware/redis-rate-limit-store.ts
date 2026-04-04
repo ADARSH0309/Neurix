@@ -28,7 +28,9 @@ export class IORedisStore implements Store {
   }
 
   /**
-   * Increment counter using atomic Lua script
+   * Increment counter using atomic Lua script.
+   * Fails open (returns totalHits=0) if Redis is unavailable so a Redis outage
+   * never blocks authentication or other critical paths.
    */
   async increment(key: string): Promise<IncrementResponse> {
     const fullKey = this.prefix + key;
@@ -52,31 +54,51 @@ export class IORedisStore implements Store {
       return {hits, ttl}
     `;
 
-    const result = await this.redis.eval(
-      luaScript,
-      1,
-      fullKey,
-      windowSeconds.toString(),
-      resetOnChange
-    ) as [number, number];
+    try {
+      const result = await this.redis.eval(
+        luaScript,
+        1,
+        fullKey,
+        windowSeconds.toString(),
+        resetOnChange
+      ) as [number, number];
 
-    const [hits, ttl] = result;
-    const resetTime = ttl > 0 ? new Date(Date.now() + ttl * 1000) : undefined;
+      const [hits, ttl] = result;
+      const resetTime = ttl > 0 ? new Date(Date.now() + ttl * 1000) : undefined;
 
-    return {
-      totalHits: hits,
-      resetTime,
-    };
+      return {
+        totalHits: hits,
+        resetTime,
+      };
+    } catch (error) {
+      console.error(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'error',
+        message: 'Rate limit store Redis error - failing open',
+        prefix: this.prefix,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      }));
+      // Fail open: allow the request through rather than blocking all traffic
+      return { totalHits: 0, resetTime: undefined };
+    }
   }
 
   async decrement(key: string): Promise<void> {
     const fullKey = this.prefix + key;
-    await this.redis.decr(fullKey);
+    try {
+      await this.redis.decr(fullKey);
+    } catch {
+      // Ignore decrement errors - non-critical
+    }
   }
 
   async resetKey(key: string): Promise<void> {
     const fullKey = this.prefix + key;
-    await this.redis.del(fullKey);
+    try {
+      await this.redis.del(fullKey);
+    } catch {
+      // Ignore reset errors - non-critical
+    }
   }
 
   async resetAll(): Promise<void> {
