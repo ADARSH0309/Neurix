@@ -131,8 +131,11 @@ export function ServerProvider({ children }: { children: ReactNode }) {
         }
         setConnectingServerId(serverId);
         localStorage.setItem('mcp_auth_pending', serverId);
+        toast.info('On the Google sign-in screen, click "Advanced" → "Go to neurixgateway..." to continue.', { duration: 6000 });
         const redirectUrl = window.location.origin;
-        window.location.href = `${server.baseUrl}/auth/login?redirect_uri=${encodeURIComponent(redirectUrl)}`;
+        setTimeout(() => {
+            window.location.href = `${server.baseUrl}/auth/login?redirect_uri=${encodeURIComponent(redirectUrl)}`;
+        }, 2000);
     };
 
     const disconnectServer = (serverId: string) => {
