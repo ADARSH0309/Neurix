@@ -148,15 +148,9 @@ export function initializeRedis(config?: RedisConfig): Redis {
         return false;
       },
 
-      // Enable TLS for encrypted connections (AWS ElastiCache with transit encryption)
-      // In production, we use TLS with proper certificate validation
-      // Phase 5.1 - CRITICAL Security: Enable certificate validation (Week 1, Task 1.1)
-      // AWS ElastiCache uses Amazon Trust Services CA which is already trusted by Node.js
-      // No need to explicitly load CA bundle - Node.js built-in CAs include AWS CAs
-      tls: process.env.NODE_ENV === 'production' ? {
-        rejectUnauthorized: true, // ✅ Enable certificate validation
-        // Node.js will use its built-in CA certificates (includes Amazon Trust Services)
-      } : undefined,
+      // TLS: Only enable when REDIS_TLS=true is explicitly set (e.g. AWS ElastiCache)
+      // Railway Redis does not need TLS for internal connections
+      tls: process.env.REDIS_TLS === 'true' ? { rejectUnauthorized: true } : undefined,
     };
     redisClient = new Redis(redisOptions);
   }

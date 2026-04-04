@@ -83,8 +83,9 @@ export async function startServer(serverDef: ServerDefinition): Promise<void> {
 
   // Initialize Redis
   try {
-    const redisConfig = process.env.REDIS_URL
-      ? { url: process.env.REDIS_URL }
+    const redisUrl = process.env.REDIS_URL || process.env.REDIS_PRIVATE_URL;
+    const redisConfig = redisUrl
+      ? { url: redisUrl }
       : {
           host: process.env.REDIS_HOST,
           port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT, 10) : undefined,
@@ -93,11 +94,14 @@ export async function startServer(serverDef: ServerDefinition): Promise<void> {
 
     initializeRedis(redisConfig);
 
+    // Log connection info (mask password)
+    const safeUrl = redisUrl ? redisUrl.replace(/\/\/[^@]*@/, '//***@') : undefined;
     console.log(JSON.stringify({
       timestamp: new Date().toISOString(),
       level: 'info',
       message: 'Redis client initialized',
-      connectionType: process.env.REDIS_URL ? 'url' : 'host/port',
+      connectionType: redisUrl ? 'url' : 'host/port',
+      redisUrl: safeUrl || 'localhost (default)',
     }));
   } catch (error) {
     console.error(JSON.stringify({
