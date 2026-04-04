@@ -78,7 +78,7 @@ class GatewayAdapter implements McpAdapter {
       }
     }
 
-    return allTools;
+    return { tools: allTools };
   }
 
   async callTool(name: string, args: Record<string, unknown>): Promise<any> {

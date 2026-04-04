@@ -1209,7 +1209,8 @@ function matchNaturalLanguage(input: string, tools: McpTool[]): McpTool | null {
   for (const [toolName, aliases] of Object.entries(NATURAL_LANGUAGE_ALIASES)) {
     for (const alias of aliases) {
       if (lower.includes(alias)) {
-        const tool = tools.find(t => t.name === toolName);
+        // Match both "list_messages" and "gmail__list_messages" (gateway-prefixed)
+        const tool = tools.find(t => t.name === toolName || t.name.endsWith('__' + toolName));
         if (tool) return tool;
       }
     }
