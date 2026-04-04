@@ -158,7 +158,7 @@ export const gatewayDefinition: ServerDefinition = {
   name: 'Neurix Gateway',
   displayName: 'Neurix MCP Gateway',
   port: 8080,
-  callbackPath: 'callback',
+  callbackPath: 'gateway',
   scopes: allScopes,
   factory: {
     createClient(clientId: string, clientSecret: string, redirectUri: string): ServiceClient {
