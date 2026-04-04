@@ -43,38 +43,21 @@ export function initializeRedis(config?: RedisConfig): Redis {
       enableOfflineQueue: true,
       offlineQueue: true,
       tls: isTls ? { rejectUnauthorized: false } : undefined,
-      retryStrategy: (times: number): number | void => {
-        if (times > 20) {
-          console.error(JSON.stringify({
-            timestamp: new Date().toISOString(),
-            level: 'error',
-            message: 'Redis retry limit exceeded',
-            attempts: times,
-          }));
-          return undefined;
-        }
-        const delay = Math.min(times * 100, 3000);
-        console.log(JSON.stringify({
-          timestamp: new Date().toISOString(),
-          level: 'warn',
-          message: 'Retrying Redis connection',
-          attempt: times,
-          delay: `${delay}ms`,
-        }));
-        return delay;
-      },
-      reconnectOnError: (err: Error): boolean | 1 | 2 => {
-        const targetError = 'READONLY';
-        if (err.message.includes(targetError)) {
+      retryStrategy: (times: number): number => {
+        // Never give up — Railway internal DNS can take time to propagate
+        const delay = Math.min(times * 200, 5000);
+        if (times % 10 === 0) {
           console.log(JSON.stringify({
             timestamp: new Date().toISOString(),
             level: 'warn',
-            message: 'Reconnecting due to READONLY error (master failover)',
+            message: 'Retrying Redis connection',
+            attempt: times,
+            delay: `${delay}ms`,
           }));
-          return 1;
         }
-        return false;
+        return delay;
       },
+      reconnectOnError: (): 1 => 1, // Always reconnect and resend failed command
     });
   } else {
     // Use individual connection parameters
@@ -109,44 +92,21 @@ export function initializeRedis(config?: RedisConfig): Redis {
       enableOfflineQueue: true,
       offlineQueue: true,
 
-      // Retry strategy: Exponential backoff with max 2 second delay
-      retryStrategy: (times: number): number | void => {
-        if (times > 10) {
-          // After 10 retries, stop retrying and fail
-          console.error(JSON.stringify({
-            timestamp: new Date().toISOString(),
-            level: 'error',
-            message: 'Redis retry limit exceeded',
-            attempts: times,
-          }));
-          return undefined; // Stop retrying
-        }
-        const delay = Math.min(times * 50, 2000);
-        console.log(JSON.stringify({
-          timestamp: new Date().toISOString(),
-          level: 'warn',
-          message: 'Retrying Redis connection',
-          attempt: times,
-          delay: `${delay}ms`,
-        }));
-        return delay;
-      },
-
-      // Reconnect on specific errors (e.g., READONLY - master failover)
-      reconnectOnError: (err: Error): boolean | 1 | 2 => {
-        const targetError = 'READONLY';
-        if (err.message.includes(targetError)) {
+      // Never give up retrying — Railway DNS can take time
+      retryStrategy: (times: number): number => {
+        const delay = Math.min(times * 200, 5000);
+        if (times % 10 === 0) {
           console.log(JSON.stringify({
             timestamp: new Date().toISOString(),
             level: 'warn',
-            message: 'Reconnecting due to READONLY error (master failover)',
+            message: 'Retrying Redis connection',
+            attempt: times,
+            delay: `${delay}ms`,
           }));
-          // 1 = reconnect and resend the failed command
-          return 1;
         }
-        // false = don't reconnect for other errors
-        return false;
+        return delay;
       },
+      reconnectOnError: (): 1 => 1, // Always reconnect and resend failed command
 
       // TLS: Only enable when REDIS_TLS=true is explicitly set (e.g. AWS ElastiCache)
       // Railway Redis does not need TLS for internal connections
