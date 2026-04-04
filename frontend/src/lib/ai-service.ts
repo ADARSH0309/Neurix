@@ -52,13 +52,12 @@ function parsePrefixedToolName(prefixed: string): { serverId: string; toolName: 
 /** Parse text-based function calls that Llama sometimes outputs instead of proper tool_calls */
 function parseTextFunctionCalls(text: string): { cleanText: string; toolCalls: AIToolCall[] } {
     const toolCalls: AIToolCall[] = [];
+    // Match <function=name>{args}</function> pattern
+    const regex = /<function=([^>]+)>(.*?)<\/function>/gs;
+    let match;
     let callIndex = 0;
 
-    // Pattern 1: <function=name>{args}</function>
-    const xmlRegex = /<function=([^>]+)>(.*?)<\/function>/gs;
-    let match;
-
-    while ((match = xmlRegex.exec(text)) !== null) {
+    while ((match = regex.exec(text)) !== null) {
         const fullName = match[1].trim();
         const argsStr = match[2].trim();
         const { serverId, toolName } = parsePrefixedToolName(fullName);
@@ -78,48 +77,8 @@ function parseTextFunctionCalls(text: string): { cleanText: string; toolCalls: A
         });
     }
 
-    // Pattern 2: tool_name(key=value, key=value) — Python-style calls Llama outputs
-    const pyRegex = /\b((?:[a-z_]+__)?[a-z_]+)\(([^)]*)\)/gi;
-
-    while ((match = pyRegex.exec(text)) !== null) {
-        const fullName = match[1].trim();
-        const paramsStr = match[2].trim();
-        const { serverId, toolName } = parsePrefixedToolName(fullName);
-
-        // Only parse if it looks like a real tool call (has a serverId prefix or known tool name pattern)
-        if (!serverId && !toolName.includes('_')) continue;
-
-        const args: Record<string, any> = {};
-        if (paramsStr) {
-            for (const param of paramsStr.split(',')) {
-                const eqIdx = param.indexOf('=');
-                if (eqIdx !== -1) {
-                    const key = param.slice(0, eqIdx).trim();
-                    let val: any = param.slice(eqIdx + 1).trim();
-                    // Remove surrounding quotes
-                    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
-                        val = val.slice(1, -1);
-                    } else if (!isNaN(Number(val))) {
-                        val = Number(val);
-                    }
-                    args[key] = val;
-                }
-            }
-        }
-
-        toolCalls.push({
-            id: `text_call_${callIndex++}`,
-            serverId,
-            toolName,
-            args,
-        });
-    }
-
-    // Remove both patterns from the visible text
-    let cleanText = text
-        .replace(/<function=[^>]+>.*?<\/function>/gs, '')
-        .replace(/\b(?:[a-z_]+__)?[a-z_]+\([^)]*\)/gi, '')
-        .trim();
+    // Remove the function call tags from the visible text
+    const cleanText = text.replace(/<function=[^>]+>.*?<\/function>/gs, '').trim();
 
     return { cleanText: cleanText || null as any, toolCalls };
 }
@@ -194,7 +153,7 @@ export async function chatWithAI(
     let text = assistantMessage.content;
     let textToolCalls: AIToolCall[] = [];
 
-    if (text && (/<function=/.test(text) || /\b[a-z_]+\([^)]*\)/i.test(text))) {
+    if (text && /<function=/.test(text)) {
         const parsed = parseTextFunctionCalls(text);
         text = parsed.cleanText;
         textToolCalls = parsed.toolCalls;
@@ -291,7 +250,7 @@ export async function streamChatWithAI(
     let text: string | null = fullText || null;
     let textToolCalls: AIToolCall[] = [];
 
-    if (text && (/<function=/.test(text) || /\b[a-z_]+\([^)]*\)/i.test(text))) {
+    if (text && /<function=/.test(text)) {
         const parsed = parseTextFunctionCalls(text);
         text = parsed.cleanText;
         textToolCalls = parsed.toolCalls;

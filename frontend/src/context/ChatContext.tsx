@@ -218,44 +218,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         history.push({ role: 'user', content: text });
 
         if (aiResponse.toolCalls.length === 0) {
-            // AI didn't call a tool — try keyword matching as fallback before showing AI text
-            const serverId = activeServerId || Object.values(servers).find(s => s.connected)?.id;
-            if (serverId) {
-                const server = servers[serverId];
-                if (server?.connected && server.tools && server.tools.length > 0) {
-                    const { tool, args, missingRequired } = findTool(serverId, text);
-                    if (tool && missingRequired.length === 0) {
-                        setStreamingContent(null);
-                        try {
-                            addActivity('info', `Executing ${tool.name}`, serverId, server.name);
-                            const result = await executeTool(serverId, tool.name, args);
-                            history.push({ role: 'assistant', content: result });
-                            aiHistoryRef.current[sessionId] = history;
-                            return result;
-                        } catch (err: unknown) {
-                            // Fall through to AI text response
-                        }
-                    }
-                    // Also check other connected servers
-                    for (const [sid, srv] of Object.entries(servers)) {
-                        if (sid === serverId || !srv.connected || !srv.tools || srv.tools.length === 0) continue;
-                        const result = matchUserInputToTool(text, srv.tools);
-                        if (result.tool && result.missingRequired.length === 0) {
-                            setStreamingContent(null);
-                            try {
-                                addActivity('info', `Executing ${result.tool.name}`, sid, srv.name);
-                                const toolResult = await executeTool(sid, result.tool.name, result.args);
-                                history.push({ role: 'assistant', content: toolResult });
-                                aiHistoryRef.current[sessionId] = history;
-                                return toolResult;
-                            } catch {
-                                // Fall through to AI text response
-                            }
-                        }
-                    }
-                }
-            }
-
+            // No tool calls — just a text response (already streamed to UI)
             const responseText = aiResponse.text || 'I\'m not sure how to help with that. Try connecting to a service first.';
             history.push({ role: 'assistant', content: responseText });
             aiHistoryRef.current[sessionId] = history;
