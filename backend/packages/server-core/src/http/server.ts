@@ -67,7 +67,8 @@ export async function createHttpServer(config: OAuthConfig, serverDef: ServerDef
   const app = express();
   const factory = serverDef.factory;
 
-  app.set('trust proxy', true);
+  // Trust first proxy (Railway's load balancer) — 'true' is rejected by express-rate-limit v8
+  app.set('trust proxy', 1);
 
   // Initialize OAuth client
   initializeOAuthClient({

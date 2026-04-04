@@ -79,7 +79,7 @@ export class IORedisStore implements Store {
         error: error instanceof Error ? error.message : 'Unknown error',
       }));
       // Fail open: allow the request through rather than blocking all traffic
-      return { totalHits: 0, resetTime: undefined };
+      return { totalHits: 1, resetTime: undefined };
     }
   }
 
