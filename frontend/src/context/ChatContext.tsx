@@ -400,12 +400,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
             if (!server.token) {
                 responseContent = 'Please connect to the server first.';
-            } else if (isAIConfigured()) {
-                // AI-powered path: OpenAI handles NLU + tool routing
-                responseContent = await sendMessageWithAI(text, sessionId);
             } else {
-                // Fallback: keyword matching
+                // Always try keyword matching first — gives formatted output
                 responseContent = await sendMessageWithKeywords(text, serverId);
+
+                // If keyword matching couldn't find a tool AND AI is configured, use AI
+                if (isAIConfigured() && responseContent.includes('I couldn\'t find a matching command')) {
+                    responseContent = await sendMessageWithAI(text, sessionId);
+                }
             }
 
             const suggestions = generateSuggestions(server.name, responseContent, serverId);

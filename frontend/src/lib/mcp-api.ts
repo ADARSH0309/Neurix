@@ -1174,6 +1174,55 @@ export function generateToolsHelpMessage(tools: McpTool[], serverName: string): 
 /**
  * Match user input to a tool
  */
+// Natural language patterns → tool name mapping
+const NATURAL_LANGUAGE_ALIASES: Record<string, string[]> = {
+  // Gmail
+  'list_messages': ['show mail', 'show mails', 'show email', 'show emails', 'list mail', 'list mails', 'list email', 'list emails', 'recent mail', 'recent mails', 'recent email', 'recent emails', 'my mail', 'my mails', 'my email', 'my emails', 'inbox', 'top mail', 'top mails', 'top email', 'top emails', 'last mail', 'last mails', 'latest mail', 'latest mails'],
+  'get_unread_messages': ['unread mail', 'unread mails', 'unread email', 'unread emails', 'show unread', 'list unread', 'new mail', 'new mails', 'new email', 'new emails'],
+  'search_messages': ['search mail', 'search mails', 'search email', 'search emails', 'find mail', 'find mails', 'find email', 'find emails', 'search inbox'],
+  'send_message': ['send mail', 'send email', 'compose mail', 'compose email', 'write mail', 'write email', 'new message'],
+  'get_message': ['read mail', 'read email', 'open mail', 'open email', 'view mail', 'view email'],
+  'get_profile': ['my profile', 'gmail profile', 'email profile', 'my account'],
+  'list_labels': ['show labels', 'list labels', 'my labels'],
+  'list_drafts': ['show drafts', 'list drafts', 'my drafts'],
+  'trash_message': ['delete mail', 'delete email', 'trash mail', 'trash email', 'remove mail', 'remove email', 'delete trash'],
+  // Drive
+  'list_files': ['show files', 'list files', 'my files', 'recent files', 'show documents', 'list documents', 'my documents', 'my drive'],
+  'search_files': ['search files', 'search drive', 'find files', 'find documents', 'search documents'],
+  'create_folder': ['create folder', 'new folder', 'make folder'],
+  // Calendar
+  'list_events': ['show events', 'list events', 'my events', 'upcoming events', 'today events', 'my schedule', 'my calendar', 'show calendar', 'upcoming meetings', 'today meetings', 'show meetings'],
+  'create_event': ['create event', 'new event', 'add event', 'schedule meeting', 'create meeting', 'new meeting'],
+  'list_calendars': ['show calendars', 'list calendars', 'my calendars'],
+  // Tasks
+  'list_tasks': ['show tasks', 'list tasks', 'my tasks', 'show todos', 'list todos', 'my todos'],
+  'create_task': ['create task', 'new task', 'add task', 'create todo', 'new todo', 'add todo'],
+  'list_task_lists': ['show task lists', 'list task lists', 'my task lists'],
+  // Forms
+  'list_forms': ['show forms', 'list forms', 'my forms'],
+  // Sheets
+  'list_spreadsheets': ['show spreadsheets', 'list spreadsheets', 'my spreadsheets', 'show sheets', 'list sheets', 'my sheets'],
+};
+
+function matchNaturalLanguage(input: string, tools: McpTool[]): McpTool | null {
+  const lower = input.toLowerCase();
+  for (const [toolName, aliases] of Object.entries(NATURAL_LANGUAGE_ALIASES)) {
+    for (const alias of aliases) {
+      if (lower.includes(alias)) {
+        const tool = tools.find(t => t.name === toolName);
+        if (tool) return tool;
+      }
+    }
+  }
+  return null;
+}
+
+/** Extract a number from user input for maxResults-type params */
+function extractNumber(input: string): number | null {
+  const match = input.match(/\b(\d+)\b/);
+  return match ? parseInt(match[1], 10) : null;
+}
+
 export function matchUserInputToTool(
   input: string,
   tools: McpTool[]
@@ -1181,7 +1230,52 @@ export function matchUserInputToTool(
   const lowerInput = input.toLowerCase().trim();
   const originalInput = input.trim();
 
-  // Try to match tool name (with underscores replaced by spaces)
+  // First: try natural language matching
+  const nlTool = matchNaturalLanguage(lowerInput, tools);
+  if (nlTool) {
+    const args: Record<string, unknown> = {};
+
+    // Extract maxResults from input (e.g., "show 5 mails" → maxResults: 5)
+    const num = extractNumber(lowerInput);
+    if (num && nlTool.inputSchema?.properties) {
+      const maxProp = Object.keys(nlTool.inputSchema.properties).find(
+        p => p.toLowerCase().includes('max') || p.toLowerCase().includes('count') || p.toLowerCase().includes('limit')
+      );
+      if (maxProp) args[maxProp] = num;
+    }
+
+    // Check for search query after the alias match (e.g., "search emails about project")
+    if (nlTool.inputSchema?.required) {
+      const required = nlTool.inputSchema.required;
+      const missingRequired: string[] = [];
+      for (const req of required) {
+        if (args[req] === undefined) {
+          // Try to extract remaining text as the argument
+          const propType = (nlTool.inputSchema.properties?.[req] as any)?.type;
+          if (propType === 'string') {
+            // Find the alias that matched and extract text after it
+            const lower = lowerInput;
+            for (const alias of NATURAL_LANGUAGE_ALIASES[nlTool.name] || []) {
+              const idx = lower.indexOf(alias);
+              if (idx !== -1) {
+                const rest = originalInput.slice(idx + alias.length).trim();
+                if (rest) {
+                  args[req] = rest;
+                  break;
+                }
+              }
+            }
+          }
+          if (args[req] === undefined) missingRequired.push(req);
+        }
+      }
+      return { tool: nlTool, args, missingRequired };
+    }
+
+    return { tool: nlTool, args, missingRequired: [] };
+  }
+
+  // Then: try to match tool name (with underscores replaced by spaces)
   for (const tool of tools) {
     const toolNameLower = tool.name.toLowerCase();
     const toolNameSpaces = toolNameLower.replace(/_/g, ' ');
