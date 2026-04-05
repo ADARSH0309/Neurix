@@ -19,27 +19,36 @@ export function isConfigured(): boolean {
     return !!import.meta.env.VITE_GROQ_API_KEY;
 }
 
-/** Convert MCP tools from all servers into OpenAI function-calling format, prefixed with serverId */
+/** Convert MCP tools from all servers into OpenAI function-calling format, prefixed with serverId.
+ *  All servers point to the same gateway, so only use tools from the first connected server
+ *  to avoid duplicates and stay under Groq's 128-tool limit. */
 export function mcpToolsToOpenAI(
     servers: Record<string, McpServer>
 ): OpenAI.Chat.ChatCompletionTool[] {
     const tools: OpenAI.Chat.ChatCompletionTool[] = [];
+    const seenToolNames = new Set<string>();
 
     for (const [serverId, server] of Object.entries(servers)) {
         if (!server.connected || !server.tools || server.tools.length === 0) continue;
         for (const tool of server.tools) {
+            // Gateway tools are already prefixed (e.g. gmail__list_messages).
+            // Deduplicate across servers since they all share the same gateway.
+            if (seenToolNames.has(tool.name)) continue;
+            seenToolNames.add(tool.name);
+
             tools.push({
                 type: 'function',
                 function: {
                     name: `${serverId}__${tool.name}`,
-                    description: `[${server.name}] ${tool.description || ''}`,
+                    description: tool.description || '',
                     parameters: tool.inputSchema || { type: 'object', properties: {} },
                 },
             });
         }
     }
 
-    return tools;
+    // Groq limit: 128 tools max
+    return tools.slice(0, 128);
 }
 
 /** Parse a prefixed tool name back into serverId + toolName */
